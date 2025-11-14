@@ -1,0 +1,12 @@
+{
+    "bot_name": "The Bot",
+    "version": "1.0.0",
+    "mode": "paper",
+    "initial_capital": 1000,
+    "max_positions": 20,
+    "risk_settings": {
+        "max_drawdown": 0.08,
+        "risk_per_trade": 0.02,
+        "max_daily_loss": 0.05
+    }
+}

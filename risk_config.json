@@ -1,0 +1,37 @@
+{
+  "_comment": "Configuration de gestion des risques",
+  
+  "risk_per_trade": 0.02,
+  "max_daily_loss": 0.05,
+  "max_drawdown": 0.08,
+  
+  "circuit_breakers": {
+    "level_1": {
+      "drawdown_threshold": 0.05,
+      "action": "reduce_positions",
+      "reduction_factor": 0.5
+    },
+    "level_2": {
+      "drawdown_threshold": 0.08,
+      "action": "emergency_close_all"
+    }
+  },
+  
+  "position_limits": {
+    "max_positions": 20,
+    "max_concentration": 0.25,
+    "max_correlated_positions": 5
+  },
+  
+  "var": {
+    "confidence_level": 0.95,
+    "time_horizon_days": 1,
+    "calculation_window_days": 30
+  },
+  
+  "stop_loss": {
+    "default_pct": 0.02,
+    "trailing_stop": true,
+    "trailing_distance_pct": 0.015
+  }
+}
