@@ -1,459 +1,579 @@
 """
-Memory Manager pour The Bot
-Gestion optimisÃƒÂ©e de la mÃƒÂ©moire pour ÃƒÂ©viter les memory leaks
+Performance Optimizer pour The Bot
+Optimisations Python pour maximiser les performances sur PC classique
 """
 
-import gc
 import logging
+import numpy as np
+import pandas as pd
 import time
-import psutil
-import threading
-from typing import Dict, List, Optional, Callable, Any
-from datetime import datetime, timedelta
-from collections import deque
+from typing import Dict, Callable, Any, Optional
+from functools import wraps
+import gc
 
 logger = logging.getLogger(__name__)
 
 
-class MemoryManager:
+class PerformanceOptimizer:
     """
-    Gestionnaire de mÃƒÂ©moire pour ÃƒÂ©viter les memory leaks
+    Optimiseur de performance pour PC classique
     
-    ResponsabilitÃƒÂ©s:
-    - Monitor l'utilisation mÃƒÂ©moire
-    - DÃƒÂ©clencher le garbage collection
-    - Nettoyer les anciens buffers
-    - Alerter en cas de fuite mÃƒÂ©moire
-    - Optimiser l'utilisation RAM
+    Optimisations:
+    - Numpy et Pandas optimises
+    - Numba JIT compilation
+    - Vectorisation
+    - Cache et memoization
+    - Gestion memoire efficace
     """
     
     def __init__(self, config: Dict):
         """
-        Initialise le memory manager
+        Initialise l'optimiseur
         
         Args:
             config: Configuration
         """
         self.config = config
-        self.max_memory_mb = getattr(config, 'MAX_MEMORY_MB', 2000)  # 2GB par dÃƒÂ©faut
-        self.warning_threshold = getattr(config, 'WARNING_THRESHOLD', 0.8)  # 80%
-        self.critical_threshold = getattr(config, 'CRITICAL_THRESHOLD', 0.95)  # 95%
-        self.cleanup_interval = getattr(config, 'CLEANUP_INTERVAL', 300)  # 5 min
-        
-        # Ãƒâ€°tat
-        self.is_running = False
-        self.monitor_thread = None
-        self.last_cleanup = time.time()
-        self.cleanup_count = 0
-        
-        # Buffers gÃƒÂ©rÃƒÂ©s
-        self.managed_buffers = {}
-        self.buffer_limits = {}
+        self.enabled = getattr(config, 'ENABLED', True)
         
         # Statistiques
         self.stats = {
-            'peak_memory_mb': 0,
-            'avg_memory_mb': 0,
-            'cleanup_triggered': 0,
-            'gc_collections': 0,
-            'memory_warnings': 0,
-            'memory_samples': []
+            'optimizations_applied': 0,
+            'time_saved_ms': 0,
+            'functions_optimized': []
         }
         
-        # Callbacks
-        self.on_warning_callbacks = []
-        self.on_critical_callbacks = []
-        self.on_cleanup_callbacks = []
+        # Appliquer les optimisations globales
+        if self.enabled:
+            self._apply_global_optimizations()
         
-        # Process actuel
-        self.process = psutil.Process()
-        
-        logger.info(f"Memory Manager initialisÃƒÂ© (max: {self.max_memory_mb}MB)")
+        logger.info(f"Performance Optimizer initialise (enabled: {self.enabled})")
     
-    def start(self):
-        """DÃƒÂ©marre le monitoring mÃƒÂ©moire"""
-        if self.is_running:
-            logger.warning("Memory Manager dÃƒÂ©jÃƒÂ  en cours")
-            return
+    def _apply_global_optimizations(self):
+        """Applique les optimisations globales"""
+        logger.info(" Application des optimisations globales...")
         
-        self.is_running = True
+        # Optimiser Numpy
+        self.optimize_numpy()
         
-        # Thread de monitoring
-        self.monitor_thread = threading.Thread(
-            target=self._monitor_loop,
-            daemon=True,
-            name="MemoryMonitor"
-        )
-        self.monitor_thread.start()
+        # Optimiser Pandas
+        self.optimize_pandas()
         
-        logger.info("Ã¢Å“â€¦ Memory Manager dÃƒÂ©marrÃƒÂ©")
+        # Configurer le GC
+        self.optimize_gc()
+        
+        logger.info("""| Optimisations globales appliquees")
     
-    def stop(self):
-        """ArrÃƒÂªte le monitoring"""
-        if not self.is_running:
-            return
-        
-        self.is_running = False
-        
-        if self.monitor_thread:
-            self.monitor_thread.join(timeout=5)
-        
-        logger.info("Memory Manager arrÃƒÂªtÃƒÂ©")
+    def optimize_numpy(self):
+        """Optimise Numpy"""
+        try:
+            # Desactiver les warnings Numpy (performance)
+            np.seterr(all='ignore')
+            
+            # Configuration pour performance
+            np.set_printoptions(precision=4, suppress=True)
+            
+            self.stats['optimizations_applied'] += 1
+            logger.info("""| Numpy optimise")
+            
+        except Exception as e:
+            logger.error(f"Erreur optimisation Numpy: {e}")
     
-    def _monitor_loop(self):
-        """Boucle principale de monitoring"""
-        logger.info("Thread Memory Monitor dÃƒÂ©marrÃƒÂ©")
+    def optimize_pandas(self):
+        """Optimise Pandas"""
+        try:
+            # Desactiver les warnings de chanage
+            pd.options.mode.chained_assignment = None
+            
+            # Activer numexpr pour calculs vectorises (2-3x plus rapide)
+            pd.options.compute.use_numexpr = True
+            
+            # Activer bottleneck pour reductions (sommes, moyennes, etc.)
+            pd.options.compute.use_bottleneck = True
+            
+            # Optimiser l'affichage
+            pd.options.display.precision = 4
+            pd.options.display.max_rows = 100
+            pd.options.display.max_columns = 20
+            
+            self.stats['optimizations_applied'] += 1
+            logger.info("""| Pandas optimise")
+            
+        except Exception as e:
+            logger.error(f"Erreur optimisation Pandas: {e}")
+    
+    def optimize_gc(self):
+        """Optimise le garbage collector"""
+        try:
+            # Ajuster les seuils du GC pour moins d'interruptions
+            # Valeurs pour PC classique avec 16GB RAM
+            gc.set_threshold(700, 10, 10)
+            
+            # S'assurer que le GC est active
+            gc.enable()
+            
+            self.stats['optimizations_applied'] += 1
+            logger.info("""| Garbage Collector optimise")
+            
+        except Exception as e:
+            logger.error(f"Erreur optimisation GC: {e}")
+    
+    # ========================================================================
+    # D"CORATEURS D'OPTIMISATION
+    # ========================================================================
+    
+    @staticmethod
+    def vectorize(func: Callable) -> Callable:
+        """
+        Decorateur pour vectoriser une fonction Numpy
         
-        while self.is_running:
+        Usage:
+            @PerformanceOptimizer.vectorize
+            def my_function(x, y):
+                return x + y
+        """
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # Convertir en arrays Numpy si necessaire
+            args_array = []
+            for arg in args:
+                if isinstance(arg, (list, tuple)):
+                    args_array.append(np.array(arg))
+                else:
+                    args_array.append(arg)
+            
+            return func(*args_array, **kwargs)
+        
+        return wrapper
+    
+    @staticmethod
+    def use_numba(nopython: bool = True, cache: bool = True):
+        """
+        Decorateur pour compiler avec Numba JIT
+        
+        Args:
+            nopython: Mode nopython (plus rapide mais plus restrictif)
+            cache: Cache la compilation
+            
+        Usage:
+            @PerformanceOptimizer.use_numba()
+            def fast_calculation(prices):
+                result = 0
+                for i in range(len(prices)):
+                    result += prices[i] * 2
+                return result
+        """
+        def decorator(func: Callable) -> Callable:
             try:
-                # VÃƒÂ©rifier la mÃƒÂ©moire
-                memory_info = self.get_memory_info()
-                memory_mb = memory_info['rss_mb']
-                usage_pct = memory_mb / self.max_memory_mb
-                
-                # Enregistrer l'ÃƒÂ©chantillon
-                self.stats['memory_samples'].append({
-                    'timestamp': time.time(),
-                    'memory_mb': memory_mb,
-                    'usage_pct': usage_pct
-                })
-                
-                # Garder max 1000 ÃƒÂ©chantillons
-                if len(self.stats['memory_samples']) > 1000:
-                    self.stats['memory_samples'] = self.stats['memory_samples'][-1000:]
-                
-                # Mettre ÃƒÂ  jour peak
-                if memory_mb > self.stats['peak_memory_mb']:
-                    self.stats['peak_memory_mb'] = memory_mb
-                
-                # VÃƒÂ©rifier les seuils
-                if usage_pct >= self.critical_threshold:
-                    logger.critical(
-                        f"Ã°Å¸â€Â´ CRITIQUE: MÃƒÂ©moire ÃƒÂ  {usage_pct:.1%} ({memory_mb:.0f}MB/{self.max_memory_mb}MB)"
-                    )
-                    self.stats['memory_warnings'] += 1
-                    self._trigger_critical_cleanup()
-                    self._trigger_callbacks(self.on_critical_callbacks)
-                    
-                elif usage_pct >= self.warning_threshold:
-                    logger.warning(
-                        f"Ã¢Å¡Â Ã¯Â¸Â ATTENTION: MÃƒÂ©moire ÃƒÂ  {usage_pct:.1%} ({memory_mb:.0f}MB/{self.max_memory_mb}MB)"
-                    )
-                    self.stats['memory_warnings'] += 1
-                    self._trigger_cleanup()
-                    self._trigger_callbacks(self.on_warning_callbacks)
-                
-                # Cleanup pÃƒÂ©riodique
-                if time.time() - self.last_cleanup > self.cleanup_interval:
-                    self._scheduled_cleanup()
-                
-                # Pause
-                time.sleep(10)  # Check toutes les 10 secondes
-                
-            except Exception as e:
-                logger.error(f"Erreur monitor loop: {e}")
-                time.sleep(30)
+                from numba import jit
+                return jit(nopython=nopython, cache=cache)(func)
+            except ImportError:
+                logger.warning("Numba non disponible, fonction non optimisee")
+                return func
         
-        logger.info("Thread Memory Monitor arrÃƒÂªtÃƒÂ©")
+        return decorator
     
-    def _trigger_cleanup(self):
-        """DÃƒÂ©clenche un nettoyage standard"""
-        logger.info("Ã°Å¸Â§Â¹ Nettoyage mÃƒÂ©moire standard...")
+    # ========================================================================
+    # FONCTIONS OPTIMIS"ES COURANTES
+    # ========================================================================
+    
+    @staticmethod
+    def fast_mean(arr: np.ndarray) -> float:
+        """
+        Calcul rapide de la moyenne
         
-        start_mem = self.get_memory_info()['rss_mb']
+        Args:
+            arr: Array numpy
+            
+        Returns:
+            Moyenne
+        """
+        return np.mean(arr)
+    
+    @staticmethod
+    def fast_std(arr: np.ndarray) -> float:
+        """
+        Calcul rapide de l'ecart-type
         
-        # Nettoyer les buffers gÃƒÂ©rÃƒÂ©s
-        self._cleanup_managed_buffers()
+        Args:
+            arr: Array numpy
+            
+        Returns:
+            "cart-type
+        """
+        return np.std(arr, ddof=1)
+    
+    @staticmethod
+    def fast_rolling_mean(arr: np.ndarray, window: int) -> np.ndarray:
+        """
+        Moyenne mobile rapide avec Numpy
         
-        # Garbage collection
-        collected = gc.collect()
-        self.stats['gc_collections'] += 1
+        Args:
+            arr: Array des valeurs
+            window: Taille de la fenetre
+            
+        Returns:
+            Array des moyennes mobiles
+        """
+        if len(arr) < window:
+            return np.full_like(arr, np.nan)
         
-        end_mem = self.get_memory_info()['rss_mb']
-        freed_mb = start_mem - end_mem
+        # Utiliser convolution pour performance
+        weights = np.ones(window) / window
+        result = np.convolve(arr, weights, mode='valid')
         
-        self.cleanup_count += 1
-        self.last_cleanup = time.time()
-        self.stats['cleanup_triggered'] += 1
+        # Padding avec NaN au debut
+        padding = np.full(window - 1, np.nan)
+        return np.concatenate([padding, result])
+    
+    @staticmethod
+    def fast_ema(arr: np.ndarray, period: int) -> np.ndarray:
+        """
+        EMA rapide avec Numpy
+        
+        Args:
+            arr: Array des valeurs
+            period: Periode
+            
+        Returns:
+            Array des EMA
+        """
+        alpha = 2 / (period + 1)
+        result = np.empty_like(arr)
+        result[0] = arr[0]
+        
+        for i in range(1, len(arr)):
+            result[i] = alpha * arr[i] + (1 - alpha) * result[i - 1]
+        
+        return result
+    
+    @staticmethod
+    def fast_correlation(x: np.ndarray, y: np.ndarray) -> float:
+        """
+        Correlation rapide
+        
+        Args:
+            x: Premier array
+            y: Deuxieme array
+            
+        Returns:
+            Coefficient de correlation
+        """
+        return np.corrcoef(x, y)[0, 1]
+    
+    @staticmethod
+    def batch_process_dataframe(df: pd.DataFrame, 
+                               func: Callable, 
+                               batch_size: int = 1000) -> pd.DataFrame:
+        """
+        Traite un DataFrame par batch pour economiser la memoire
+        
+        Args:
+            df: DataFrame  traiter
+            func: Fonction  appliquer
+            batch_size: Taille des batches
+            
+        Returns:
+            DataFrame traite
+        """
+        results = []
+        
+        for i in range(0, len(df), batch_size):
+            batch = df.iloc[i:i + batch_size]
+            result = func(batch)
+            results.append(result)
+            
+            # GC periodique
+            if i % (batch_size * 10) == 0:
+                gc.collect()
+        
+        return pd.concat(results, ignore_index=True)
+    
+    # ========================================================================
+    # PROFILING ET MESURES
+    # ========================================================================
+    
+    def profile_function(self, func: Callable, *args, **kwargs) -> Dict[str, Any]:
+        """
+        Profile une fonction
+        
+        Args:
+            func: Fonction  profiler
+            *args, **kwargs: Arguments de la fonction
+            
+        Returns:
+            Dict avec resultats et metriques
+        """
+        import psutil
+        process = psutil.Process()
+        
+        # Mesures avant
+        mem_before = process.memory_info().rss / 1024 / 1024
+        time_before = time.time()
+        
+        # Execution
+        result = func(*args, **kwargs)
+        
+        # Mesures apres
+        time_after = time.time()
+        mem_after = process.memory_info().rss / 1024 / 1024
+        
+        # Metriques
+        elapsed_ms = (time_after - time_before) * 1000
+        mem_delta = mem_after - mem_before
+        
+        profile_result = {
+            'result': result,
+            'elapsed_ms': elapsed_ms,
+            'memory_delta_mb': mem_delta,
+            'memory_before_mb': mem_before,
+            'memory_after_mb': mem_after
+        }
+        
+        logger.debug(
+            f"Profile {func.__name__}: "
+            f"{elapsed_ms:.2f}ms, "
+            f"mem: {mem_delta:+.1f}MB"
+        )
+        
+        return profile_result
+    
+    def compare_implementations(self, 
+                               implementations: Dict[str, Callable],
+                               *args, **kwargs) -> Dict[str, Dict]:
+        """
+        Compare plusieurs implementations d'une fonction
+        
+        Args:
+            implementations: Dict {nom: fonction}
+            *args, **kwargs: Arguments  passer
+            
+        Returns:
+            Dict avec comparaisons
+        """
+        results = {}
+        
+        logger.info(f"" Comparaison de {len(implementations)} implementations...")
+        
+        for name, func in implementations.items():
+            profile = self.profile_function(func, *args, **kwargs)
+            results[name] = profile
+            
+            logger.info(
+                f"  {name}: {profile['elapsed_ms']:.2f}ms, "
+                f"mem: {profile['memory_delta_mb']:+.1f}MB"
+            )
+        
+        # Trouver la plus rapide
+        fastest = min(results.items(), key=lambda x: x[1]['elapsed_ms'])
+        logger.info(f"""| Plus rapide: {fastest[0]}")
+        
+        return results
+    
+    # ========================================================================
+    # RECOMMANDATIONS
+    # ========================================================================
+    
+    def analyze_dataframe_efficiency(self, df: pd.DataFrame) -> Dict[str, Any]:
+        """
+        Analyse l'efficacite d'un DataFrame
+        
+        Args:
+            df: DataFrame  analyser
+            
+        Returns:
+            Dict avec recommandations
+        """
+        analysis = {
+            'shape': df.shape,
+            'memory_usage_mb': df.memory_usage(deep=True).sum() / 1024 / 1024,
+            'dtypes': df.dtypes.value_counts().to_dict(),
+            'null_counts': df.isnull().sum().sum(),
+            'recommendations': []
+        }
+        
+        # Recommandations
+        
+        # 1. Colonnes object
+        object_cols = df.select_dtypes(include=['object']).columns.tolist()
+        if object_cols:
+            analysis['recommendations'].append(
+                f"Convertir {len(object_cols)} colonnes 'object' en category pour economiser la memoire"
+            )
+        
+        # 2. Float64 -> Float32
+        float64_cols = df.select_dtypes(include=['float64']).columns.tolist()
+        if float64_cols:
+            analysis['recommendations'].append(
+                f"Convertir {len(float64_cols)} colonnes float64 en float32 (economie ~50%)"
+            )
+        
+        # 3. Int64 -> Int32
+        int64_cols = df.select_dtypes(include=['int64']).columns.tolist()
+        if int64_cols:
+            analysis['recommendations'].append(
+                f"Convertir {len(int64_cols)} colonnes int64 en int32 si les valeurs le permettent"
+            )
+        
+        # 4. Valeurs nulles
+        if analysis['null_counts'] > len(df) * 0.1:
+            analysis['recommendations'].append(
+                f"{analysis['null_counts']} valeurs nulles detectees, envisager fillna() ou dropna()"
+            )
+        
+        return analysis
+    
+    def optimize_dataframe(self, df: pd.DataFrame, aggressive: bool = False) -> pd.DataFrame:
+        """
+        Optimise un DataFrame automatiquement
+        
+        Args:
+            df: DataFrame  optimiser
+            aggressive: Optimisation agressive (peut perdre en precision)
+            
+        Returns:
+            DataFrame optimise
+        """
+        df_optimized = df.copy()
+        
+        # Convertir float64 -> float32
+        float_cols = df_optimized.select_dtypes(include=['float64']).columns
+        df_optimized[float_cols] = df_optimized[float_cols].astype('float32')
+        
+        # Convertir int64 -> int32 si possible
+        if aggressive:
+            int_cols = df_optimized.select_dtypes(include=['int64']).columns
+            for col in int_cols:
+                if df_optimized[col].max() < 2147483647:  # Max int32
+                    df_optimized[col] = df_optimized[col].astype('int32')
+        
+        # Convertir object -> category si peu de valeurs uniques
+        object_cols = df_optimized.select_dtypes(include=['object']).columns
+        for col in object_cols:
+            num_unique = df_optimized[col].nunique()
+            if num_unique / len(df_optimized) < 0.5:  # Moins de 50% de valeurs uniques
+                df_optimized[col] = df_optimized[col].astype('category')
+        
+        # Log economie
+        mem_before = df.memory_usage(deep=True).sum() / 1024 / 1024
+        mem_after = df_optimized.memory_usage(deep=True).sum() / 1024 / 1024
+        savings = mem_before - mem_after
+        savings_pct = (savings / mem_before) * 100
         
         logger.info(
-            f"Ã¢Å“â€¦ Nettoyage terminÃƒÂ©: {freed_mb:.1f}MB libÃƒÂ©rÃƒÂ©s, "
-            f"{collected} objets collectÃƒÂ©s, mÃƒÂ©moire: {end_mem:.0f}MB"
+            f"""| DataFrame optimise: {mem_before:.1f}MB -> {mem_after:.1f}MB "
+            f"(economie: {savings:.1f}MB, {savings_pct:.1f}%)"
         )
         
-        # Callbacks
-        self._trigger_callbacks(self.on_cleanup_callbacks)
+        return df_optimized
     
-    def _trigger_critical_cleanup(self):
-        """DÃƒÂ©clenche un nettoyage agressif en cas de critique"""
-        logger.critical("Ã°Å¸Å¡Â¨ Nettoyage CRITIQUE en cours...")
-        
-        start_mem = self.get_memory_info()['rss_mb']
-        
-        # Nettoyer agressivement les buffers
-        for buffer_name in list(self.managed_buffers.keys()):
-            buffer = self.managed_buffers[buffer_name]
-            if isinstance(buffer, (list, deque)):
-                # Garder seulement 10%
-                keep = max(10, len(buffer) // 10)
-                if isinstance(buffer, deque):
-                    while len(buffer) > keep:
-                        buffer.popleft()
-                else:
-                    buffer[:] = buffer[-keep:]
-                logger.info(f"Buffer '{buffer_name}' rÃƒÂ©duit ÃƒÂ  {keep} items")
-        
-        # Plusieurs passes de GC
-        for i in range(3):
-            collected = gc.collect(generation=2)
-            logger.info(f"GC pass {i+1}: {collected} objets collectÃƒÂ©s")
-        
-        end_mem = self.get_memory_info()['rss_mb']
-        freed_mb = start_mem - end_mem
-        
-        logger.critical(f"Ã¢Å“â€¦ Nettoyage critique terminÃƒÂ©: {freed_mb:.1f}MB libÃƒÂ©rÃƒÂ©s")
-        
-        # Si toujours critique, log dÃƒÂ©taillÃƒÂ©
-        if end_mem / self.max_memory_mb > self.critical_threshold:
-            self._log_memory_details()
+    # ========================================================================
+    # TIPS ET BEST PRACTICES
+    # ========================================================================
     
-    def _scheduled_cleanup(self):
-        """Nettoyage pÃƒÂ©riodique planifiÃƒÂ©"""
-        logger.debug("Ã°Å¸Â§Â¹ Nettoyage pÃƒÂ©riodique...")
-        
-        # Nettoyer les buffers selon leurs limites
-        self._cleanup_managed_buffers()
-        
-        # GC lÃƒÂ©ger
-        gc.collect(generation=0)
-        
-        self.last_cleanup = time.time()
+    @staticmethod
+    def get_optimization_tips() -> List[str]:
+        """Retourne des tips d'optimisation"""
+        return [
+            """| Utilisez numpy pour calculs vectorises (100x plus rapide que boucles Python)",
+            """| Preferez pandas.apply() avec engine='numba' pour DataFrames",
+            """| Utilisez @numba.jit pour fonctions avec boucles intensives",
+            """| "vitez les boucles Python, preferez la vectorisation",
+            """| Utilisez dtype appropries (float32 au lieu de float64 si possible)",
+            """| Liberez la memoire avec gc.collect() apres gros calculs",
+            """| Utilisez pandas.eval() pour expressions complexes",
+            """| Chargez seulement les colonnes necessaires des CSV",
+            """| Utilisez category dtype pour colonnes avec peu de valeurs uniques",
+            """| "vitez .iterrows(), utilisez .itertuples() ou mieux: vectorisation"
+        ]
     
-    def _cleanup_managed_buffers(self):
-        """Nettoie les buffers selon leurs limites"""
-        for buffer_name, buffer in self.managed_buffers.items():
-            if buffer_name not in self.buffer_limits:
-                continue
-            
-            limit = self.buffer_limits[buffer_name]
-            
-            if isinstance(buffer, list):
-                if len(buffer) > limit:
-                    buffer[:] = buffer[-limit:]
-                    logger.debug(f"Buffer '{buffer_name}' nettoyÃƒÂ©: {len(buffer)}/{limit}")
-                    
-            elif isinstance(buffer, deque):
-                while len(buffer) > limit:
-                    buffer.popleft()
-                logger.debug(f"Buffer '{buffer_name}' nettoyÃƒÂ©: {len(buffer)}/{limit}")
-                
-            elif isinstance(buffer, dict):
-                if len(buffer) > limit:
-                    # Garder les plus rÃƒÂ©cents
-                    items = sorted(buffer.items(), key=lambda x: x[0], reverse=True)
-                    buffer.clear()
-                    buffer.update(dict(items[:limit]))
-                    logger.debug(f"Dict '{buffer_name}' nettoyÃƒÂ©: {len(buffer)}/{limit}")
-    
-    def register_buffer(self, name: str, buffer: Any, limit: int):
-        """
-        Enregistre un buffer ÃƒÂ  gÃƒÂ©rer
+    def print_optimization_report(self):
+        """Affiche un rapport d'optimisation"""
+        logger.info("\n" + "=" * 60)
+        logger.info("RAPPORT D'OPTIMISATION")
+        logger.info("=" * 60)
+        logger.info(f"Optimisations appliquees: {self.stats['optimizations_applied']}")
+        logger.info(f"Temps economise: {self.stats['time_saved_ms']:.0f}ms")
+        logger.info(f"Fonctions optimisees: {len(self.stats['functions_optimized'])}")
         
-        Args:
-            name: Nom du buffer
-            buffer: RÃƒÂ©fÃƒÂ©rence au buffer
-            limit: Taille maximum
-        """
-        self.managed_buffers[name] = buffer
-        self.buffer_limits[name] = limit
-        logger.info(f"Buffer '{name}' enregistrÃƒÂ© (limit: {limit})")
-    
-    def unregister_buffer(self, name: str):
-        """
-        DÃƒÂ©senregistre un buffer
+        if self.stats['functions_optimized']:
+            logger.info("\nFonctions optimisees:")
+            for func_name in self.stats['functions_optimized']:
+                logger.info(f"  " {func_name}")
         
-        Args:
-            name: Nom du buffer
-        """
-        if name in self.managed_buffers:
-            del self.managed_buffers[name]
-            del self.buffer_limits[name]
-            logger.info(f"Buffer '{name}' dÃƒÂ©senregistrÃƒÂ©")
-    
-    def register_callback(self, event: str, callback: Callable):
-        """
-        Enregistre un callback
+        logger.info("\nTips d'optimisation:")
+        for tip in self.get_optimization_tips():
+            logger.info(f"  {tip}")
         
-        Args:
-            event: 'warning', 'critical' ou 'cleanup'
-            callback: Fonction ÃƒÂ  appeler
-        """
-        if event == 'warning':
-            self.on_warning_callbacks.append(callback)
-        elif event == 'critical':
-            self.on_critical_callbacks.append(callback)
-        elif event == 'cleanup':
-            self.on_cleanup_callbacks.append(callback)
-        else:
-            logger.warning(f"Event inconnu: {event}")
-    
-    def _trigger_callbacks(self, callbacks: List[Callable]):
-        """DÃƒÂ©clenche une liste de callbacks"""
-        for callback in callbacks:
-            try:
-                callback()
-            except Exception as e:
-                logger.error(f"Erreur callback: {e}")
-    
-    def get_memory_info(self) -> Dict[str, float]:
-        """
-        Retourne les infos mÃƒÂ©moire
-        
-        Returns:
-            Dict avec infos mÃƒÂ©moire
-        """
-        try:
-            mem_info = self.process.memory_info()
-            vm = psutil.virtual_memory()
-            
-            return {
-                'rss_mb': mem_info.rss / 1024 / 1024,
-                'vms_mb': mem_info.vms / 1024 / 1024,
-                'percent': self.process.memory_percent(),
-                'available_mb': vm.available / 1024 / 1024,
-                'system_total_mb': vm.total / 1024 / 1024,
-                'system_used_mb': vm.used / 1024 / 1024,
-                'system_percent': vm.percent
-            }
-        except Exception as e:
-            logger.error(f"Erreur get_memory_info: {e}")
-            return {}
+        logger.info("=" * 60 + "\n")
     
     def get_stats(self) -> Dict[str, Any]:
-        """
-        Retourne les statistiques
-        
-        Returns:
-            Dict avec statistiques
-        """
-        current_mem = self.get_memory_info()['rss_mb']
-        
-        # Moyenne mÃƒÂ©moire sur derniÃƒÂ¨res 100 samples
-        recent_samples = self.stats['memory_samples'][-100:]
-        if recent_samples:
-            avg_mem = sum(s['memory_mb'] for s in recent_samples) / len(recent_samples)
-        else:
-            avg_mem = current_mem
-        
+        """Retourne les statistiques"""
         return {
-            'current_memory_mb': current_mem,
-            'peak_memory_mb': self.stats['peak_memory_mb'],
-            'avg_memory_mb': avg_mem,
-            'max_memory_mb': self.max_memory_mb,
-            'usage_percent': (current_mem / self.max_memory_mb) * 100,
-            'cleanup_count': self.cleanup_count,
-            'gc_collections': self.stats['gc_collections'],
-            'memory_warnings': self.stats['memory_warnings'],
-            'managed_buffers': len(self.managed_buffers),
-            'uptime_seconds': time.time() - self.stats['memory_samples'][0]['timestamp'] if self.stats['memory_samples'] else 0
+            'enabled': self.enabled,
+            'optimizations_applied': self.stats['optimizations_applied'],
+            'time_saved_ms': self.stats['time_saved_ms'],
+            'functions_optimized': self.stats['functions_optimized']
         }
+
+
+# ============================================================================
+# FONCTIONS UTILITAIRES NUMBA (si disponible)
+# ============================================================================
+
+try:
+    from numba import jit
     
-    def force_cleanup(self):
-        """Force un nettoyage immÃƒÂ©diat"""
-        logger.info("Ã°Å¸Â§Â¹ Nettoyage forcÃƒÂ©...")
-        self._trigger_cleanup()
-    
-    def force_gc(self):
-        """Force un garbage collection complet"""
-        logger.info("Ã°Å¸â€”â€˜Ã¯Â¸Â Garbage collection forcÃƒÂ©...")
-        
-        collected = 0
-        for generation in range(3):
-            collected += gc.collect(generation)
-        
-        self.stats['gc_collections'] += 1
-        logger.info(f"Ã¢Å“â€¦ GC terminÃƒÂ©: {collected} objets collectÃƒÂ©s")
-        
-        return collected
-    
-    def _log_memory_details(self):
-        """Log des dÃƒÂ©tails sur l'utilisation mÃƒÂ©moire"""
-        import sys
-        
-        mem_info = self.get_memory_info()
-        
-        logger.critical("\n" + "=" * 60)
-        logger.critical("DÃƒâ€°TAILS MÃƒâ€°MOIRE")
-        logger.critical("=" * 60)
-        logger.critical(f"RSS: {mem_info['rss_mb']:.1f}MB")
-        logger.critical(f"VMS: {mem_info['vms_mb']:.1f}MB")
-        logger.critical(f"Percent: {mem_info['percent']:.1f}%")
-        logger.critical(f"System available: {mem_info['available_mb']:.1f}MB")
-        logger.critical(f"System used: {mem_info['system_used_mb']:.1f}MB ({mem_info['system_percent']:.1f}%)")
-        
-        # Buffers gÃƒÂ©rÃƒÂ©s
-        logger.critical("\nBuffers gÃƒÂ©rÃƒÂ©s:")
-        for name, buffer in self.managed_buffers.items():
-            if isinstance(buffer, (list, deque)):
-                size = len(buffer)
-                limit = self.buffer_limits.get(name, 'N/A')
-                logger.critical(f"  {name}: {size}/{limit} items")
-            elif isinstance(buffer, dict):
-                size = len(buffer)
-                limit = self.buffer_limits.get(name, 'N/A')
-                logger.critical(f"  {name}: {size}/{limit} keys")
-        
-        # GC stats
-        logger.critical("\nGarbage Collector:")
-        for i, count in enumerate(gc.get_count()):
-            logger.critical(f"  Generation {i}: {count} objects")
-        
-        logger.critical("=" * 60 + "\n")
-    
-    def get_buffer_info(self) -> Dict[str, Dict]:
+    @jit(nopython=True, cache=True)
+    def fast_sma_numba(prices: np.ndarray, period: int) -> np.ndarray:
         """
-        Retourne les infos sur les buffers gÃƒÂ©rÃƒÂ©s
+        SMA ultra-rapide avec Numba
         
+        Args:
+            prices: Array des prix
+            period: Periode
+            
         Returns:
-            Dict avec infos buffers
+            Array des SMA
         """
-        info = {}
+        n = len(prices)
+        sma = np.empty(n)
+        sma[:period-1] = np.nan
         
-        for name, buffer in self.managed_buffers.items():
-            if isinstance(buffer, (list, deque)):
-                size = len(buffer)
-            elif isinstance(buffer, dict):
-                size = len(buffer)
-            else:
-                size = 'N/A'
-            
-            limit = self.buffer_limits.get(name, 'N/A')
-            usage_pct = (size / limit * 100) if isinstance(size, int) and isinstance(limit, int) else None
-            
-            info[name] = {
-                'size': size,
-                'limit': limit,
-                'usage_percent': usage_pct,
-                'type': type(buffer).__name__
-            }
+        for i in range(period - 1, n):
+            sma[i] = np.mean(prices[i - period + 1:i + 1])
         
-        return info
+        return sma
     
-    def optimize_memory(self):
+    @jit(nopython=True, cache=True)
+    def fast_returns_numba(prices: np.ndarray) -> np.ndarray:
         """
-        Optimise l'utilisation mÃƒÂ©moire
+        Calcul rapide des returns avec Numba
         
-        Tips d'optimisation appliquÃƒÂ©s automatiquement
+        Args:
+            prices: Array des prix
+            
+        Returns:
+            Array des returns
         """
-        logger.info("Ã°Å¸â€Â§ Optimisation mÃƒÂ©moire...")
+        n = len(prices)
+        returns = np.empty(n)
+        returns[0] = 0.0
         
-        # Activer le GC automatique
-        gc.enable()
+        for i in range(1, n):
+            returns[i] = (prices[i] - prices[i-1]) / prices[i-1]
         
-        # Ajuster les seuils du GC
-        gc.set_threshold(700, 10, 10)
-        
-        # Force un nettoyage complet
-        self.force_gc()
-        
-        logger.info("Ã¢Å“â€¦ Optimisation terminÃƒÂ©e")
+        return returns
+    
+    logger.info("""| Fonctions Numba disponibles")
+    
+    # except ImportError:
+    logger.warning(" Numba non disponible, fonctions standard seront utilisees")
+    
+    def fast_sma_numba(prices: np.ndarray, period: int) -> np.ndarray:
+        """Fallback sans Numba"""
+        return PerformanceOptimizer.fast_rolling_mean(prices, period)
+    
+    def fast_returns_numba(prices: np.ndarray) -> np.ndarray:
+        """Fallback sans Numba"""
+        return np.diff(prices) / prices[:-1]
