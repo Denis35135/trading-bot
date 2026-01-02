@@ -1,6 +1,6 @@
 """
 Helpers pour The Bot
-Fonctions utilitaires et helpers pour diverses tÃƒÂ¢ches
+Fonctions utilitaires et helpers pour diverses tches
 """
 
 import os
@@ -26,11 +26,11 @@ def format_price(price: float, decimals: int = 2) -> str:
     Formate un prix pour affichage
     
     Args:
-        price: Prix ÃƒÂ  formater
-        decimals: Nombre de dÃƒÂ©cimales
+        price: Prix  formater
+        decimals: Nombre de decimales
         
     Returns:
-        Prix formatÃƒÂ©
+        Prix formate
     """
     return f"${price:,.{decimals}f}"
 
@@ -41,11 +41,11 @@ def format_percentage(value: float, decimals: int = 2, show_sign: bool = True) -
     
     Args:
         value: Valeur (0.05 = 5%)
-        decimals: Nombre de dÃƒÂ©cimales
+        decimals: Nombre de decimales
         show_sign: Afficher le signe +/-
         
     Returns:
-        Pourcentage formatÃƒÂ©
+        Pourcentage formate
     """
     sign = "+" if value > 0 and show_sign else ""
     return f"{sign}{value * 100:.{decimals}f}%"
@@ -53,13 +53,13 @@ def format_percentage(value: float, decimals: int = 2, show_sign: bool = True) -
 
 def format_duration(seconds: int) -> str:
     """
-    Formate une durÃƒÂ©e en format lisible
+    Formate une duree en format lisible
     
     Args:
-        seconds: DurÃƒÂ©e en secondes
+        seconds: Duree en secondes
         
     Returns:
-        DurÃƒÂ©e formatÃƒÂ©e (ex: "2h 15m 30s")
+        Duree formatee (ex: "2h 15m 30s")
     """
     hours = seconds // 3600
     minutes = (seconds % 3600) // 60
@@ -86,7 +86,7 @@ def format_timestamp(timestamp: Union[int, float, datetime],
         format_str: Format de sortie
         
     Returns:
-        Timestamp formatÃƒÂ©
+        Timestamp formate
     """
     if isinstance(timestamp, (int, float)):
         dt = datetime.fromtimestamp(timestamp / 1000 if timestamp > 1e10 else timestamp)
@@ -101,10 +101,10 @@ def format_number_short(number: float) -> str:
     Formate un nombre en format court (K, M, B)
     
     Args:
-        number: Nombre ÃƒÂ  formater
+        number: Nombre  formater
         
     Returns:
-        Nombre formatÃƒÂ© (ex: "1.5M")
+        Nombre formate (ex: "1.5M")
     """
     if number >= 1_000_000_000:
         return f"{number / 1_000_000_000:.1f}B"
@@ -122,10 +122,10 @@ def format_number_short(number: float) -> str:
 
 def is_valid_symbol(symbol: str) -> bool:
     """
-    VÃƒÂ©rifie si un symbole est valide
+    Verifie si un symbole est valide
     
     Args:
-        symbol: Symbole ÃƒÂ  vÃƒÂ©rifier (ex: BTCUSDT)
+        symbol: Symbole  verifier (ex: BTCUSDT)
         
     Returns:
         True si valide
@@ -133,11 +133,11 @@ def is_valid_symbol(symbol: str) -> bool:
     if not symbol or not isinstance(symbol, str):
         return False
     
-    # Doit contenir au moins 6 caractÃƒÂ¨res
+    # Doit contenir au moins 6 caracteres
     if len(symbol) < 6:
         return False
     
-    # Doit ÃƒÂªtre en majuscules
+    # Doit etre en majuscules
     if symbol != symbol.upper():
         return False
     
@@ -151,11 +151,11 @@ def is_valid_symbol(symbol: str) -> bool:
 
 def is_valid_price(price: float, min_price: float = 0) -> bool:
     """
-    VÃƒÂ©rifie si un prix est valide
+    Verifie si un prix est valide
     
     Args:
-        price: Prix ÃƒÂ  vÃƒÂ©rifier
-        min_price: Prix minimum acceptÃƒÂ©
+        price: Prix  verifier
+        min_price: Prix minimum accepte
         
     Returns:
         True si valide
@@ -174,11 +174,11 @@ def is_valid_price(price: float, min_price: float = 0) -> bool:
 
 def is_valid_quantity(quantity: float, min_qty: float = 0) -> bool:
     """
-    VÃƒÂ©rifie si une quantitÃƒÂ© est valide
+    Verifie si une quantite est valide
     
     Args:
-        quantity: QuantitÃƒÂ© ÃƒÂ  vÃƒÂ©rifier
-        min_qty: QuantitÃƒÂ© minimum
+        quantity: Quantite  verifier
+        min_qty: Quantite minimum
         
     Returns:
         True si valide
@@ -200,12 +200,12 @@ def validate_order_params(symbol: str,
                          quantity: float, 
                          price: Optional[float] = None) -> Tuple[bool, str]:
     """
-    Valide les paramÃƒÂ¨tres d'un ordre
+    Valide les parametres d'un ordre
     
     Args:
         symbol: Symbole
-        side: CÃƒÂ´tÃƒÂ© (BUY/SELL)
-        quantity: QuantitÃƒÂ©
+        side: Cte (BUY/SELL)
+        quantity: Quantite
         price: Prix (optionnel pour market orders)
         
     Returns:
@@ -219,9 +219,9 @@ def validate_order_params(symbol: str,
     if side not in ['BUY', 'SELL']:
         return False, f"Side invalide: {side}"
     
-    # QuantitÃƒÂ©
+    # Quantite
     if not is_valid_quantity(quantity):
-        return False, f"QuantitÃƒÂ© invalide: {quantity}"
+        return False, f"Quantite invalide: {quantity}"
     
     # Prix (si fourni)
     if price is not None and not is_valid_price(price):
@@ -243,9 +243,9 @@ def calculate_profit(entry_price: float,
     Calcule le profit d'un trade
     
     Args:
-        entry_price: Prix d'entrÃƒÂ©e
+        entry_price: Prix d'entree
         exit_price: Prix de sortie
-        quantity: QuantitÃƒÂ©
+        quantity: Quantite
         side: BUY (long) ou SELL (short)
         fees: Frais (0.001 = 0.1%)
         
@@ -262,7 +262,7 @@ def calculate_profit(entry_price: float,
     # Valeur notionnelle
     notional_value = entry_price * quantity
     
-    # Frais (entrÃƒÂ©e + sortie)
+    # Frais (entree + sortie)
     entry_fee = notional_value * fees
     exit_fee = notional_value * fees
     total_fees = entry_fee + exit_fee
@@ -288,18 +288,18 @@ def calculate_position_size(capital: float,
                            entry_price: float,
                            stop_loss_price: float) -> Dict[str, float]:
     """
-    Calcule la taille de position basÃƒÂ©e sur le risque
+    Calcule la taille de position basee sur le risque
     
     Args:
         capital: Capital disponible
         risk_percent: Risque en % (0.02 = 2%)
-        entry_price: Prix d'entrÃƒÂ©e
+        entry_price: Prix d'entree
         stop_loss_price: Prix du stop loss
         
     Returns:
         Dict avec quantity, notional_value, risk_usdc
     """
-    # Montant ÃƒÂ  risquer
+    # Montant  risquer
     risk_usdc = capital * risk_percent
     
     # Distance au stop loss en %
@@ -308,7 +308,7 @@ def calculate_position_size(capital: float,
     # Valeur notionnelle maximale
     notional_value = risk_usdc / sl_distance_pct
     
-    # QuantitÃƒÂ©
+    # Quantite
     quantity = notional_value / entry_price
     
     return {
@@ -328,7 +328,7 @@ def calculate_roi(initial_capital: float,
     Args:
         initial_capital: Capital initial
         current_capital: Capital actuel
-        days: Nombre de jours (pour ROI annualisÃƒÂ©)
+        days: Nombre de jours (pour ROI annualise)
         
     Returns:
         Dict avec roi, roi_pct, annualized_roi (si days fourni)
@@ -342,7 +342,7 @@ def calculate_roi(initial_capital: float,
     }
     
     if days and days > 0:
-        # ROI annualisÃƒÂ©
+        # ROI annualise
         annualized_roi = (1 + roi_pct) ** (365 / days) - 1
         result['annualized_roi'] = annualized_roi
     
@@ -366,14 +366,14 @@ def calculate_sharpe_ratio(returns: List[float],
     
     returns_array = np.array(returns)
     
-    # Moyenne et ÃƒÂ©cart-type
+    # Moyenne et ecart-type
     mean_return = np.mean(returns_array)
     std_return = np.std(returns_array)
     
     if std_return == 0:
         return 0.0
     
-    # Sharpe annualisÃƒÂ©
+    # Sharpe annualise
     sharpe = (mean_return - risk_free_rate / 252) / std_return * np.sqrt(252)
     
     return sharpe
@@ -406,7 +406,7 @@ def calculate_max_drawdown(capital_history: List[float]) -> Dict[str, Any]:
     max_dd = drawdowns[max_dd_idx]
     max_dd_pct = drawdown_pcts[max_dd_idx]
     
-    # DurÃƒÂ©e du drawdown
+    # Duree du drawdown
     # Trouver le peak avant le max dd
     peak_idx = np.argmax(running_max[:max_dd_idx + 1])
     dd_duration = max_dd_idx - peak_idx
@@ -426,14 +426,14 @@ def calculate_max_drawdown(capital_history: List[float]) -> Dict[str, Any]:
 
 def round_step_size(quantity: float, step_size: float) -> float:
     """
-    Arrondit une quantitÃƒÂ© selon le step size de Binance
+    Arrondit une quantite selon le step size de Binance
     
     Args:
-        quantity: QuantitÃƒÂ© ÃƒÂ  arrondir
+        quantity: Quantite  arrondir
         step_size: Step size (ex: 0.001)
         
     Returns:
-        QuantitÃƒÂ© arrondie
+        Quantite arrondie
     """
     precision = int(round(-np.log10(step_size)))
     return round(quantity, precision)
@@ -444,7 +444,7 @@ def round_price(price: float, tick_size: float) -> float:
     Arrondit un prix selon le tick size de Binance
     
     Args:
-        price: Prix ÃƒÂ  arrondir
+        price: Prix  arrondir
         tick_size: Tick size (ex: 0.01)
         
     Returns:
@@ -479,7 +479,7 @@ def convert_timeframe_to_seconds(timeframe: str) -> int:
         '1w': 604800
     }
     
-    return conversions.get(timeframe, 300)  # DÃƒÂ©faut: 5m
+    return conversions.get(timeframe, 300)  # Defaut: 5m
 
 
 def timestamp_to_datetime(timestamp: Union[int, float]) -> datetime:
@@ -518,11 +518,11 @@ def datetime_to_timestamp(dt: datetime) -> int:
 
 def detect_trend(prices: np.ndarray, window: int = 20) -> str:
     """
-    DÃƒÂ©tecte la tendance
+    Detecte la tendance
     
     Args:
         prices: Array des prix
-        window: FenÃƒÂªtre d'analyse
+        window: Fenetre d'analyse
         
     Returns:
         'uptrend', 'downtrend' ou 'sideways'
@@ -532,14 +532,14 @@ def detect_trend(prices: np.ndarray, window: int = 20) -> str:
     
     recent = prices[-window:]
     
-    # RÃƒÂ©gression linÃƒÂ©aire simple
+    # Regression lineaire simple
     x = np.arange(len(recent))
     slope = np.polyfit(x, recent, 1)[0]
     
     # Normaliser par le prix moyen
     slope_pct = slope / np.mean(recent)
     
-    if slope_pct > 0.002:  # +0.2% par pÃƒÂ©riode
+    if slope_pct > 0.002:  # +0.2% par periode
         return 'uptrend'
     elif slope_pct < -0.002:
         return 'downtrend'
@@ -549,14 +549,14 @@ def detect_trend(prices: np.ndarray, window: int = 20) -> str:
 
 def calculate_volatility(prices: np.ndarray, window: int = 20) -> float:
     """
-    Calcule la volatilitÃƒÂ©
+    Calcule la volatilite
     
     Args:
         prices: Array des prix
-        window: FenÃƒÂªtre
+        window: Fenetre
         
     Returns:
-        VolatilitÃƒÂ© (ÃƒÂ©cart-type des returns)
+        Volatilite (ecart-type des returns)
     """
     if len(prices) < window + 1:
         return 0.0
@@ -588,12 +588,12 @@ def is_near_support_resistance(price: float,
                                levels: List[float], 
                                threshold: float = 0.005) -> bool:
     """
-    VÃƒÂ©rifie si le prix est proche d'un niveau de S/R
+    Verifie si le prix est proche d'un niveau de S/R
     
     Args:
         price: Prix actuel
         levels: Liste des niveaux S/R
-        threshold: Seuil de proximitÃƒÂ© (0.005 = 0.5%)
+        threshold: Seuil de proximite (0.005 = 0.5%)
         
     Returns:
         True si proche d'un niveau
@@ -612,20 +612,20 @@ def is_near_support_resistance(price: float,
 
 def ensure_dir_exists(path: str):
     """
-    CrÃƒÂ©e un rÃƒÂ©pertoire s'il n'existe pas
+    Cree un repertoire s'il n'existe pas
     
     Args:
-        path: Chemin du rÃƒÂ©pertoire
+        path: Chemin du repertoire
     """
     os.makedirs(path, exist_ok=True)
 
 
 def save_json(data: Any, filepath: str, indent: int = 2):
     """
-    Sauvegarde des donnÃƒÂ©es en JSON
+    Sauvegarde des donnees en JSON
     
     Args:
-        data: DonnÃƒÂ©es ÃƒÂ  sauvegarder
+        data: Donnees  sauvegarder
         filepath: Chemin du fichier
         indent: Indentation
     """
@@ -637,13 +637,13 @@ def save_json(data: Any, filepath: str, indent: int = 2):
 
 def load_json(filepath: str) -> Any:
     """
-    Charge des donnÃƒÂ©es JSON
+    Charge des donnees JSON
     
     Args:
         filepath: Chemin du fichier
         
     Returns:
-        DonnÃƒÂ©es chargÃƒÂ©es
+        Donnees chargees
     """
     if not os.path.exists(filepath):
         return None
@@ -654,10 +654,10 @@ def load_json(filepath: str) -> Any:
 
 def generate_order_id(prefix: str = "ORDER") -> str:
     """
-    GÃƒÂ©nÃƒÂ¨re un ID d'ordre unique
+    Genere un ID d'ordre unique
     
     Args:
-        prefix: PrÃƒÂ©fixe de l'ID
+        prefix: Prefixe de l'ID
         
     Returns:
         ID unique
@@ -669,10 +669,10 @@ def generate_order_id(prefix: str = "ORDER") -> str:
 
 def hash_string(text: str) -> str:
     """
-    CrÃƒÂ©e un hash d'une chaÃƒÂ®ne
+    Cree un hash d'une chane
     
     Args:
-        text: Texte ÃƒÂ  hasher
+        text: Texte  hasher
         
     Returns:
         Hash MD5
@@ -727,7 +727,7 @@ def calculate_trade_stats(trades: List[Dict]) -> Dict[str, Any]:
 
 
 # ============================================================================
-# SÃƒâ€°CURITÃƒâ€°
+# S"CURIT"
 # ============================================================================
 
 def sanitize_symbol(symbol: str) -> str:
@@ -735,15 +735,15 @@ def sanitize_symbol(symbol: str) -> str:
     Nettoie un symbole
     
     Args:
-        symbol: Symbole ÃƒÂ  nettoyer
+        symbol: Symbole  nettoyer
         
     Returns:
-        Symbole nettoyÃƒÂ©
+        Symbole nettoye
     """
     # Enlever espaces et mettre en majuscules
     symbol = symbol.strip().upper()
     
-    # Enlever caractÃƒÂ¨res spÃƒÂ©ciaux
+    # Enlever caracteres speciaux
     allowed = set('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
     symbol = ''.join(c for c in symbol if c in allowed)
     
@@ -760,22 +760,22 @@ def clamp(value: float, min_value: float, max_value: float) -> float:
         max_value: Maximum
         
     Returns:
-        Valeur clampÃƒÂ©e
+        Valeur clampee
     """
     return max(min_value, min(value, max_value))
 
 
 def safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """
-    Division sÃƒÂ©curisÃƒÂ©e (ÃƒÂ©vite division par zÃƒÂ©ro)
+    Division securisee (evite division par zero)
     
     Args:
-        numerator: NumÃƒÂ©rateur
-        denominator: DÃƒÂ©nominateur
-        default: Valeur par dÃƒÂ©faut si division impossible
+        numerator: Numerateur
+        denominator: Denominateur
+        default: Valeur par defaut si division impossible
         
     Returns:
-        RÃƒÂ©sultat ou valeur par dÃƒÂ©faut
+        Resultat ou valeur par defaut
     """
     if denominator == 0:
         return default
@@ -785,15 +785,15 @@ def safe_divide(numerator: float, denominator: float, default: float = 0.0) -> f
 
 def get_env_variable(name: str, default: Any = None, cast_type: type = str) -> Any:
     """
-    RÃƒÂ©cupÃƒÂ¨re une variable d'environnement avec cast
+    Recupere une variable d'environnement avec cast
     
     Args:
         name: Nom de la variable
-        default: Valeur par dÃƒÂ©faut
+        default: Valeur par defaut
         cast_type: Type de cast
         
     Returns:
-        Valeur castÃƒÂ©e
+        Valeur castee
     """
     value = os.getenv(name)
     
