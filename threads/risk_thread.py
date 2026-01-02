@@ -16,12 +16,12 @@ class RiskThread:
     """
     Thread de surveillance des risques
     
-    ResponsabilitÃƒÂ©s:
+    Responsabilites:
     - Monitor continu du drawdown
     - Surveillance de l'exposition
-    - VÃƒÂ©rification des corrÃƒÂ©lations
-    - DÃƒÂ©clenchement des circuit breakers
-    - Alertes en temps rÃƒÂ©el
+    - Verification des correlations
+    - Declenchement des circuit breakers
+    - Alertes en temps reel
     - Actions correctives automatiques
     """
     
@@ -42,7 +42,7 @@ class RiskThread:
         self.check_interval = getattr(config, 'CHECK_INTERVAL', 5)  # 5 secondes
         self.alert_cooldown = getattr(config, 'ALERT_COOLDOWN', 60)  # 60s entre alertes
         
-        # Ãƒâ€°tat
+        # Etat
         self.last_check = None
         self.last_alert = {}
         self.actions_taken = []
@@ -57,12 +57,12 @@ class RiskThread:
             'emergency_stops': 0
         }
         
-        logger.info("Risk Thread initialisÃƒÂ©")
+        logger.info("Risk Thread initialise")
     
     def start(self):
-        """DÃƒÂ©marre le thread"""
+        """Demarre le thread"""
         if self.is_running:
-            logger.warning("Risk Thread dÃƒÂ©jÃƒÂ  en cours")
+            logger.warning("Risk Thread deja en cours")
             return
         
         self.is_running = True
@@ -73,10 +73,10 @@ class RiskThread:
         )
         self.thread.start()
         
-        logger.info("Ã¢Å“â€¦ Risk Thread dÃƒÂ©marrÃƒÂ©")
+        logger.info("[OK] Risk Thread demarre")
     
     def stop(self):
-        """ArrÃƒÂªte le thread"""
+        """Arrete le thread"""
         if not self.is_running:
             return
         
@@ -85,15 +85,15 @@ class RiskThread:
         if self.thread:
             self.thread.join(timeout=10)
         
-        logger.info("Risk Thread arrÃƒÂªtÃƒÂ©")
+        logger.info("Risk Thread arrete")
     
     def _run(self):
         """Boucle principale du thread"""
-        logger.info("Ã°Å¸â€â€ž Risk Thread running...")
+        logger.info("Risk Thread running...")
         
         while self.is_running:
             try:
-                # VÃƒÂ©rifier les risques
+                # Verifier les risques
                 self._perform_risk_check()
                 
                 # Pause entre checks
@@ -103,35 +103,35 @@ class RiskThread:
                 logger.error(f"Erreur dans risk thread: {e}", exc_info=True)
                 time.sleep(10)
         
-        logger.info("Risk Thread terminÃƒÂ©")
+        logger.info("Risk Thread termine")
     
     def _perform_risk_check(self):
-        """Effectue une vÃƒÂ©rification complÃƒÂ¨te des risques"""
+        """Effectue une verification complete des risques"""
         try:
             self.stats['checks_performed'] += 1
             self.last_check = datetime.now()
             
-            # VÃƒÂ©rifier que le risk monitor existe
+            # Verifier que le risk monitor existe
             if not hasattr(self.bot, 'risk_monitor'):
                 logger.warning("Risk monitor non disponible")
                 return
             
-            # RÃƒÂ©cupÃƒÂ©rer l'ÃƒÂ©tat actuel
+            # Recuperer l'etat actuel
             current_capital = self.bot.capital
             positions = self._get_current_positions()
             
-            # Mise ÃƒÂ  jour du risk monitor
+            # Mise a jour du risk monitor
             risk_report = self.bot.risk_monitor.update(current_capital, positions)
             
-            # Mettre ÃƒÂ  jour les stats
+            # Mettre a jour les stats
             risk_level = risk_report['risk_level']
             self.stats['last_risk_level'] = risk_level
             
-            # Log pÃƒÂ©riodique (toutes les minutes)
+            # Log periodique (toutes les minutes)
             if self.stats['checks_performed'] % 12 == 0:  # 60s / 5s = 12
                 self._log_risk_status(risk_report)
             
-            # RÃƒÂ©agir selon le niveau de risque
+            # Reagir selon le niveau de risque
             if risk_level == 'EMERGENCY':
                 self._handle_emergency(risk_report)
             elif risk_level == 'CRITICAL':
@@ -141,7 +141,7 @@ class RiskThread:
             elif risk_level == 'WARNING':
                 self._handle_warning(risk_report)
             
-            # Traiter les actions recommandÃƒÂ©es
+            # Traiter les actions recommandees
             if risk_report.get('actions'):
                 self._process_actions(risk_report['actions'])
         
@@ -150,7 +150,7 @@ class RiskThread:
     
     def _get_current_positions(self) -> Dict:
         """
-        RÃƒÂ©cupÃƒÂ¨re les positions actuelles
+        Recupere les positions actuelles
         
         Returns:
             Dict des positions
@@ -160,24 +160,24 @@ class RiskThread:
                 return self.bot.strategy_manager.positions
             return {}
         except Exception as e:
-            logger.error(f"Erreur rÃƒÂ©cupÃƒÂ©ration positions: {e}")
+            logger.error(f"Erreur recuperation positions: {e}")
             return {}
     
     def _handle_emergency(self, risk_report: Dict):
         """
-        GÃƒÂ¨re un niveau d'urgence
+        Gere un niveau d'urgence
         
         Args:
             risk_report: Rapport de risque
         """
-        logger.critical("Ã°Å¸Å¡Â¨ NIVEAU D'URGENCE - Actions immÃƒÂ©diates!")
+        logger.critical("[ALERT] NIVEAU D'URGENCE - Actions immediates!")
         
         self.stats['emergency_stops'] += 1
         
         # Fermer TOUTES les positions
         if self._should_send_alert('emergency'):
             logger.critical(
-                f"Ã¢Å¡Â Ã¯Â¸Â ARRÃƒÅ T D'URGENCE Ã¢Å¡Â Ã¯Â¸Â\n"
+                f"[EMERGENCY] ARRET D'URGENCE\n"
                 f"Drawdown: {risk_report['current_drawdown']:.2%}\n"
                 f"Capital: ${risk_report['capital']:,.2f}\n"
                 f"Fermeture de toutes les positions!"
@@ -186,7 +186,7 @@ class RiskThread:
             # Fermer les positions
             self._close_all_positions('emergency')
             
-            # DÃƒÂ©sactiver le trading
+            # Desactiver le trading
             if hasattr(self.bot, 'strategy_manager'):
                 self.bot.strategy_manager.disable_trading()
             
@@ -197,12 +197,12 @@ class RiskThread:
     
     def _handle_critical(self, risk_report: Dict):
         """
-        GÃƒÂ¨re un niveau critique
+        Gere un niveau critique
         
         Args:
             risk_report: Rapport de risque
         """
-        logger.error("Ã¢ÂÅ’ NIVEAU CRITIQUE - Actions correctives")
+        logger.error("[CRITICAL] NIVEAU CRITIQUE - Actions correctives")
         
         self.stats['circuit_breakers_triggered'] += 1
         
@@ -216,7 +216,7 @@ class RiskThread:
             # Fermer les positions perdantes
             self._close_losing_positions()
             
-            # RÃƒÂ©duire les autres positions
+            # Reduire les autres positions
             self._reduce_all_positions(0.5)
             
             # Envoyer notification
@@ -226,23 +226,23 @@ class RiskThread:
     
     def _handle_high_risk(self, risk_report: Dict):
         """
-        GÃƒÂ¨re un niveau de risque ÃƒÂ©levÃƒÂ©
+        Gere un niveau de risque eleve
         
         Args:
             risk_report: Rapport de risque
         """
-        logger.warning("Ã¢Å¡Â Ã¯Â¸Â RISQUE Ãƒâ€°LEVÃƒâ€° - RÃƒÂ©duction des positions")
+        logger.warning("[WARNING] RISQUE ELEVE - Reduction des positions")
         
         if self._should_send_alert('high'):
             logger.warning(
-                f"Risque ÃƒÂ©levÃƒÂ© dÃƒÂ©tectÃƒÂ©\n"
+                f"Risque eleve detecte\n"
                 f"Drawdown: {risk_report['current_drawdown']:.2%}"
             )
             
             # Fermer la pire position
             self._close_worst_position()
             
-            # RÃƒÂ©duire les nouvelles positions
+            # Reduire les nouvelles positions
             if hasattr(self.bot, 'position_sizer'):
                 self.bot.position_sizer.apply_reduction_factor(0.7)
             
@@ -250,14 +250,14 @@ class RiskThread:
     
     def _handle_warning(self, risk_report: Dict):
         """
-        GÃƒÂ¨re un avertissement
+        Gere un avertissement
         
         Args:
             risk_report: Rapport de risque
         """
         if self._should_send_alert('warning'):
             logger.warning(
-                f"Ã¢Å¡Â Ã¯Â¸Â Avertissement risque\n"
+                f"Avertissement risque\n"
                 f"Drawdown: {risk_report['current_drawdown']:.2%}"
             )
             
@@ -268,13 +268,13 @@ class RiskThread:
     
     def _should_send_alert(self, alert_type: str) -> bool:
         """
-        VÃƒÂ©rifie si une alerte doit ÃƒÂªtre envoyÃƒÂ©e (cooldown)
+        Verifie si une alerte doit etre envoyee (cooldown)
         
         Args:
             alert_type: Type d'alerte
             
         Returns:
-            True si alerte autorisÃƒÂ©e
+            True si alerte autorisee
         """
         if alert_type not in self.last_alert:
             return True
@@ -295,7 +295,7 @@ class RiskThread:
             
             positions = self.bot.strategy_manager.positions.copy()
             
-            logger.critical(f"Ã°Å¸Å¡Â¨ Fermeture de {len(positions)} positions ({reason})")
+            logger.critical(f"[ACTION] Fermeture de {len(positions)} positions ({reason})")
             
             for symbol in positions:
                 try:
@@ -336,7 +336,7 @@ class RiskThread:
                 else:
                     pnl_pct = (entry_price - current_price) / entry_price
                 
-                # Fermer si nÃƒÂ©gatif
+                # Fermer si negatif
                 if pnl_pct < 0:
                     logger.info(f"Fermeture position perdante: {symbol} ({pnl_pct:.2%})")
                     self.bot.strategy_manager.close_position(symbol, 'losing_position')
@@ -347,10 +347,10 @@ class RiskThread:
     
     def _reduce_all_positions(self, factor: float):
         """
-        RÃƒÂ©duit toutes les positions d'un facteur
+        Reduit toutes les positions d'un facteur
         
         Args:
-            factor: Facteur de rÃƒÂ©duction (0.5 = rÃƒÂ©duire de 50%)
+            factor: Facteur de reduction (0.5 = reduire de 50%)
         """
         try:
             if not hasattr(self.bot, 'strategy_manager'):
@@ -358,19 +358,19 @@ class RiskThread:
             
             positions = self.bot.strategy_manager.positions.copy()
             
-            logger.warning(f"RÃƒÂ©duction de {len(positions)} positions ÃƒÂ  {factor:.0%}")
+            logger.warning(f"Reduction de {len(positions)} positions a {factor:.0%}")
             
             for symbol, position in positions.items():
-                # Calculer nouvelle quantitÃƒÂ©
+                # Calculer nouvelle quantite
                 current_qty = position.get('quantity', 0)
                 new_qty = current_qty * factor
                 
-                # Fermer la diffÃƒÂ©rence
+                # Fermer la difference
                 qty_to_close = current_qty - new_qty
                 
                 if qty_to_close > 0:
-                    # TODO: ImplÃƒÂ©menter rÃƒÂ©duction partielle
-                    logger.debug(f"RÃƒÂ©duction {symbol}: {qty_to_close:.6f}")
+                    # TODO: Implementer reduction partielle
+                    logger.debug(f"Reduction {symbol}: {qty_to_close:.6f}")
         
         except Exception as e:
             logger.error(f"Erreur reduce_all_positions: {e}")
@@ -433,14 +433,14 @@ class RiskThread:
                     else:
                         new_sl = entry_price + (current_sl - entry_price) * 0.8
                     
-                    # TODO: Mettre ÃƒÂ  jour le stop loss
-                    logger.debug(f"SL resserrÃƒÂ© {symbol}: {current_sl:.2f} Ã¢â€ â€™ {new_sl:.2f}")
+                    # TODO: Mettre a jour le stop loss
+                    logger.debug(f"SL resserre {symbol}: {current_sl:.2f} -> {new_sl:.2f}")
         
         except Exception as e:
             logger.error(f"Erreur tighten_stop_losses: {e}")
     
     def _get_current_price(self, symbol: str) -> Optional[float]:
-        """RÃƒÂ©cupÃƒÂ¨re le prix actuel d'un symbole"""
+        """Recupere le prix actuel d'un symbole"""
         try:
             if hasattr(self.bot, 'exchange'):
                 ticker = self.bot.exchange.get_symbol_ticker(symbol)
@@ -452,14 +452,14 @@ class RiskThread:
     
     def _process_actions(self, actions: List[str]):
         """
-        Traite une liste d'actions recommandÃƒÂ©es
+        Traite une liste d'actions recommandees
         
         Args:
             actions: Liste des actions
         """
         for action in actions:
-            logger.info(f"Action recommandÃƒÂ©e: {action}")
-            # Les actions sont dÃƒÂ©jÃƒÂ  traitÃƒÂ©es dans les handlers
+            logger.info(f"Action recommandee: {action}")
+            # Les actions sont deja traitees dans les handlers
     
     def _send_notification(self, level: str, risk_report: Dict):
         """
@@ -487,7 +487,7 @@ class RiskThread:
             risk_report: Rapport de risque
         """
         logger.info(
-            f"Ã°Å¸â€œÅ  Risk Status: {risk_report['risk_level']} | "
+            f"[RISK STATUS] {risk_report['risk_level']} | "
             f"DD: {risk_report['current_drawdown']:.2%} | "
             f"Expo: {risk_report['total_exposure_pct']:.1%} | "
             f"Pos: {len(risk_report.get('positions', {}))}"
@@ -509,7 +509,7 @@ class RiskThread:
     
     def get_recent_actions(self, limit: int = 10) -> List[Dict]:
         """
-        Retourne les actions rÃƒÂ©centes
+        Retourne les actions recentes
         
         Args:
             limit: Nombre max d'actions
