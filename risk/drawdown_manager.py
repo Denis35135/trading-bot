@@ -1,6 +1,6 @@
 """
 Drawdown Manager
-GÃƒÂ¨re et surveille le drawdown du portfolio
+Gere et surveille le drawdown du portfolio
 """
 
 import numpy as np
@@ -16,10 +16,10 @@ class DrawdownManager:
     """
     Gestionnaire de drawdown
     
-    FonctionnalitÃƒÂ©s:
+    Fonctionnalites:
     - Calcul du drawdown actuel
     - Historique des drawdowns
-    - DÃƒÂ©tection des pÃƒÂ©riodes de rÃƒÂ©cupÃƒÂ©ration
+    - Detection des periodes de recuperation
     - Alertes sur drawdown excessif
     - Ajustement automatique du risque
     """
@@ -35,8 +35,8 @@ class DrawdownManager:
             'max_drawdown_pct': 0.08,  # 8% maximum
             'warning_drawdown_pct': 0.05,  # 5% warning
             'recovery_target_pct': 0.02,  # Objectif: revenir sous 2%
-            'max_recovery_days': 7,  # Max 7 jours pour rÃƒÂ©cupÃƒÂ©rer
-            'risk_reduction_threshold': 0.06  # RÃƒÂ©duire risque ÃƒÂ  6% DD
+            'max_recovery_days': 7,  # Max 7 jours pour recuperer
+            'risk_reduction_threshold': 0.06  # Reduire risque  6% DD
         }
         
         if config:
@@ -50,7 +50,7 @@ class DrawdownManager:
         self.peak_equity = 0
         self.current_drawdown = 0
         
-        # PÃƒÂ©riodes de drawdown
+        # Periodes de drawdown
         self.in_drawdown = False
         self.drawdown_start_time = None
         self.drawdown_start_equity = 0
@@ -64,34 +64,34 @@ class DrawdownManager:
             'current_drawdown_days': 0
         }
         
-        logger.info("Ã°Å¸â€œâ€° Drawdown Manager initialisÃƒÂ©")
+        logger.info(""" Drawdown Manager initialise")
         logger.info(f"   Max drawdown: {self.config['max_drawdown_pct']:.1%}")
     
     def update(self, current_equity: float, timestamp: datetime = None) -> Dict:
         """
-        Met ÃƒÂ  jour le drawdown avec la nouvelle equity
+        Met  jour le drawdown avec la nouvelle equity
         
         Args:
             current_equity: Equity actuelle
             timestamp: Timestamp (maintenant si None)
             
         Returns:
-            Dict avec mÃƒÂ©triques de drawdown
+            Dict avec metriques de drawdown
         """
         if timestamp is None:
             timestamp = datetime.now()
         
-        # Ajouter ÃƒÂ  l'historique
+        # Ajouter  l'historique
         self.equity_curve.append({
             'timestamp': timestamp,
             'equity': current_equity
         })
         
-        # Mettre ÃƒÂ  jour le peak
+        # Mettre  jour le peak
         if current_equity > self.peak_equity:
             self.peak_equity = current_equity
             
-            # Si on ÃƒÂ©tait en drawdown et qu'on revient au peak, fin du drawdown
+            # Si on etait en drawdown et qu'on revient au peak, fin du drawdown
             if self.in_drawdown:
                 self._end_drawdown_period(timestamp)
         
@@ -101,15 +101,15 @@ class DrawdownManager:
         else:
             self.current_drawdown = 0
         
-        # Mettre ÃƒÂ  jour les stats
+        # Mettre  jour les stats
         if self.current_drawdown > self.stats['max_drawdown_ever']:
             self.stats['max_drawdown_ever'] = self.current_drawdown
         
-        # DÃƒÂ©tecter dÃƒÂ©but de drawdown
+        # Detecter debut de drawdown
         if not self.in_drawdown and self.current_drawdown > 0.01:  # >1%
             self._start_drawdown_period(current_equity, timestamp)
         
-        # Si en drawdown, mettre ÃƒÂ  jour la durÃƒÂ©e
+        # Si en drawdown, mettre  jour la duree
         if self.in_drawdown:
             days = (timestamp - self.drawdown_start_time).days
             self.stats['current_drawdown_days'] = days
@@ -131,28 +131,28 @@ class DrawdownManager:
         return analysis
     
     def _start_drawdown_period(self, equity: float, timestamp: datetime):
-        """DÃƒÂ©marre une nouvelle pÃƒÂ©riode de drawdown"""
+        """Demarre une nouvelle periode de drawdown"""
         self.in_drawdown = True
         self.drawdown_start_time = timestamp
         self.drawdown_start_equity = equity
         
-        logger.info(f"Ã°Å¸â€œâ€° DÃƒÂ©but de drawdown ÃƒÂ  {equity:.2f}")
+        logger.info(f""" Debut de drawdown  {equity:.2f}")
     
     def _end_drawdown_period(self, timestamp: datetime):
-        """Termine une pÃƒÂ©riode de drawdown"""
+        """Termine une periode de drawdown"""
         if not self.in_drawdown:
             return
         
         duration = (timestamp - self.drawdown_start_time).days
         recovery_pct = (self.peak_equity - self.drawdown_start_equity) / self.drawdown_start_equity
         
-        logger.info(f"Ã¢Å“â€¦ Fin de drawdown aprÃƒÂ¨s {duration} jours")
-        logger.info(f"   RÃƒÂ©cupÃƒÂ©ration: {recovery_pct:.2%}")
+        logger.info(f"""| Fin de drawdown apres {duration} jours")
+        logger.info(f"   Recuperation: {recovery_pct:.2%}")
         
-        # Mettre ÃƒÂ  jour les stats
+        # Mettre  jour les stats
         self.stats['total_drawdown_periods'] += 1
         
-        # Calculer la moyenne du temps de rÃƒÂ©cupÃƒÂ©ration
+        # Calculer la moyenne du temps de recuperation
         if self.stats['total_drawdown_periods'] > 0:
             current_avg = self.stats['avg_recovery_time']
             self.stats['avg_recovery_time'] = (
@@ -178,7 +178,7 @@ class DrawdownManager:
             'level': 'ok'
         }
         
-        # DÃƒÂ©terminer le niveau de gravitÃƒÂ©
+        # Determiner le niveau de gravite
         if self.current_drawdown >= self.config['max_drawdown_pct']:
             analysis['level'] = 'critical'
             analysis['action'] = 'halt_trading'
@@ -187,13 +187,13 @@ class DrawdownManager:
         elif self.current_drawdown >= self.config['risk_reduction_threshold']:
             analysis['level'] = 'high'
             analysis['action'] = 'reduce_risk'
-            analysis['risk_multiplier'] = 0.5  # RÃƒÂ©duire de 50%
-            analysis['message'] = f'Ãƒâ€°LEVÃƒâ€°: Drawdown {self.current_drawdown:.2%} - RÃƒÂ©duire le risque'
+            analysis['risk_multiplier'] = 0.5  # Reduire de 50%
+            analysis['message'] = f'"LEV": Drawdown {self.current_drawdown:.2%} - Reduire le risque'
             
         elif self.current_drawdown >= self.config['warning_drawdown_pct']:
             analysis['level'] = 'warning'
             analysis['action'] = 'monitor_closely'
-            analysis['risk_multiplier'] = 0.7  # RÃƒÂ©duire de 30%
+            analysis['risk_multiplier'] = 0.7  # Reduire de 30%
             analysis['message'] = f'ATTENTION: Drawdown {self.current_drawdown:.2%}'
             
         else:
@@ -202,36 +202,36 @@ class DrawdownManager:
             analysis['risk_multiplier'] = 1.0
             analysis['message'] = 'Drawdown dans les limites normales'
         
-        # VÃƒÂ©rifier la durÃƒÂ©e du drawdown
+        # Verifier la duree du drawdown
         if self.in_drawdown:
             days = self.stats['current_drawdown_days']
             analysis['drawdown_days'] = days
             
             if days > self.config['max_recovery_days']:
                 analysis['prolonged_drawdown'] = True
-                analysis['message'] += f' | Drawdown prolongÃƒÂ©: {days} jours'
+                analysis['message'] += f' | Drawdown prolonge: {days} jours'
         
         return analysis
     
     def get_risk_adjustment_multiplier(self) -> float:
         """
-        Retourne le multiplicateur d'ajustement du risque basÃƒÂ© sur le drawdown
+        Retourne le multiplicateur d'ajustement du risque base sur le drawdown
         
         Returns:
-            Multiplicateur (0.5 ÃƒÂ  1.0)
+            Multiplicateur (0.5  1.0)
         """
         if self.current_drawdown >= self.config['max_drawdown_pct']:
-            return 0.0  # ArrÃƒÂªt complet
+            return 0.0  # Arret complet
         elif self.current_drawdown >= self.config['risk_reduction_threshold']:
-            return 0.5  # RÃƒÂ©duction de 50%
+            return 0.5  # Reduction de 50%
         elif self.current_drawdown >= self.config['warning_drawdown_pct']:
-            return 0.7  # RÃƒÂ©duction de 30%
+            return 0.7  # Reduction de 30%
         else:
             return 1.0  # Risque normal
     
     def get_drawdown_curve(self, period_days: int = 30) -> pd.DataFrame:
         """
-        Retourne la courbe de drawdown sur une pÃƒÂ©riode
+        Retourne la courbe de drawdown sur une periode
         
         Args:
             period_days: Nombre de jours
@@ -286,7 +286,7 @@ class DrawdownManager:
     
     def calculate_underwater_time(self) -> Tuple[int, float]:
         """
-        Calcule le temps passÃƒÂ© en drawdown
+        Calcule le temps passe en drawdown
         
         Returns:
             Tuple (jours totaux, pourcentage du temps)
@@ -310,10 +310,10 @@ class DrawdownManager:
     
     def get_recovery_metrics(self) -> Dict:
         """
-        Retourne les mÃƒÂ©triques de rÃƒÂ©cupÃƒÂ©ration
+        Retourne les metriques de recuperation
         
         Returns:
-            Dict avec mÃƒÂ©triques
+            Dict avec metriques
         """
         if not self.in_drawdown:
             return {
@@ -324,7 +324,7 @@ class DrawdownManager:
         days_in_drawdown = self.stats['current_drawdown_days']
         recovery_needed = self.current_drawdown * self.peak_equity
         
-        # Estimer le temps de rÃƒÂ©cupÃƒÂ©ration basÃƒÂ© sur la moyenne historique
+        # Estimer le temps de recuperation base sur la moyenne historique
         estimated_days = self.stats['avg_recovery_time'] if self.stats['avg_recovery_time'] > 0 else 7
         
         return {
@@ -337,7 +337,7 @@ class DrawdownManager:
         }
     
     def get_stats(self) -> Dict:
-        """Retourne les statistiques complÃƒÂ¨tes"""
+        """Retourne les statistiques completes"""
         underwater_days, underwater_pct = self.calculate_underwater_time()
         
         return {
@@ -351,14 +351,14 @@ class DrawdownManager:
         }
     
     def reset(self):
-        """RÃƒÂ©initialise le drawdown manager"""
+        """Reinitialise le drawdown manager"""
         self.equity_curve = []
         self.drawdown_history = []
         self.peak_equity = 0
         self.current_drawdown = 0
         self.in_drawdown = False
         
-        logger.info("Ã°Å¸â€â€ž Drawdown Manager rÃƒÂ©initialisÃƒÂ©")
+        logger.info(""" Drawdown Manager reinitialise")
 
 
 # =============================================================
@@ -375,15 +375,15 @@ if __name__ == "__main__":
     
     # Simuler une courbe d'equity avec drawdown
     equity_curve = [
-        10000, 10200, 10500, 10300,  # Hausse puis lÃƒÂ©gÃƒÂ¨re baisse
+        10000, 10200, 10500, 10300,  # Hausse puis legere baisse
         10100, 9800, 9500, 9300,     # Drawdown
-        9600, 9900, 10200, 10500,    # RÃƒÂ©cupÃƒÂ©ration
+        9600, 9900, 10200, 10500,    # Recuperation
         10800, 11000                  # Nouveau peak
     ]
     
     timestamps = [datetime.now() + timedelta(hours=i) for i in range(len(equity_curve))]
     
-    print("\n1. Simulation d'ÃƒÂ©quity curve:")
+    print("\n1. Simulation d'equity curve:")
     for i, (equity, ts) in enumerate(zip(equity_curve, timestamps)):
         analysis = manager.update(equity, ts)
         
@@ -394,7 +394,7 @@ if __name__ == "__main__":
             print(f"   Level: {analysis['level']}")
             print(f"   Action: {analysis['action']}")
     
-    print("\n2. MÃƒÂ©triques de rÃƒÂ©cupÃƒÂ©ration:")
+    print("\n2. Metriques de recuperation:")
     recovery = manager.get_recovery_metrics()
     for key, value in recovery.items():
         print(f"   {key}: {value}")
