@@ -1,6 +1,6 @@
 """
 Database Manager pour The Bot
-Gestion de la persistance des donnÃƒÂ©es avec SQLAlchemy
+Gestion de la persistance des donnees avec SQLAlchemy
 """
 
 import os
@@ -19,16 +19,16 @@ from sqlalchemy import func, desc
 
 logger = logging.getLogger(__name__)
 
-# Base pour les modÃƒÂ¨les
+# Base pour les modeles
 Base = declarative_base()
 
 
 # ============================================================================
-# MODÃƒË†LES DE BASE DE DONNÃƒâ€°ES
+# MODELES DE BASE DE DONNEES
 # ============================================================================
 
 class Trade(Base):
-    """Table des trades exÃƒÂ©cutÃƒÂ©s"""
+    """Table des trades executes"""
     __tablename__ = 'trades'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -38,12 +38,12 @@ class Trade(Base):
     strategy = Column(String(50), nullable=False, index=True)
     side = Column(String(10), nullable=False)  # BUY/SELL
     
-    # Prix et quantitÃƒÂ©
+    # Prix et quantite
     entry_price = Column(Float, nullable=False)
     exit_price = Column(Float)
     quantity = Column(Float, nullable=False)
     
-    # RÃƒÂ©sultats
+    # Resultats
     profit_usdc = Column(Float, default=0)
     profit_pct = Column(Float, default=0)
     fees = Column(Float, default=0)
@@ -64,7 +64,7 @@ class Trade(Base):
     # Statut
     status = Column(String(20), default='open')  # open/closed/cancelled
     
-    # MÃƒÂ©tadonnÃƒÂ©es
+    # Metadonnees
     created_at = Column(DateTime, default=datetime.now)
     
     # Index composites pour performance
@@ -103,7 +103,7 @@ class Position(Base):
     entry_time = Column(DateTime, nullable=False, index=True)
     last_update = Column(DateTime, default=datetime.now, onupdate=datetime.now)
     
-    # MÃƒÂ©tadonnÃƒÂ©es
+    # Metadonnees
     entry_reason = Column(String(200))
     
     created_at = Column(DateTime, default=datetime.now)
@@ -147,12 +147,12 @@ class PerformanceSnapshot(Base):
 
 
 class StrategyPerformance(Base):
-    """Performance par stratÃƒÂ©gie"""
+    """Performance par strategie"""
     __tablename__ = 'strategy_performance'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     
-    # StratÃƒÂ©gie
+    # Strategie
     strategy_name = Column(String(50), nullable=False, index=True)
     
     # Performance
@@ -189,7 +189,7 @@ class StrategyPerformance(Base):
 
 
 class SystemLog(Base):
-    """Logs systÃƒÂ¨me importants"""
+    """Logs systeme importants"""
     __tablename__ = 'system_logs'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -202,24 +202,24 @@ class SystemLog(Base):
     symbol = Column(String(20))
     strategy = Column(String(50))
     
-    # DonnÃƒÂ©es supplÃƒÂ©mentaires (JSON)
+    # Donnees supplementaires (JSON)
     extra_data = Column(Text)  # JSON serialized
     
     timestamp = Column(DateTime, default=datetime.now, index=True)
 
 
 # ============================================================================
-# GESTIONNAIRE DE BASE DE DONNÃƒâ€°ES
+# GESTIONNAIRE DE BASE DE DONNEES
 # ============================================================================
 
 class DatabaseManager:
     """
-    Gestionnaire central de la base de donnÃƒÂ©es
+    Gestionnaire central de la base de donnees
     
-    ResponsabilitÃƒÂ©s:
+    Responsabilites:
     - Connexion et initialisation
     - CRUD operations
-    - RequÃƒÂªtes optimisÃƒÂ©es
+    - Requetes optimisees
     - Backup et restore
     - Maintenance
     """
@@ -229,29 +229,29 @@ class DatabaseManager:
         Initialise le database manager
         
         Args:
-            config: Configuration de la base de donnÃƒÂ©es
+            config: Configuration de la base de donnees
         """
         self.config = config
         self.db_path = getattr(config, 'DB_PATH', 'data/bot.db')
         self.db_type = getattr(config, 'DB_TYPE', 'sqlite')  # sqlite ou postgresql
         
-        # CrÃƒÂ©er le rÃƒÂ©pertoire si nÃƒÂ©cessaire
+        # Creer le repertoire si necessaire
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         
-        # CrÃƒÂ©er l'engine
+        # Creer l'engine
         self.engine = self._create_engine()
         
-        # CrÃƒÂ©er les tables
+        # Creer les tables
         Base.metadata.create_all(self.engine)
         
         # Session factory
         session_factory = sessionmaker(bind=self.engine)
         self.Session = scoped_session(session_factory)
         
-        logger.info(f"Ã¢Å“â€¦ Database initialisÃƒÂ©e: {self.db_path}")
+        logger.info(f"[OK] Database initialisee: {self.db_path}")
     
     def _create_engine(self):
-        """CrÃƒÂ©e l'engine SQLAlchemy"""
+        """Cree l'engine SQLAlchemy"""
         if self.db_type == 'sqlite':
             # SQLite pour PC classique
             engine = create_engine(
@@ -270,7 +270,7 @@ class DatabaseManager:
                 echo=False
             )
         else:
-            raise ValueError(f"Type de DB non supportÃƒÂ©: {self.db_type}")
+            raise ValueError(f"Type de DB non supporte: {self.db_type}")
         
         return engine
     
@@ -283,10 +283,10 @@ class DatabaseManager:
         Sauvegarde un trade
         
         Args:
-            trade_data: DonnÃƒÂ©es du trade
+            trade_data: Donnees du trade
             
         Returns:
-            Trade sauvegardÃƒÂ©
+            Trade sauvegarde
         """
         session = self.Session()
         try:
@@ -304,11 +304,11 @@ class DatabaseManager:
     
     def update_trade(self, trade_id: int, updates: Dict):
         """
-        Met ÃƒÂ  jour un trade
+        Met a jour un trade
         
         Args:
             trade_id: ID du trade
-            updates: Mises ÃƒÂ  jour
+            updates: Mises a jour
         """
         session = self.Session()
         try:
@@ -319,17 +319,17 @@ class DatabaseManager:
                 session.commit()
         except Exception as e:
             session.rollback()
-            logger.error(f"Erreur mise ÃƒÂ  jour trade: {e}")
+            logger.error(f"Erreur mise a jour trade: {e}")
         finally:
             session.close()
     
     def get_recent_trades(self, limit: int = 100, strategy: str = None) -> List[Trade]:
         """
-        RÃƒÂ©cupÃƒÂ¨re les trades rÃƒÂ©cents
+        Recupere les trades recents
         
         Args:
             limit: Nombre max de trades
-            strategy: Filtrer par stratÃƒÂ©gie (optionnel)
+            strategy: Filtrer par strategie (optionnel)
             
         Returns:
             Liste des trades
@@ -347,7 +347,7 @@ class DatabaseManager:
             session.close()
     
     def get_trades_by_date_range(self, start_date: datetime, end_date: datetime) -> List[Trade]:
-        """RÃƒÂ©cupÃƒÂ¨re les trades dans une pÃƒÂ©riode"""
+        """Recupere les trades dans une periode"""
         session = self.Session()
         try:
             trades = session.query(Trade).filter(
@@ -379,7 +379,7 @@ class DatabaseManager:
             session.close()
     
     def update_position(self, symbol: str, updates: Dict):
-        """Met ÃƒÂ  jour une position"""
+        """Met a jour une position"""
         session = self.Session()
         try:
             position = session.query(Position).filter(Position.symbol == symbol).first()
@@ -390,12 +390,12 @@ class DatabaseManager:
                 session.commit()
         except Exception as e:
             session.rollback()
-            logger.error(f"Erreur mise ÃƒÂ  jour position: {e}")
+            logger.error(f"Erreur mise a jour position: {e}")
         finally:
             session.close()
     
     def get_open_positions(self) -> List[Position]:
-        """RÃƒÂ©cupÃƒÂ¨re toutes les positions ouvertes"""
+        """Recupere toutes les positions ouvertes"""
         session = self.Session()
         try:
             positions = session.query(Position).all()
@@ -435,7 +435,7 @@ class DatabaseManager:
             session.close()
     
     def get_performance_history(self, hours: int = 24) -> List[PerformanceSnapshot]:
-        """RÃƒÂ©cupÃƒÂ¨re l'historique de performance"""
+        """Recupere l'historique de performance"""
         session = self.Session()
         try:
             since = datetime.now() - timedelta(hours=hours)
@@ -447,7 +447,7 @@ class DatabaseManager:
             session.close()
     
     def update_strategy_performance(self, strategy_name: str, performance_data: Dict):
-        """Met ÃƒÂ  jour la performance d'une stratÃƒÂ©gie"""
+        """Met a jour la performance d'une strategie"""
         session = self.Session()
         try:
             perf = session.query(StrategyPerformance).filter(
@@ -455,11 +455,11 @@ class DatabaseManager:
             ).first()
             
             if not perf:
-                # CrÃƒÂ©er si n'existe pas
+                # Creer si n'existe pas
                 perf = StrategyPerformance(strategy_name=strategy_name)
                 session.add(perf)
             
-            # Mettre ÃƒÂ  jour
+            # Mettre a jour
             for key, value in performance_data.items():
                 setattr(perf, key, value)
             
@@ -471,7 +471,7 @@ class DatabaseManager:
             session.close()
     
     def get_all_strategy_performance(self) -> List[StrategyPerformance]:
-        """RÃƒÂ©cupÃƒÂ¨re les performances de toutes les stratÃƒÂ©gies"""
+        """Recupere les performances de toutes les strategies"""
         session = self.Session()
         try:
             perfs = session.query(StrategyPerformance).all()
@@ -486,15 +486,15 @@ class DatabaseManager:
     def log_event(self, level: str, category: str, message: str, 
                    symbol: str = None, strategy: str = None, extra_data: Dict = None):
         """
-        Enregistre un ÃƒÂ©vÃƒÂ©nement systÃƒÂ¨me
+        Enregistre un evenement systeme
         
         Args:
             level: Niveau (INFO/WARNING/ERROR)
-            category: CatÃƒÂ©gorie
+            category: Categorie
             message: Message
             symbol: Symbole (optionnel)
-            strategy: StratÃƒÂ©gie (optionnel)
-            extra_data: DonnÃƒÂ©es supplÃƒÂ©mentaires (optionnel)
+            strategy: Strategie (optionnel)
+            extra_data: Donnees supplementaires (optionnel)
         """
         session = self.Session()
         try:
@@ -515,7 +515,7 @@ class DatabaseManager:
             session.close()
     
     def get_recent_logs(self, limit: int = 100, level: str = None) -> List[SystemLog]:
-        """RÃƒÂ©cupÃƒÂ¨re les logs rÃƒÂ©cents"""
+        """Recupere les logs recents"""
         session = self.Session()
         try:
             query = session.query(SystemLog).order_by(desc(SystemLog.timestamp))
@@ -588,10 +588,10 @@ class DatabaseManager:
     
     def cleanup_old_data(self, days: int = 30):
         """
-        Nettoie les anciennes donnÃƒÂ©es
+        Nettoie les anciennes donnees
         
         Args:
-            days: Garder les donnÃƒÂ©es des X derniers jours
+            days: Garder les donnees des X derniers jours
         """
         session = self.Session()
         try:
@@ -615,7 +615,7 @@ class DatabaseManager:
                     session.delete(snapshot)
             
             session.commit()
-            logger.info(f"Ã°Å¸Â§Â¹ DonnÃƒÂ©es > {days} jours nettoyÃƒÂ©es")
+            logger.info(f"Donnees > {days} jours nettoyees")
             
         except Exception as e:
             session.rollback()
@@ -624,7 +624,7 @@ class DatabaseManager:
             session.close()
     
     def optimize_database(self):
-        """Optimise la base de donnÃƒÂ©es"""
+        """Optimise la base de donnees"""
         try:
             if self.db_type == 'sqlite':
                 session = self.Session()
@@ -632,16 +632,16 @@ class DatabaseManager:
                 session.execute('ANALYZE')
                 session.commit()
                 session.close()
-                logger.info("Ã¢Å“â€¦ Database optimisÃƒÂ©e")
+                logger.info("[OK] Database optimisee")
         except Exception as e:
             logger.error(f"Erreur optimisation DB: {e}")
     
     def backup_database(self, backup_dir: str = "data/backups"):
         """
-        Sauvegarde la base de donnÃƒÂ©es
+        Sauvegarde la base de donnees
         
         Args:
-            backup_dir: RÃƒÂ©pertoire de backup
+            backup_dir: Repertoire de backup
         """
         try:
             os.makedirs(backup_dir, exist_ok=True)
@@ -651,7 +651,7 @@ class DatabaseManager:
             
             if self.db_type == 'sqlite':
                 shutil.copy2(self.db_path, backup_path)
-                logger.info(f"Ã°Å¸â€™Â¾ Backup crÃƒÂ©ÃƒÂ©: {backup_path}")
+                logger.info(f"[OK] Backup cree: {backup_path}")
                 
                 # Garder seulement les 7 derniers backups
                 self._cleanup_old_backups(backup_dir, keep=7)
@@ -666,7 +666,7 @@ class DatabaseManager:
             if len(backups) > keep:
                 for backup in backups[:-keep]:
                     backup.unlink()
-                    logger.info(f"Ã°Å¸Â§Â¹ Ancien backup supprimÃƒÂ©: {backup.name}")
+                    logger.info(f"Ancien backup supprime: {backup.name}")
         except Exception as e:
             logger.error(f"Erreur cleanup backups: {e}")
     
@@ -690,9 +690,10 @@ class DatabaseManager:
         try:
             self.Session.remove()
             self.engine.dispose()
-            logger.info("Database fermÃƒÂ©e")
+            logger.info("Database fermee")
         except Exception as e:
             logger.error(f"Erreur fermeture DB: {e}")
-# Alias pour compatibilitÃ©
-Database = DatabaseManager
 
+
+# Alias pour compatibilite
+Database = DatabaseManager
