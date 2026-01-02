@@ -1,6 +1,6 @@
 """
 Logger pour The Bot
-SystÃƒÂ¨me de logging colorÃƒÂ© et structurÃƒÂ© avec rotation de fichiers
+Systeme de logging structure avec rotation de fichiers
 """
 
 import os
@@ -11,39 +11,15 @@ from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 from pathlib import Path
 from typing import Optional
 
-try:
-    import colorlog
-    COLORLOG_AVAILABLE = True
-except ImportError:
-    COLORLOG_AVAILABLE = False
-    print("Ã¢Å¡Â Ã¯Â¸Â colorlog non disponible, logs en noir et blanc")
-
-
-# RÃƒÂ©pertoire des logs
+# Repertoire des logs
 LOGS_DIR = "data/logs"
 LOG_FILE_MAX_SIZE = 10 * 1024 * 1024  # 10MB
 LOG_FILE_BACKUP_COUNT = 5
 
-
 # Format des logs
 LOG_FORMAT = "%(asctime)s - %(name)-20s - %(levelname)-8s - %(message)s"
 LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
-
-# Format colorÃƒÂ© pour la console
-if COLORLOG_AVAILABLE:
-    CONSOLE_LOG_FORMAT = "%(log_color)s%(asctime)s%(reset)s - %(cyan)s%(name)-20s%(reset)s - %(log_color)s%(levelname)-8s%(reset)s - %(message)s"
-else:
-    CONSOLE_LOG_FORMAT = LOG_FORMAT
-
-# Couleurs par niveau
-LOG_COLORS = {
-    'DEBUG': 'white',
-    'INFO': 'green',
-    'WARNING': 'yellow',
-    'ERROR': 'red',
-    'CRITICAL': 'red,bg_white',
-}
-
+CONSOLE_LOG_FORMAT = LOG_FORMAT
 
 def setup_logger(name: str = 'TheBot', 
                 level: str = 'INFO',
@@ -56,24 +32,19 @@ def setup_logger(name: str = 'TheBot',
     
     Args:
         name: Nom du logger
-        level: Niveau de log par dÃƒÂ©faut (DEBUG/INFO/WARNING/ERROR/CRITICAL)
+        level: Niveau de log par defaut
         log_to_file: Logger dans un fichier
         log_to_console: Logger sur la console
-        file_level: Niveau pour le fichier (si diffÃƒÂ©rent de level)
-        console_level: Niveau pour la console (si diffÃƒÂ©rent de level)
+        file_level: Niveau pour le fichier
+        console_level: Niveau pour la console
         
     Returns:
-        Logger configurÃƒÂ©
-        
-    Usage:
-        logger = setup_logger('MyModule', 'INFO')
-        logger.info("Message info")
-        logger.error("Message erreur")
+        Logger configure
     """
-    # CrÃƒÂ©er le logger
+    # Creer le logger
     logger = logging.getLogger(name)
     
-    # Ãƒâ€°viter les doublons si dÃƒÂ©jÃƒÂ  configurÃƒÂ©
+    # Eviter les doublons
     if logger.handlers:
         return logger
     
@@ -81,13 +52,11 @@ def setup_logger(name: str = 'TheBot',
     log_level = getattr(logging, level.upper(), logging.INFO)
     logger.setLevel(log_level)
     
-    # CrÃƒÂ©er le rÃƒÂ©pertoire de logs
+    # Creer le repertoire de logs
     if log_to_file:
         os.makedirs(LOGS_DIR, exist_ok=True)
     
-    # ========================================================================
-    # HANDLER CONSOLE
-    # ========================================================================
+    # Handler Console
     if log_to_console:
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(
@@ -95,29 +64,17 @@ def setup_logger(name: str = 'TheBot',
             else log_level
         )
         
-        # Formatter avec couleurs si disponible
-        if COLORLOG_AVAILABLE:
-            console_formatter = colorlog.ColoredFormatter(
-                CONSOLE_LOG_FORMAT,
-                datefmt=LOG_DATE_FORMAT,
-                log_colors=LOG_COLORS,
-                reset=True,
-                style='%'
-            )
-        else:
-            console_formatter = logging.Formatter(
-                LOG_FORMAT,
-                datefmt=LOG_DATE_FORMAT
-            )
+        console_formatter = logging.Formatter(
+            LOG_FORMAT,
+            datefmt=LOG_DATE_FORMAT
+        )
         
         console_handler.setFormatter(console_formatter)
         logger.addHandler(console_handler)
     
-    # ========================================================================
-    # HANDLER FICHIER (avec rotation par taille)
-    # ========================================================================
+    # Handler Fichier avec rotation
     if log_to_file:
-        # Fichier principal avec rotation
+        # Fichier principal
         log_filename = os.path.join(LOGS_DIR, f"{name.lower()}.log")
         file_handler = RotatingFileHandler(
             log_filename,
@@ -137,9 +94,7 @@ def setup_logger(name: str = 'TheBot',
         file_handler.setFormatter(file_formatter)
         logger.addHandler(file_handler)
         
-        # ====================================================================
-        # HANDLER FICHIER ERREURS (seulement ERROR et CRITICAL)
-        # ====================================================================
+        # Fichier erreurs
         error_log_filename = os.path.join(LOGS_DIR, f"{name.lower()}_errors.log")
         error_handler = RotatingFileHandler(
             error_log_filename,
@@ -151,9 +106,7 @@ def setup_logger(name: str = 'TheBot',
         error_handler.setFormatter(file_formatter)
         logger.addHandler(error_handler)
         
-        # ====================================================================
-        # HANDLER FICHIER QUOTIDIEN (rotation par jour)
-        # ====================================================================
+        # Fichier quotidien
         daily_log_filename = os.path.join(
             LOGS_DIR, 
             f"{name.lower()}_{datetime.now().strftime('%Y%m%d')}.log"
@@ -162,70 +115,58 @@ def setup_logger(name: str = 'TheBot',
             daily_log_filename,
             when='midnight',
             interval=1,
-            backupCount=30,  # Garder 30 jours
+            backupCount=30,
             encoding='utf-8'
         )
         daily_handler.setLevel(log_level)
         daily_handler.setFormatter(file_formatter)
-        
-        # Ajouter suffix de date aux backups
         daily_handler.suffix = "%Y%m%d"
-        
         logger.addHandler(daily_handler)
     
     # Ne pas propager aux loggers parents
     logger.propagate = False
     
     # Message de confirmation
-    logger.debug(f"Logger '{name}' configurÃƒÂ© (niveau: {level})")
+    logger.debug(f"Logger '{name}' configure (niveau: {level})")
     
     return logger
 
-
 def get_logger(name: str) -> logging.Logger:
     """
-    RÃƒÂ©cupÃƒÂ¨re un logger existant ou en crÃƒÂ©e un nouveau
+    Recupere un logger existant ou en cree un nouveau
     
     Args:
         name: Nom du logger
         
     Returns:
         Logger
-        
-    Usage:
-        logger = get_logger(__name__)
-        logger.info("Message")
     """
     logger = logging.getLogger(name)
     
-    # Si pas de handlers, configurer avec les paramÃƒÂ¨tres par dÃƒÂ©faut
     if not logger.handlers:
         return setup_logger(name)
     
     return logger
-
 
 def set_log_level(logger: logging.Logger, level: str):
     """
     Change le niveau de log d'un logger
     
     Args:
-        logger: Logger ÃƒÂ  modifier
-        level: Nouveau niveau (DEBUG/INFO/WARNING/ERROR/CRITICAL)
+        logger: Logger a modifier
+        level: Nouveau niveau
     """
     log_level = getattr(logging, level.upper(), logging.INFO)
     logger.setLevel(log_level)
     
-    # Mettre ÃƒÂ  jour tous les handlers
     for handler in logger.handlers:
         handler.setLevel(log_level)
     
-    logger.info(f"Niveau de log changÃƒÂ© ÃƒÂ  {level}")
-
+    logger.info(f"Niveau de log change a {level}")
 
 def disable_external_loggers():
     """
-    DÃƒÂ©sactive ou rÃƒÂ©duit les logs des librairies externes bruyantes
+    Desactive ou reduit les logs des librairies externes
     """
     # Binance
     logging.getLogger('binance').setLevel(logging.WARNING)
@@ -240,19 +181,18 @@ def disable_external_loggers():
     logging.getLogger('sqlalchemy').setLevel(logging.WARNING)
     logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
     
-    # Matplotlib (si utilisÃƒÂ©)
+    # Matplotlib
     logging.getLogger('matplotlib').setLevel(logging.WARNING)
     
     # Asyncio
     logging.getLogger('asyncio').setLevel(logging.WARNING)
-
 
 def cleanup_old_logs(days: int = 7):
     """
     Nettoie les vieux fichiers de logs
     
     Args:
-        days: Nombre de jours ÃƒÂ  conserver
+        days: Nombre de jours a conserver
     """
     if not os.path.exists(LOGS_DIR):
         return
@@ -275,8 +215,7 @@ def cleanup_old_logs(days: int = 7):
     
     if deleted_count > 0:
         logger = get_logger('LogCleaner')
-        logger.info(f"Ã°Å¸Â§Â¹ {deleted_count} vieux fichiers de logs supprimÃƒÂ©s (>{days} jours)")
-
+        logger.info(f"[CLEAN] {deleted_count} vieux fichiers supprimes (>{days} jours)")
 
 def get_log_stats() -> dict:
     """
@@ -308,7 +247,6 @@ def get_log_stats() -> dict:
                 'modified': datetime.fromtimestamp(os.path.getmtime(filepath))
             })
     
-    # Trier par date de modification
     files_info.sort(key=lambda x: x['modified'], reverse=True)
     
     return {
@@ -316,7 +254,6 @@ def get_log_stats() -> dict:
         'total_size_mb': total_size / (1024 * 1024),
         'files': files_info
     }
-
 
 def print_log_stats():
     """Affiche les statistiques des logs"""
@@ -329,44 +266,30 @@ def print_log_stats():
     print(f"Taille totale: {stats['total_size_mb']:.2f} MB")
     
     if stats['files']:
-        print("\nFichiers rÃƒÂ©cents:")
-        for file_info in stats['files'][:10]:  # Top 10
+        print("\nFichiers recents:")
+        for file_info in stats['files'][:10]:
             print(
-                f"  Ã¢â‚¬Â¢ {file_info['name']:<40} "
+                f"  - {file_info['name']:<40} "
                 f"{file_info['size_mb']:>6.2f} MB  "
                 f"{file_info['modified'].strftime('%Y-%m-%d %H:%M')}"
             )
     
     print("=" * 60 + "\n")
 
-
 class LoggerContext:
     """
     Context manager pour changer temporairement le niveau de log
-    
-    Usage:
-        with LoggerContext(logger, 'DEBUG'):
-            # Code avec niveau DEBUG
-            logger.debug("Debug message visible")
-        # Retour au niveau prÃƒÂ©cÃƒÂ©dent
     """
     
     def __init__(self, logger: logging.Logger, level: str):
-        """
-        Args:
-            logger: Logger ÃƒÂ  modifier
-            level: Niveau temporaire
-        """
         self.logger = logger
         self.new_level = getattr(logging, level.upper())
         self.old_level = logger.level
         self.old_handler_levels = []
     
     def __enter__(self):
-        # Sauvegarder les niveaux actuels
         self.old_handler_levels = [h.level for h in self.logger.handlers]
         
-        # Changer les niveaux
         self.logger.setLevel(self.new_level)
         for handler in self.logger.handlers:
             handler.setLevel(self.new_level)
@@ -374,29 +297,16 @@ class LoggerContext:
         return self.logger
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # Restaurer les niveaux
         self.logger.setLevel(self.old_level)
         for handler, level in zip(self.logger.handlers, self.old_handler_levels):
             handler.setLevel(level)
 
-
 class PerformanceLogger:
     """
-    Logger de performance pour mesurer le temps d'exÃƒÂ©cution
-    
-    Usage:
-        with PerformanceLogger(logger, "Calcul indicateurs"):
-            # Code ÃƒÂ  mesurer
-            calculate_indicators()
+    Logger de performance pour mesurer le temps d'execution
     """
     
     def __init__(self, logger: logging.Logger, operation: str, level: str = "INFO"):
-        """
-        Args:
-            logger: Logger ÃƒÂ  utiliser
-            operation: Nom de l'opÃƒÂ©ration
-            level: Niveau de log
-        """
         self.logger = logger
         self.operation = operation
         self.level = getattr(logging, level.upper())
@@ -404,7 +314,7 @@ class PerformanceLogger:
     
     def __enter__(self):
         self.start_time = datetime.now()
-        self.logger.log(self.level, f"Ã¢ÂÂ±Ã¯Â¸Â DÃƒÂ©but: {self.operation}")
+        self.logger.log(self.level, f"[START] Debut: {self.operation}")
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -413,42 +323,26 @@ class PerformanceLogger:
         if exc_type is None:
             self.logger.log(
                 self.level, 
-                f"Ã¢Å“â€¦ Fin: {self.operation} (temps: {elapsed:.3f}s)"
+                f"[DONE] Fin: {self.operation} (temps: {elapsed:.3f}s)"
             )
         else:
             self.logger.log(
                 logging.ERROR,
-                f"Ã¢ÂÅ’ Ãƒâ€°chec: {self.operation} aprÃƒÂ¨s {elapsed:.3f}s - {exc_val}"
+                f"[FAIL] Echec: {self.operation} apres {elapsed:.3f}s - {exc_val}"
             )
 
-
-# ============================================================================
-# CONFIGURATION PAR DÃƒâ€°FAUT AU CHARGEMENT DU MODULE
-# ============================================================================
-
-# DÃƒÂ©sactiver les loggers externes bruyants
+# Configuration par defaut
 disable_external_loggers()
-
-# Logger par dÃƒÂ©faut pour le module utils
 _module_logger = get_logger('utils')
 
-# Nettoyer les vieux logs au dÃƒÂ©marrage (>30 jours)
 try:
     cleanup_old_logs(days=30)
 except Exception as e:
     _module_logger.warning(f"Impossible de nettoyer les vieux logs: {e}")
 
-
-# ============================================================================
-# HELPERS
-# ============================================================================
-
 def log_system_info(logger: Optional[logging.Logger] = None):
     """
-    Log les informations systÃƒÂ¨me
-    
-    Args:
-        logger: Logger ÃƒÂ  utiliser (ou logger par dÃƒÂ©faut)
+    Log les informations systeme
     """
     if logger is None:
         logger = get_logger('SystemInfo')
@@ -457,7 +351,7 @@ def log_system_info(logger: Optional[logging.Logger] = None):
     import psutil
     
     logger.info("=" * 60)
-    logger.info("INFORMATIONS SYSTÃƒË†ME")
+    logger.info("INFORMATIONS SYSTEME")
     logger.info("=" * 60)
     logger.info(f"OS: {platform.system()} {platform.release()}")
     logger.info(f"Python: {platform.python_version()}")
@@ -467,15 +361,9 @@ def log_system_info(logger: Optional[logging.Logger] = None):
     logger.info(f"RAM: {psutil.virtual_memory().total / (1024**3):.1f} GB")
     logger.info("=" * 60)
 
-
 def log_config(config_dict: dict, logger: Optional[logging.Logger] = None, mask_keys: list = None):
     """
-    Log une configuration en masquant les clÃƒÂ©s sensibles
-    
-    Args:
-        config_dict: Configuration ÃƒÂ  logger
-        logger: Logger ÃƒÂ  utiliser
-        mask_keys: Liste des clÃƒÂ©s ÃƒÂ  masquer (ex: ['api_key', 'secret'])
+    Log une configuration en masquant les cles sensibles
     """
     if logger is None:
         logger = get_logger('Config')
@@ -488,7 +376,6 @@ def log_config(config_dict: dict, logger: Optional[logging.Logger] = None, mask_
     logger.info("=" * 60)
     
     for key, value in config_dict.items():
-        # Masquer les valeurs sensibles
         if any(sensitive in key.lower() for sensitive in mask_keys):
             display_value = "***MASKED***"
         else:
@@ -497,7 +384,6 @@ def log_config(config_dict: dict, logger: Optional[logging.Logger] = None, mask_
         logger.info(f"{key}: {display_value}")
     
     logger.info("=" * 60)
-
 
 # Export principal
 __all__ = [
