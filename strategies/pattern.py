@@ -1,6 +1,6 @@
 """
 Pattern Recognition Strategy
-DÃƒÂ©tecte les patterns chartistes classiques
+Detecte les patterns chartistes classiques
 """
 
 import numpy as np
@@ -16,29 +16,29 @@ logger = logging.getLogger(__name__)
 
 class PatternStrategy(BaseStrategy):
     """
-    StratÃƒÂ©gie de reconnaissance de patterns (10% du capital)
+    Strategie de reconnaissance de patterns (10% du capital)
     
-    Patterns dÃƒÂ©tectÃƒÂ©s:
+    Patterns detectes:
     - Double Bottom / Double Top
     - Head & Shoulders / Inverse H&S
-    - Triangles (ascendant, descendant, symÃƒÂ©trique)
+    - Triangles (ascendant, descendant, symetrique)
     - Flags & Pennants
     - Support/Resistance breakouts
     """
     
     def __init__(self, config: Dict = None):
         """
-        Initialise la stratÃƒÂ©gie Pattern
+        Initialise la strategie Pattern
         
         Args:
-            config: Configuration de la stratÃƒÂ©gie
+            config: Configuration de la strategie
         """
         default_config = {
             'name': 'Pattern_Strategy',
             'allocation': 0.10,  # 10% du capital
             'min_confidence': 0.65,
-            'lookback_period': 100,  # PÃƒÂ©riode pour dÃƒÂ©tecter patterns
-            'tolerance': 0.02,  # TolÃƒÂ©rance pour pattern matching (2%)
+            'lookback_period': 100,  # Periode pour detecter patterns
+            'tolerance': 0.02,  # Tolerance pour pattern matching (2%)
             'min_pattern_bars': 20  # Minimum de barres pour un pattern
         }
         
@@ -47,7 +47,7 @@ class PatternStrategy(BaseStrategy):
         
         super().__init__(default_config)
         
-        # Patterns supportÃƒÂ©s
+        # Patterns supportes
         self.supported_patterns = [
             'double_bottom',
             'double_top',
@@ -63,7 +63,7 @@ class PatternStrategy(BaseStrategy):
     
     def analyze(self, data: Dict) -> Optional[Dict]:
         """
-        Analyse et dÃƒÂ©tecte les patterns chartistes
+        Analyse et detecte les patterns chartistes
         
         Args:
             data: Dict avec df, orderbook, trades, symbol
@@ -93,7 +93,7 @@ class PatternStrategy(BaseStrategy):
             # Prendre le pattern avec la plus haute confiance
             best_pattern = max(detected_patterns, key=lambda x: x['confidence'])
             
-            # GÃƒÂ©nÃƒÂ©rer le signal
+            # Generer le signal
             signal = self._generate_signal_from_pattern(best_pattern, df, symbol)
             
             if signal and self.validate_signal(signal):
@@ -143,7 +143,7 @@ class PatternStrategy(BaseStrategy):
             df: DataFrame avec prix
             
         Returns:
-            Liste des patterns dÃƒÂ©tectÃƒÂ©s
+            Liste des patterns detectes
         """
         detected = []
         
@@ -186,7 +186,7 @@ class PatternStrategy(BaseStrategy):
         
         Args:
             df: DataFrame avec prix
-            window: FenÃƒÂªtre pour dÃƒÂ©tection
+            window: Fenetre pour detection
             
         Returns:
             Dict avec indices des pivots
@@ -207,11 +207,11 @@ class PatternStrategy(BaseStrategy):
     
     def _detect_double_bottom(self, df: pd.DataFrame, pivots: Dict) -> Optional[Dict]:
         """
-        DÃƒÂ©tecte un pattern Double Bottom
+        Detecte un pattern Double Bottom
         
         Args:
             df: DataFrame
-            pivots: Pivots dÃƒÂ©tectÃƒÂ©s
+            pivots: Pivots detectes
             
         Returns:
             Pattern ou None
@@ -225,7 +225,7 @@ class PatternStrategy(BaseStrategy):
         low1_idx = lows[-2]
         low2_idx = lows[-1]
         
-        # VÃƒÂ©rifier qu'ils sont proches en prix (Ã‚Â±2%)
+        # Verifier qu'ils sont proches en prix (2%)
         low1_price = df['low'].iloc[low1_idx]
         low2_price = df['low'].iloc[low2_idx]
         
@@ -234,18 +234,18 @@ class PatternStrategy(BaseStrategy):
         if price_diff > self.config['tolerance']:
             return None
         
-        # VÃƒÂ©rifier qu'il y a un high entre les deux
+        # Verifier qu'il y a un high entre les deux
         between_highs = [h for h in pivots['highs'] if low1_idx < h < low2_idx]
         
         if not between_highs:
             return None
         
-        # VÃƒÂ©rifier que le prix actuel est au-dessus du neckline
+        # Verifier que le prix actuel est au-dessus du neckline
         neckline = df['high'].iloc[between_highs].max()
         current_price = df['close'].iloc[-1]
         
         if current_price > neckline:
-            # Breakout confirmÃƒÂ©
+            # Breakout confirme
             return {
                 'pattern': 'double_bottom',
                 'confidence': 0.70,
@@ -260,11 +260,11 @@ class PatternStrategy(BaseStrategy):
     
     def _detect_double_top(self, df: pd.DataFrame, pivots: Dict) -> Optional[Dict]:
         """
-        DÃƒÂ©tecte un pattern Double Top
+        Detecte un pattern Double Top
         
         Args:
             df: DataFrame
-            pivots: Pivots dÃƒÂ©tectÃƒÂ©s
+            pivots: Pivots detectes
             
         Returns:
             Pattern ou None
@@ -278,7 +278,7 @@ class PatternStrategy(BaseStrategy):
         high1_idx = highs[-2]
         high2_idx = highs[-1]
         
-        # VÃƒÂ©rifier qu'ils sont proches en prix (Ã‚Â±2%)
+        # Verifier qu'ils sont proches en prix (2%)
         high1_price = df['high'].iloc[high1_idx]
         high2_price = df['high'].iloc[high2_idx]
         
@@ -287,18 +287,18 @@ class PatternStrategy(BaseStrategy):
         if price_diff > self.config['tolerance']:
             return None
         
-        # VÃƒÂ©rifier qu'il y a un low entre les deux
+        # Verifier qu'il y a un low entre les deux
         between_lows = [l for l in pivots['lows'] if high1_idx < l < high2_idx]
         
         if not between_lows:
             return None
         
-        # VÃƒÂ©rifier que le prix actuel est en dessous du neckline
+        # Verifier que le prix actuel est en dessous du neckline
         neckline = df['low'].iloc[between_lows].min()
         current_price = df['close'].iloc[-1]
         
         if current_price < neckline:
-            # Breakdown confirmÃƒÂ©
+            # Breakdown confirme
             return {
                 'pattern': 'double_top',
                 'confidence': 0.70,
@@ -313,11 +313,11 @@ class PatternStrategy(BaseStrategy):
     
     def _detect_head_shoulders(self, df: pd.DataFrame, pivots: Dict) -> Optional[Dict]:
         """
-        DÃƒÂ©tecte un pattern Head & Shoulders
+        Detecte un pattern Head & Shoulders
         
         Args:
             df: DataFrame
-            pivots: Pivots dÃƒÂ©tectÃƒÂ©s
+            pivots: Pivots detectes
             
         Returns:
             Pattern ou None
@@ -336,11 +336,11 @@ class PatternStrategy(BaseStrategy):
         head = df['high'].iloc[head_idx]
         right_shoulder = df['high'].iloc[right_shoulder_idx]
         
-        # VÃƒÂ©rifier structure: head > shoulders
+        # Verifier structure: head > shoulders
         if not (head > left_shoulder and head > right_shoulder):
             return None
         
-        # VÃƒÂ©rifier que les ÃƒÂ©paules sont similaires (Ã‚Â±2%)
+        # Verifier que les epaules sont similaires (2%)
         shoulder_diff = abs(left_shoulder - right_shoulder) / left_shoulder
         if shoulder_diff > self.config['tolerance']:
             return None
@@ -371,11 +371,11 @@ class PatternStrategy(BaseStrategy):
     
     def _detect_inverse_head_shoulders(self, df: pd.DataFrame, pivots: Dict) -> Optional[Dict]:
         """
-        DÃƒÂ©tecte un Inverse Head & Shoulders
+        Detecte un Inverse Head & Shoulders
         
         Args:
             df: DataFrame
-            pivots: Pivots dÃƒÂ©tectÃƒÂ©s
+            pivots: Pivots detectes
             
         Returns:
             Pattern ou None
@@ -394,11 +394,11 @@ class PatternStrategy(BaseStrategy):
         head = df['low'].iloc[head_idx]
         right_shoulder = df['low'].iloc[right_shoulder_idx]
         
-        # VÃƒÂ©rifier structure: head < shoulders
+        # Verifier structure: head < shoulders
         if not (head < left_shoulder and head < right_shoulder):
             return None
         
-        # VÃƒÂ©rifier que les ÃƒÂ©paules sont similaires
+        # Verifier que les epaules sont similaires
         shoulder_diff = abs(left_shoulder - right_shoulder) / left_shoulder
         if shoulder_diff > self.config['tolerance']:
             return None
@@ -428,11 +428,11 @@ class PatternStrategy(BaseStrategy):
     
     def _detect_triangle(self, df: pd.DataFrame, pivots: Dict) -> Optional[Dict]:
         """
-        DÃƒÂ©tecte un triangle (ascendant/descendant/symÃƒÂ©trique)
+        Detecte un triangle (ascendant/descendant/symetrique)
         
         Args:
             df: DataFrame
-            pivots: Pivots dÃƒÂ©tectÃƒÂ©s
+            pivots: Pivots detectes
             
         Returns:
             Pattern ou None
@@ -449,7 +449,7 @@ class PatternStrategy(BaseStrategy):
         
         current_price = df['close'].iloc[-1]
         
-        # Triangle ascendant: rÃƒÂ©sistance horizontale, support montant
+        # Triangle ascendant: resistance horizontale, support montant
         if abs(highs_line['slope']) < 0.001 and lows_line['slope'] > 0:
             resistance = highs_line['level']
             if current_price > resistance:
@@ -462,7 +462,7 @@ class PatternStrategy(BaseStrategy):
                     'stop': lows_line['level']
                 }
         
-        # Triangle descendant: support horizontal, rÃƒÂ©sistance descendante
+        # Triangle descendant: support horizontal, resistance descendante
         elif abs(lows_line['slope']) < 0.001 and highs_line['slope'] < 0:
             support = lows_line['level']
             if current_price < support:
@@ -475,7 +475,7 @@ class PatternStrategy(BaseStrategy):
                     'stop': highs_line['level']
                 }
         
-        # Triangle symÃƒÂ©trique: convergence
+        # Triangle symetrique: convergence
         elif lows_line['slope'] > 0 and highs_line['slope'] < 0:
             # Attendre le breakout
             resistance = highs_line['level']
@@ -504,11 +504,11 @@ class PatternStrategy(BaseStrategy):
     
     def _detect_flag(self, df: pd.DataFrame, pivots: Dict) -> Optional[Dict]:
         """
-        DÃƒÂ©tecte un flag (continuation pattern)
+        Detecte un flag (continuation pattern)
         
         Args:
             df: DataFrame
-            pivots: Pivots dÃƒÂ©tectÃƒÂ©s
+            pivots: Pivots detectes
             
         Returns:
             Pattern ou None
@@ -520,12 +520,12 @@ class PatternStrategy(BaseStrategy):
         
         recent = df.iloc[-lookback:]
         
-        # DÃƒÂ©tecter le pole (mouvement fort)
+        # Detecter le pole (mouvement fort)
         price_change = (recent['close'].iloc[-1] - recent['close'].iloc[0]) / recent['close'].iloc[0]
         
         # Flag haussier: forte hausse puis consolidation
         if price_change > 0.03:  # 3% hausse
-            # VÃƒÂ©rifier consolidation (canal descendant lÃƒÂ©ger)
+            # Verifier consolidation (canal descendant leger)
             consolidation_prices = recent['close'].iloc[-10:]
             if consolidation_prices.iloc[-1] > consolidation_prices.iloc[0]:
                 # Breakout de la consolidation
@@ -580,7 +580,7 @@ class PatternStrategy(BaseStrategy):
         x = np.array(recent_pivots)
         y = np.array([df[price_type].iloc[i] for i in recent_pivots])
         
-        # RÃƒÂ©gression linÃƒÂ©aire simple
+        # Regression lineaire simple
         if len(x) >= 2:
             slope = (y[-1] - y[0]) / (x[-1] - x[0]) if x[-1] != x[0] else 0
             level = y[-1]
@@ -595,10 +595,10 @@ class PatternStrategy(BaseStrategy):
     
     def _generate_signal_from_pattern(self, pattern: Dict, df: pd.DataFrame, symbol: str) -> Optional[Dict]:
         """
-        GÃƒÂ©nÃƒÂ¨re un signal de trading ÃƒÂ  partir d'un pattern
+        Genere un signal de trading  partir d'un pattern
         
         Args:
-            pattern: Pattern dÃƒÂ©tectÃƒÂ©
+            pattern: Pattern detecte
             df: DataFrame
             symbol: Symbole
             
@@ -609,7 +609,7 @@ class PatternStrategy(BaseStrategy):
             current_price = df['close'].iloc[-1]
             atr = df['atr'].iloc[-1] if 'atr' in df.columns else current_price * 0.01
             
-            # Ajuster les stops/targets avec ATR si nÃƒÂ©cessaire
+            # Ajuster les stops/targets avec ATR si necessaire
             if 'stop' not in pattern or pattern['stop'] == 0:
                 if pattern['direction'] == 'BUY':
                     pattern['stop'] = current_price - (atr * 2)
@@ -630,7 +630,7 @@ class PatternStrategy(BaseStrategy):
                 'stop_loss': pattern['stop'],
                 'take_profit': pattern['target'],
                 'reasons': [
-                    f"Pattern dÃƒÂ©tectÃƒÂ©: {pattern['pattern']}",
+                    f"Pattern detecte: {pattern['pattern']}",
                     f"Confiance: {pattern['confidence']:.2%}",
                     f"Direction: {pattern['direction']}"
                 ],
@@ -644,7 +644,7 @@ class PatternStrategy(BaseStrategy):
             return signal
             
         except Exception as e:
-            logger.error(f"Erreur gÃƒÂ©nÃƒÂ©ration signal from pattern: {e}")
+            logger.error(f"Erreur generation signal from pattern: {e}")
             return None
 
 
@@ -653,7 +653,7 @@ class PatternStrategy(BaseStrategy):
 # =============================================================
 
 if __name__ == "__main__":
-    """Test de la stratÃƒÂ©gie Pattern"""
+    """Test de la strategie Pattern"""
     
     config = {
         'min_confidence': 0.65
@@ -661,13 +661,13 @@ if __name__ == "__main__":
     
     strategy = PatternStrategy(config)
     
-    # DonnÃƒÂ©es de test avec un double bottom
+    # Donnees de test avec un double bottom
     dates = pd.date_range(start='2024-01-01', periods=200, freq='5min')
     
-    # CrÃƒÂ©er un double bottom artificiel
+    # Creer un double bottom artificiel
     prices = np.ones(200) * 100
     prices[50] = 95  # Premier low
-    prices[100] = 95  # DeuxiÃƒÂ¨me low
+    prices[100] = 95  # Deuxieme low
     prices[75] = 105  # High entre les deux
     prices[150:] = np.linspace(96, 106, 50)  # Breakout
     
@@ -686,14 +686,14 @@ if __name__ == "__main__":
     
     print("Test Pattern Strategy")
     print("=" * 50)
-    print(f"StratÃƒÂ©gie: {strategy.name}")
+    print(f"Strategie: {strategy.name}")
     print(f"Active: {strategy.is_active}")
-    print(f"Patterns supportÃƒÂ©s: {len(strategy.supported_patterns)}")
+    print(f"Patterns supportes: {len(strategy.supported_patterns)}")
     
     signal = strategy.analyze(data)
     
     if signal:
-        print(f"\nÃ¢Å“â€¦ Signal dÃƒÂ©tectÃƒÂ©!")
+        print(f"\n""| Signal detecte!")
         print(f"Type: {signal['side']}")
         print(f"Prix: {signal['price']:.2f}")
         print(f"Confiance: {signal['confidence']:.2%}")
@@ -702,4 +702,4 @@ if __name__ == "__main__":
         if 'pattern_type' in signal.get('metadata', {}):
             print(f"Pattern: {signal['metadata']['pattern_type']}")
     else:
-        print("\nÃ¢ÂÅ’ Aucun pattern dÃƒÂ©tectÃƒÂ©")
+        print("\n' Aucun pattern detecte")
