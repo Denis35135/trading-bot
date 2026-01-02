@@ -1,6 +1,6 @@
 """
-StratÃƒÂ©gie Mean Reversion pour The Bot
-Trade les retours ÃƒÂ  la moyenne aprÃƒÂ¨s des mouvements extrÃƒÂªmes
+Strategie Mean Reversion pour The Bot
+Trade les retours  la moyenne apres des mouvements extremes
 """
 
 import numpy as np
@@ -18,30 +18,30 @@ logger = logging.getLogger(__name__)
 
 class MeanReversionStrategy(BaseStrategy):
     """
-    StratÃƒÂ©gie Mean Reversion
+    Strategie Mean Reversion
     
-    CaractÃƒÂ©ristiques:
-    - Identifie les dÃƒÂ©viations extrÃƒÂªmes
+    Caracteristiques:
+    - Identifie les deviations extremes
     - Trade le retour vers la moyenne
     - Utilise Bollinger, RSI, et z-score
-    - Profits visÃƒÂ©s: 0.5-1.5%
-    - Holding: 30min ÃƒÂ  quelques heures
+    - Profits vises: 0.5-1.5%
+    - Holding: 30min  quelques heures
     """
     
     def __init__(self, config: Dict = None):
         """
-        Initialise la stratÃƒÂ©gie Mean Reversion
+        Initialise la strategie Mean Reversion
         
         Args:
-            config: Configuration personnalisÃƒÂ©e
+            config: Configuration personnalisee
         """
-        # Configuration par dÃƒÂ©faut
+        # Configuration par defaut
         default_config = {
             'min_confidence': 0.68,
             'lookback_periods': 60,
             'bb_periods': 20,
-            'bb_std_entry': 2.0,  # EntrÃƒÂ©e ÃƒÂ  2 std
-            'bb_std_exit': 0.5,   # Sortie ÃƒÂ  0.5 std (proche moyenne)
+            'bb_std_entry': 2.0,  # Entree  2 std
+            'bb_std_exit': 0.5,   # Sortie  0.5 std (proche moyenne)
             'rsi_oversold': 25,
             'rsi_overbought': 75,
             'z_score_threshold': 2.0,
@@ -52,8 +52,8 @@ class MeanReversionStrategy(BaseStrategy):
             'use_volume_filter': True,
             'volume_threshold': 1.5,  # Volume 1.5x moyenne
             'use_divergence': True,
-            'mean_types': ['sma', 'ema', 'vwap'],  # Types de moyennes ÃƒÂ  utiliser
-            'correlation_check': True  # VÃƒÂ©rifier corrÃƒÂ©lation avec BTC
+            'mean_types': ['sma', 'ema', 'vwap'],  # Types de moyennes  utiliser
+            'correlation_check': True  # Verifier correlation avec BTC
         }
         
         # Merger avec config fournie
@@ -65,19 +65,19 @@ class MeanReversionStrategy(BaseStrategy):
         # Indicateurs
         self.indicators = TechnicalIndicators()
         
-        # Ãƒâ€°tat spÃƒÂ©cifique
+        # "tat specifique
         self.mean_levels = {}
         self.deviation_history = {}
         self.correlation_cache = {}
         
-        logger.info("StratÃƒÂ©gie Mean Reversion initialisÃƒÂ©e")
+        logger.info("Strategie Mean Reversion initialisee")
     
     def analyze(self, data: Dict) -> Optional[Dict]:
         """
-        Analyse les donnÃƒÂ©es pour dÃƒÂ©tecter des opportunitÃƒÂ©s de mean reversion
+        Analyse les donnees pour detecter des opportunites de mean reversion
         
         Args:
-            data: DonnÃƒÂ©es de marchÃƒÂ©
+            data: Donnees de marche
             
         Returns:
             Signal de trading ou None
@@ -93,11 +93,11 @@ class MeanReversionStrategy(BaseStrategy):
             # Calculer les indicateurs
             df = self.calculate_indicators(df)
             
-            # DonnÃƒÂ©es actuelles et prÃƒÂ©cÃƒÂ©dentes
+            # Donnees actuelles et precedentes
             current = df.iloc[-1]
             prev = df.iloc[-2]
             
-            # VÃƒÂ©rifier position existante
+            # Verifier position existante
             if self.has_position(symbol):
                 return self._check_exit_conditions(symbol, df, current)
             else:
@@ -167,11 +167,11 @@ class MeanReversionStrategy(BaseStrategy):
         df['stoch_k'] = k
         df['stoch_d'] = d
         
-        # Z-Score (ÃƒÂ©cart ÃƒÂ  la moyenne en ÃƒÂ©carts-types)
+        # Z-Score (ecart  la moyenne en ecarts-types)
         df['z_score_20'] = self._calculate_z_score(close, 20)
         df['z_score_50'] = self._calculate_z_score(close, 50)
         
-        # DÃƒÂ©viation de la moyenne
+        # Deviation de la moyenne
         df['deviation_sma20'] = (close - df['sma_20']) / df['sma_20']
         df['deviation_ema20'] = (close - df['ema_20']) / df['ema_20']
         df['deviation_vwap'] = (close - df['vwap']) / df['vwap']
@@ -183,7 +183,7 @@ class MeanReversionStrategy(BaseStrategy):
         df['volume_ma'] = self.indicators.sma(volume, 20)
         df['volume_ratio'] = volume / df['volume_ma']
         
-        # ATR pour volatilitÃƒÂ©
+        # ATR pour volatilite
         df['atr'] = self.indicators.atr(high, low, close, 14)
         df['atr_percent'] = df['atr'] / close
         
@@ -197,7 +197,7 @@ class MeanReversionStrategy(BaseStrategy):
     def _check_entry_conditions(self, df: pd.DataFrame, current: pd.Series,
                                prev: pd.Series, orderbook: Dict) -> Optional[Dict]:
         """
-        VÃƒÂ©rifie les conditions d'entrÃƒÂ©e mean reversion
+        Verifie les conditions d'entree mean reversion
         """
         signals = {
             'long': [],
@@ -205,12 +205,12 @@ class MeanReversionStrategy(BaseStrategy):
         }
         
         # ===========================================
-        # CONDITIONS LONG (Oversold Ã¢â€ â€™ Retour haussier)
+        # CONDITIONS LONG (Oversold "' Retour haussier)
         # ===========================================
         
         # 1. Prix sous Bollinger lower
         if current['close'] <= current['bb_lower']:
-            if current['close'] > prev['close']:  # DÃƒÂ©but de rebond
+            if current['close'] > prev['close']:  # Debut de rebond
                 signals['long'].append(('bb_oversold_bounce', 0.85))
         
         # 2. RSI oversold avec divergence
@@ -221,11 +221,11 @@ class MeanReversionStrategy(BaseStrategy):
             if self.config['use_divergence'] and current.get('rsi_divergence') == 'bullish':
                 signals['long'].append(('rsi_bullish_divergence', 0.90))
         
-        # 3. Z-score extrÃƒÂªme nÃƒÂ©gatif
+        # 3. Z-score extreme negatif
         if current['z_score_20'] < -self.config['z_score_threshold']:
             signals['long'].append(('extreme_z_score_low', 0.75))
         
-        # 4. DÃƒÂ©viation extrÃƒÂªme de la moyenne
+        # 4. Deviation extreme de la moyenne
         max_deviation = max(
             abs(current['deviation_sma20']),
             abs(current['deviation_ema20']),
@@ -233,7 +233,7 @@ class MeanReversionStrategy(BaseStrategy):
         )
         
         if current['deviation_sma20'] < -self.config['min_deviation']:
-            if current['close'] > prev['close']:  # DÃƒÂ©but de retour
+            if current['close'] > prev['close']:  # Debut de retour
                 signals['long'].append(('mean_deviation_reversal', 0.70))
         
         # 5. Stochastic oversold
@@ -252,12 +252,12 @@ class MeanReversionStrategy(BaseStrategy):
             signals['long'].append(('support_bounce', 0.70))
         
         # ===========================================
-        # CONDITIONS SHORT (Overbought Ã¢â€ â€™ Retour baissier)
+        # CONDITIONS SHORT (Overbought "' Retour baissier)
         # ===========================================
         
         # 1. Prix au-dessus Bollinger upper
         if current['close'] >= current['bb_upper']:
-            if current['close'] < prev['close']:  # DÃƒÂ©but de retournement
+            if current['close'] < prev['close']:  # Debut de retournement
                 signals['short'].append(('bb_overbought_reversal', 0.85))
         
         # 2. RSI overbought avec divergence
@@ -268,13 +268,13 @@ class MeanReversionStrategy(BaseStrategy):
             if self.config['use_divergence'] and current.get('rsi_divergence') == 'bearish':
                 signals['short'].append(('rsi_bearish_divergence', 0.90))
         
-        # 3. Z-score extrÃƒÂªme positif
+        # 3. Z-score extreme positif
         if current['z_score_20'] > self.config['z_score_threshold']:
             signals['short'].append(('extreme_z_score_high', 0.75))
         
-        # 4. DÃƒÂ©viation extrÃƒÂªme positive
+        # 4. Deviation extreme positive
         if current['deviation_sma20'] > self.config['min_deviation']:
-            if current['close'] < prev['close']:  # DÃƒÂ©but de retour
+            if current['close'] < prev['close']:  # Debut de retour
                 signals['short'].append(('mean_deviation_reversal_down', 0.70))
         
         # 5. Stochastic overbought
@@ -297,20 +297,20 @@ class MeanReversionStrategy(BaseStrategy):
         # FILTRES ADDITIONNELS
         # ===========================================
         
-        # Filtre de volatilitÃƒÂ© (ÃƒÂ©viter les marchÃƒÂ©s trop volatils)
+        # Filtre de volatilite (eviter les marches trop volatils)
         if current['atr_percent'] > 0.05:  # ATR > 5%
-            # RÃƒÂ©duire la confiance si trop volatil
+            # Reduire la confiance si trop volatil
             for direction in ['long', 'short']:
                 signals[direction] = [(reason, score * 0.8) for reason, score in signals[direction]]
         
         # Filtre de volume
         if self.config['use_volume_filter'] and current['volume_ratio'] < 0.5:
-            # Pas assez de volume, rÃƒÂ©duire confiance
+            # Pas assez de volume, reduire confiance
             for direction in ['long', 'short']:
                 signals[direction] = [(reason, score * 0.7) for reason, score in signals[direction]]
         
         # ===========================================
-        # GÃƒâ€°NÃƒâ€°RATION DU SIGNAL
+        # G"N"RATION DU SIGNAL
         # ===========================================
         
         long_score = sum(score for _, score in signals['long']) / max(len(signals['long']), 1)
@@ -325,7 +325,7 @@ class MeanReversionStrategy(BaseStrategy):
             # Targets conservateurs pour mean reversion
             take_profit = min(
                 entry_price * (1 + self.config['profit_target']),
-                current['bb_middle']  # Viser le retour ÃƒÂ  la moyenne
+                current['bb_middle']  # Viser le retour  la moyenne
             )
             stop_loss = entry_price * (1 - self.config['stop_loss'])
             
@@ -351,7 +351,7 @@ class MeanReversionStrategy(BaseStrategy):
             
             take_profit = max(
                 entry_price * (1 - self.config['profit_target']),
-                current['bb_middle']  # Viser le retour ÃƒÂ  la moyenne
+                current['bb_middle']  # Viser le retour  la moyenne
             )
             stop_loss = entry_price * (1 + self.config['stop_loss'])
             
@@ -375,7 +375,7 @@ class MeanReversionStrategy(BaseStrategy):
     
     def _check_exit_conditions(self, symbol: str, df: pd.DataFrame, current: pd.Series) -> Optional[Dict]:
         """
-        VÃƒÂ©rifie les conditions de sortie mean reversion
+        Verifie les conditions de sortie mean reversion
         """
         position_key = f"{symbol}_{self.name}"
         if position_key not in self.positions:
@@ -399,9 +399,9 @@ class MeanReversionStrategy(BaseStrategy):
         if profit_pct <= -self.config['stop_loss']:
             exit_reasons.append(('stop_loss', 1.0))
         
-        # 3. Retour ÃƒÂ  la moyenne accompli
+        # 3. Retour  la moyenne accompli
         if side == 'BUY':
-            # Long: sortir quand on approche/dÃƒÂ©passe la moyenne
+            # Long: sortir quand on approche/depasse la moyenne
             if current['bb_position'] >= 0.45:  # Proche du milieu
                 exit_reasons.append(('mean_reached', 0.9))
             
@@ -424,7 +424,7 @@ class MeanReversionStrategy(BaseStrategy):
             if current['rsi'] < 50:
                 exit_reasons.append(('rsi_neutral', 0.7))
         
-        # 4. Z-score normalisÃƒÂ©
+        # 4. Z-score normalise
         if abs(current['z_score_20']) < 0.5:
             exit_reasons.append(('z_score_normalized', 0.8))
         
@@ -446,7 +446,7 @@ class MeanReversionStrategy(BaseStrategy):
             if adverse_move > self.config['stop_loss'] * 0.8:
                 exit_reasons.append(('adverse_momentum', 0.85))
         
-        # DÃƒÂ©cision de sortie
+        # Decision de sortie
         if exit_reasons:
             main_reason = max(exit_reasons, key=lambda x: x[1])
             exit_side = 'SELL' if side == 'BUY' else 'BUY'
@@ -471,7 +471,7 @@ class MeanReversionStrategy(BaseStrategy):
     
     def _calculate_z_score(self, prices: np.ndarray, period: int) -> np.ndarray:
         """
-        Calcule le z-score (nombre d'ÃƒÂ©carts-types de la moyenne)
+        Calcule le z-score (nombre d'ecarts-types de la moyenne)
         """
         z_scores = np.zeros_like(prices)
         z_scores[:period] = np.nan
@@ -526,7 +526,7 @@ class MeanReversionStrategy(BaseStrategy):
     def _detect_divergence(self, prices: np.ndarray, indicator: np.ndarray, 
                           window: int = 14) -> np.ndarray:
         """
-        DÃƒÂ©tecte les divergences prix/indicateur
+        Detecte les divergences prix/indicateur
         
         Returns:
             Array avec 'bullish', 'bearish', ou 'none'
@@ -549,9 +549,9 @@ class MeanReversionStrategy(BaseStrategy):
             price_min_idx = np.argmin(price_window)
             
             if price_min_idx > 2 and price_min_idx < window - 2:
-                # VÃƒÂ©rifier si c'est un vrai minimum local
+                # Verifier si c'est un vrai minimum local
                 if price_window[price_min_idx] == min(price_window[price_min_idx-2:price_min_idx+3]):
-                    # Chercher un minimum prÃƒÂ©cÃƒÂ©dent
+                    # Chercher un minimum precedent
                     prev_window = prices[i-window*2:i-window]
                     prev_min_idx = np.argmin(prev_window)
                     
