@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-🚀 AUTOBOT ULTIMATE - Main Entry Point
-Bot de trading automatisé haute performance
+ AUTOBOT ULTIMATE - Main Entry Point
+Bot de trading automatise haute performance
 Mode: PAPER TRADING
 """
 
@@ -26,7 +26,8 @@ from threads.risk_thread import RiskThread
 
 # Import des managers
 from monitoring.performance_tracker import PerformanceTracker
-from utils.database import Database
+from utils.database import DatabaseManager
+# Sinon utilisez : from utils.database import DatabaseManager
 from risk.risk_monitor import RiskMonitor
 from exchange.binance_client import BinanceClient
 
@@ -43,10 +44,10 @@ class TradingBot:
     def __init__(self):
         """Initialisation du bot"""
         logger.info("="*80)
-        logger.info("🚀 INITIALISATION DU BOT ULTIME")
+        logger.info(" INITIALISATION DU BOT ULTIME")
         logger.info("="*80)
         
-        self.running = False
+        self.is_running = False
         self.mode = config.MODE  # 'paper' ou 'live'
         
         # Queues pour communication inter-threads
@@ -54,27 +55,27 @@ class TradingBot:
         self.signal_queue = Queue(maxsize=100)
         self.order_queue = Queue(maxsize=50)
         
-        # État du bot
+        # Etat du bot
         self.capital = config.INITIAL_CAPITAL
         self.positions = {}
         self.daily_pnl = 0.0
         self.trades_today = 0
         
         # Composants principaux
-        self.db = Database(config)
+        self.db = DatabaseManager(config)
         self.binance = BinanceClient(
             api_key=config.BINANCE_API_KEY,
-            api_secret=config.BINANCE_API_SECRET,
+            secret_key=config.BINANCE_API_SECRET,
             testnet=config.BINANCE_TESTNET
         )
-        self.performance_tracker = PerformanceTracker(self.db)
-        self.risk_monitor = RiskMonitor(self.capital)
+        self.performance_tracker = PerformanceTracker(config)
+        self.risk_monitor = RiskMonitor(config)
         
         # Threads
         self.threads = {}
         self.thread_objects = {}
         
-        # Signal handler pour arrêt propre
+        # Signal handler pour arret propre
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
         
@@ -83,8 +84,8 @@ class TradingBot:
         logger.info(f"Testnet: {config.BINANCE_TESTNET}")
         
     def signal_handler(self, sig, frame):
-        """Gestion des signaux pour arrêt propre"""
-        logger.warning(f"\n⚠️  Signal {sig} reçu - Arrêt propre du bot...")
+        """Gestion des signaux pour arret propre"""
+        logger.warning(f"\n Signal {sig} recu - Arret propre du bot...")
         self.stop()
         
     def initialize_threads(self):
@@ -93,105 +94,109 @@ class TradingBot:
         
         try:
             # Thread 1: Market Data Handler
+            # MarketDataThread(exchange_client, symbols, update_interval=5)
             self.thread_objects['market_data'] = MarketDataThread(
                 self.binance,
-                self.data_queue,
                 config.SYMBOLS_TO_TRADE
             )
             
             # Thread 2: Strategy Engine
+            # StrategyThread(data_queue, signal_queue)
             self.thread_objects['strategy'] = StrategyThread(
                 self.data_queue,
-                self.signal_queue,
-                config.STRATEGIES
+                self.signal_queue
             )
             
-            # Thread 3: Execution Engine
+            # Thread 3: Execution Engine  
+            # ExecutionThread(exchange_client, signal_queue, risk_manager)
             self.thread_objects['execution'] = ExecutionThread(
                 self.binance,
                 self.signal_queue,
-                self.order_queue,
-                self.risk_monitor,
-                self.capital
+                self.risk_monitor
             )
             
             # Thread 4: Risk Monitor
+            # RiskThread(risk_monitor, config)
             self.thread_objects['risk'] = RiskThread(
                 self.risk_monitor,
-                self.positions,
-                self.capital
+                config
             )
             
-            logger.info("✅ 4 threads initialisés")
+            logger.info("[OK] 4 threads initialises")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Erreur initialisation threads: {e}")
+            logger.error(f"[ERREUR] Erreur initialisation threads: {e}")
+            import traceback
+            traceback.print_exc()
             return False
             
     def start_threads(self):
-        """Démarre tous les threads"""
-        logger.info("Démarrage des threads...")
+        """Demarre tous les threads"""
+        logger.info("Demarrage des threads...")
         
         for name, thread_obj in self.thread_objects.items():
             try:
-                thread = threading.Thread(target=thread_obj.run, name=name)
-                thread.daemon = True
-                thread.start()
-                self.threads[name] = thread
-                logger.info(f"✅ Thread '{name}' démarré")
-                time.sleep(0.5)  # Petit délai entre chaque thread
+                # Demarre le thread interne de chaque objet
+                thread_obj.start()
+                logger.info(f"[OK] Thread '{name}' demarre")
+                time.sleep(0.5)  # Petit delai entre chaque thread
                 
             except Exception as e:
-                logger.error(f"❌ Erreur démarrage thread '{name}': {e}")
+                logger.error(f"[ERREUR] Erreur demarrage thread '{name}': {e}")
                 return False
                 
         return True
         
     def monitor_threads(self):
-        """Surveille l'état des threads"""
-        for name, thread in self.threads.items():
-            if not thread.is_alive():
-                logger.error(f"❌ Thread '{name}' est mort ! Redémarrage...")
-                try:
-                    # Redémarre le thread
-                    thread_obj = self.thread_objects[name]
-                    new_thread = threading.Thread(target=thread_obj.run, name=name)
-                    new_thread.daemon = True
-                    new_thread.start()
-                    self.threads[name] = new_thread
-                    logger.info(f"✅ Thread '{name}' redémarré")
-                except Exception as e:
-                    logger.error(f"❌ Impossible de redémarrer '{name}': {e}")
+        """Surveille l'etat des threads"""
+        for name, thread_obj in self.thread_objects.items():
+            try:
+                # Verifie si le thread est toujours en cours
+                if hasattr(thread_obj, 'is_running') and not thread_obj.is_running:
+                    logger.warning(f"[ALERT] Thread '{name}' arrete - tentative de redemarrage...")
+                    thread_obj.start()
+                    logger.info(f"[OK] Thread '{name}' redemarre")
+            except Exception as e:
+                logger.error(f"[ERREUR] Monitoring thread '{name}': {e}")
                     
     def print_status(self):
         """Affiche le statut du bot (style Documentation.docx)"""
         try:
-            # Calculs métriques
-            win_rate = self.performance_tracker.get_win_rate()
-            drawdown = self.risk_monitor.get_current_drawdown()
+            # Calculs metriques
+            win_rate = self.performance_tracker.stats.get('win_rate', 0.0)
+            drawdown = self.risk_monitor.current_drawdown
             daily_pnl_pct = (self.daily_pnl / self.capital) * 100 if self.capital > 0 else 0
             
+            # Verification etat threads
+            thread_status = {}
+            for name, thread_obj in self.thread_objects.items():
+                if hasattr(thread_obj, 'is_running'):
+                    thread_status[name] = thread_obj.is_running
+                else:
+                    thread_status[name] = False
+            
             status = f"""
-╔══════════════════════════════════════╗
-║ AUTOBOT STATUS - {datetime.now().strftime('%H:%M:%S')} ║
-╠══════════════════════════════════════╣
-║ Mode: {self.mode.upper():8s}                    ║
-║ Capital: ${self.capital:,.2f}              ║
-║ P&L Today: ${self.daily_pnl:+.2f} ({daily_pnl_pct:+.2f}%)      ║
-║ Drawdown: {drawdown:.2%}                   ║
-║ Win Rate: {win_rate:.1%}                  ║
-║ Positions: {len(self.positions)}/20               ║
-║ Trades/Day: {self.trades_today}                  ║
-╠══════════════════════════════════════╣
-║ Threads:                             ║
-║  • Market Data: {'🟢' if self.threads.get('market_data', None) and self.threads['market_data'].is_alive() else '🔴'}               ║
-║  • Strategy: {'🟢' if self.threads.get('strategy', None) and self.threads['strategy'].is_alive() else '🔴'}                  ║
-║  • Execution: {'🟢' if self.threads.get('execution', None) and self.threads['execution'].is_alive() else '🔴'}                 ║
-║  • Risk: {'🟢' if self.threads.get('risk', None) and self.threads['risk'].is_alive() else '🔴'}                      ║
-╠══════════════════════════════════════╣
-║ Status: {'🟢 RUNNING' if self.running else '🔴 STOPPED':28s}    ║
-╚══════════════════════════════════════╝
+
+============================================
+         AUTOBOT STATUS - {datetime.now().strftime('%H:%M:%S')}
+============================================
+Mode: {self.mode.upper():8s}                    
+Capital: ${self.capital:,.2f}              
+P&L Today: ${self.daily_pnl:+.2f} ({daily_pnl_pct:+.2f}%)      
+Drawdown: {drawdown:.2%}                   
+Win Rate: {win_rate:.1%}                  
+Positions: {len(self.positions)}/20               
+Trades/Day: {self.trades_today}                  
+
+Threads:                             
+  * Market Data: {'[OK]' if thread_status.get('market_data', False) else '[ERREUR]'}               
+  * Strategy: {'[OK]' if thread_status.get('strategy', False) else '[ERREUR]'}                  
+  * Execution: {'[OK]' if thread_status.get('execution', False) else '[ERREUR]'}                 
+  * Risk: {'[OK]' if thread_status.get('risk', False) else '[ERREUR]'}                      
+
+Status: {'[RUNNING]' if self.is_running else '[STOPPED]'}    
+============================================
 """
             print(status)
             
@@ -201,25 +206,25 @@ class TradingBot:
     def run(self):
         """Boucle principale du bot - 100% autonome H24"""
         logger.info("\n" + "="*80)
-        logger.info("🚀 DÉMARRAGE DU BOT")
+        logger.info(" DEMARRAGE DU BOT")
         logger.info("="*80 + "\n")
         
-        # Vérifications pré-démarrage
+        # Verifications pre-demarrage
         if not self.pre_flight_checks():
-            logger.error("❌ Pre-flight checks échoués")
+            logger.error("[ERREUR] Pre-flight checks echoues")
             return False
             
-        # Initialise et démarre les threads
+        # Initialise et demarre les threads
         if not self.initialize_threads():
-            logger.error("❌ Échec initialisation threads")
+            logger.error("[ERREUR] Echec initialisation threads")
             return False
             
         if not self.start_threads():
-            logger.error("❌ Échec démarrage threads")
+            logger.error("[ERREUR] Echec demarrage threads")
             return False
             
-        self.running = True
-        logger.info("✅ Bot démarré avec succès!\n")
+        self.is_running = True
+        logger.info("[OK] Bot demarre avec succes!\n")
         
         # Compteurs pour monitoring
         status_counter = 0
@@ -228,7 +233,7 @@ class TradingBot:
         
         # BOUCLE PRINCIPALE H24
         try:
-            while self.running:
+            while self.is_running:
                 time.sleep(1)  # 1 seconde entre chaque cycle
                 
                 # Affiche status toutes les 60 secondes
@@ -244,139 +249,148 @@ class TradingBot:
                     self.update_metrics()
                     health_counter = 0
                     
-                # Sauvegarde données toutes les 5 minutes
+                # Sauvegarde donnees toutes les 5 minutes
                 save_counter += 1
                 if save_counter >= config.SAVE_INTERVAL:
                     self.save_state()
                     save_counter = 0
                     
         except KeyboardInterrupt:
-            logger.info("\n⚠️  Interruption clavier détectée")
+            logger.info("\n[ALERT] Interruption clavier detectee")
         except Exception as e:
-            logger.error(f"❌ Erreur dans boucle principale: {e}")
+            logger.error(f"[ERREUR] Erreur dans boucle principale: {e}")
         finally:
             self.stop()
             
         return True
         
     def pre_flight_checks(self):
-        """Vérifications avant démarrage"""
-        logger.info("🔍 Pre-flight checks...")
+        """Verifications avant demarrage"""
+        logger.info("Pre-flight checks...")
         
         checks = []
         
         # Check 1: Connection Binance
         try:
-            server_time = self.binance.get_server_time()
-            checks.append(('Binance Connection', True))
-            logger.info(f"✅ Connexion Binance OK (server time: {server_time})")
+            if self.binance.test_connection():
+                checks.append(('Binance Connection', True))
+                logger.info("[OK] Connexion Binance OK")
+            else:
+                checks.append(('Binance Connection', False))
+                logger.error("[ERREUR] Connexion Binance echouee")
         except Exception as e:
             checks.append(('Binance Connection', False))
-            logger.error(f"❌ Connexion Binance échouée: {e}")
+            logger.error(f"[ERREUR] Connexion Binance echouee: {e}")
             
         # Check 2: Database
         try:
-            self.db.connect()
+            stats = self.db.get_database_stats()
             checks.append(('Database', True))
-            logger.info("✅ Database OK")
+            logger.info(f"[OK] Database OK ({stats['total_trades']} trades)")
         except Exception as e:
             checks.append(('Database', False))
-            logger.error(f"❌ Database échouée: {e}")
+            logger.error(f"[ERREUR] Database echouee: {e}")
             
         # Check 3: Capital suffisant
         if self.capital >= config.MIN_ORDER_SIZE:
             checks.append(('Capital', True))
-            logger.info(f"✅ Capital OK: {self.capital} USDC")
+            logger.info(f"[OK] Capital OK: {self.capital} USDC")
         else:
             checks.append(('Capital', False))
-            logger.error(f"❌ Capital insuffisant: {self.capital} < {config.MIN_ORDER_SIZE}")
+            logger.error(f"[ERREUR] Capital insuffisant: {self.capital} < {config.MIN_ORDER_SIZE}")
             
         # Check 4: Dossiers data
-        required_dirs = ['data/logs', 'data/models', 'data/cache', 'data/backtest']
+        required_dirs = ['logs', 'data', 'data/backups', 'cache']
         for dir_path in required_dirs:
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
         checks.append(('Data Directories', True))
-        logger.info("✅ Dossiers data OK")
+        logger.info("[OK] Dossiers data OK")
         
-        # Résultat
+        # Resultat
         all_passed = all(check[1] for check in checks)
         
         if all_passed:
-            logger.info("\n✅ Tous les pre-flight checks passés!\n")
+            logger.info("\n[OK] Tous les pre-flight checks passes!\n")
         else:
-            logger.error("\n❌ Certains pre-flight checks ont échoué:")
+            logger.error("\n[ERREUR] Certains pre-flight checks ont echoue:")
             for name, passed in checks:
-                logger.error(f"  {name}: {'✅' if passed else '❌'}")
+                if not passed:
+                    logger.error(f"  {name}: [ECHEC]")
             logger.error("")
             
         return all_passed
         
     def update_metrics(self):
-        """Met à jour les métriques du bot"""
+        """Met a jour les metriques du bot"""
         try:
-            # Met à jour le capital depuis les positions
+            # Met a jour le capital depuis les positions
             total_value = self.capital
             for symbol, position in self.positions.items():
                 total_value += position.get('unrealized_pnl', 0)
                 
             # Update performance tracker
-            self.performance_tracker.update(
-                capital=total_value,
-                positions=self.positions,
-                trades_today=self.trades_today
-            )
+            self.performance_tracker.update_capital(total_value)
             
         except Exception as e:
             logger.error(f"Erreur update metrics: {e}")
             
     def save_state(self):
-        """Sauvegarde l'état du bot"""
+        """Sauvegarde l'etat du bot"""
         try:
-            state = {
-                'timestamp': datetime.now().isoformat(),
-                'capital': self.capital,
-                'positions': self.positions,
+            # Sauvegarde performance snapshot
+            snapshot_data = {
+                'timestamp': datetime.now(),
+                'total_capital': self.capital,
+                'available_capital': self.capital - sum(p.get('size_usdc', 0) for p in self.positions.values()),
+                'total_exposure': sum(p.get('size_usdc', 0) for p in self.positions.values()),
                 'daily_pnl': self.daily_pnl,
-                'trades_today': self.trades_today
+                'daily_pnl_pct': (self.daily_pnl / self.capital) * 100 if self.capital > 0 else 0,
+                'total_pnl': self.performance_tracker.stats.get('total_pnl', 0),
+                'total_pnl_pct': (self.performance_tracker.stats.get('total_pnl', 0) / config.INITIAL_CAPITAL) * 100,
+                'total_trades': self.performance_tracker.stats.get('total_trades', 0),
+                'winning_trades': self.performance_tracker.stats.get('winning_trades', 0),
+                'losing_trades': self.performance_tracker.stats.get('losing_trades', 0),
+                'win_rate': self.performance_tracker.stats.get('win_rate', 0),
+                'open_positions': len(self.positions),
+                'current_drawdown': self.risk_monitor.current_drawdown,
+                'max_drawdown': self.risk_monitor.stats.get('max_drawdown', 0),
+                'sharpe_ratio': self.performance_tracker.stats.get('sharpe_ratio', 0),
+                'profit_factor': self.performance_tracker.stats.get('profit_factor', 0)
             }
             
-            # Sauvegarde dans DB
-            self.db.save_state(state)
-            logger.debug("💾 État sauvegardé")
+            self.db.save_performance_snapshot(snapshot_data)
+            logger.debug("[OK] Etat sauvegarde")
             
         except Exception as e:
-            logger.error(f"Erreur sauvegarde état: {e}")
+            logger.error(f"Erreur sauvegarde etat: {e}")
             
     def stop(self):
-        """Arrêt propre du bot"""
-        if not self.running:
+        """Arret propre du bot"""
+        if not self.is_running:
             return
             
         logger.info("\n" + "="*80)
-        logger.info("🛑 ARRÊT DU BOT")
+        logger.info(" ARRET DU BOT")
         logger.info("="*80)
         
-        self.running = False
+        self.is_running = False
         
-        # Arrête tous les threads
+        # Arrete tous les threads
         for name, thread_obj in self.thread_objects.items():
             try:
-                logger.info(f"Arrêt thread '{name}'...")
+                logger.info(f"Arret thread '{name}'...")
                 thread_obj.stop()
             except Exception as e:
-                logger.error(f"Erreur arrêt thread '{name}': {e}")
+                logger.error(f"Erreur arret thread '{name}': {e}")
                 
-        # Attend que les threads se terminent
-        for name, thread in self.threads.items():
-            if thread.is_alive():
-                logger.info(f"Attente thread '{name}'...")
-                thread.join(timeout=5)
+        # Attendre un peu pour que les threads se terminent
+        time.sleep(2)
                 
         # Ferme les positions en mode live
         if self.mode == 'live' and len(self.positions) > 0:
-            logger.warning("⚠️  Fermeture des positions ouvertes...")
-            # TODO: Implémenter fermeture positions
+            logger.warning("[ALERT] Fermeture des positions ouvertes...")
+            # TODO: Implementer fermeture positions
             
         # Sauvegarde finale
         self.save_state()
@@ -387,31 +401,31 @@ class TradingBot:
         except:
             pass
             
-        logger.info("\n✅ Bot arrêté proprement")
+        logger.info("\n[OK] Bot arrete proprement")
         logger.info("="*80 + "\n")
         
 
 def main():
-    """Point d'entrée principal"""
+    """Point d'entree principal"""
     print("""
-    ╔══════════════════════════════════════════════════╗
-    ║                                                  ║
-    ║         🚀 AUTOBOT ULTIMATE v1.0 🚀             ║
-    ║                                                  ║
-    ║     Bot de Trading Automatisé Haute Perf        ║
-    ║              Mode: PAPER TRADING                 ║
-    ║                                                  ║
-    ╚══════════════════════════════════════════════════╝
+    
+====================================================
+           AUTOBOT ULTIMATE v1.0              
+====================================================
+      Bot de Trading Automatise Haute Perf        
+             Mode: PAPER TRADING                 
+====================================================
+    
     """)
     
-    # Crée et lance le bot
+    # Cree et lance le bot
     bot = TradingBot()
     
     try:
         success = bot.run()
         return 0 if success else 1
     except Exception as e:
-        logger.error(f"❌ Erreur fatale: {e}")
+        logger.error(f"[ERREUR] Erreur fatale: {e}")
         import traceback
         traceback.print_exc()
         return 1
