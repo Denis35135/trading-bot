@@ -31,12 +31,12 @@ class TestMovingAverages:
         assert not np.isnan(ema[-1])
     
     def test_sma_vs_ema(self, sample_ohlcv_data):
-        """Test SMA vs EMA (EMA plus rÃƒÂ©active)"""
+        """Test SMA vs EMA (EMA plus reactive)"""
         close = sample_ohlcv_data['close'].values
         sma = TechnicalIndicators.sma(close, 20)
         ema = TechnicalIndicators.ema(close, 20)
         
-        # EMA doit ÃƒÂªtre diffÃƒÂ©rente de SMA
+        # EMA doit etre differente de SMA
         assert not np.array_equal(sma, ema)
 
 
@@ -51,7 +51,7 @@ class TestMomentumIndicators:
         assert rsi is not None
         assert len(rsi) == len(close)
         
-        # RSI doit ÃƒÂªtre entre 0 et 100
+        # RSI doit etre entre 0 et 100
         valid_rsi = rsi[~np.isnan(rsi)]
         assert (valid_rsi >= 0).all()
         assert (valid_rsi <= 100).all()
@@ -84,7 +84,7 @@ class TestMomentumIndicators:
         assert k is not None
         assert d is not None
         
-        # K et D doivent ÃƒÂªtre entre 0 et 100
+        # K et D doivent etre entre 0 et 100
         valid_k = k[~np.isnan(k)]
         valid_d = d[~np.isnan(d)]
         
@@ -95,7 +95,7 @@ class TestMomentumIndicators:
 
 
 class TestVolatilityIndicators:
-    """Tests des indicateurs de volatilitÃƒÂ©"""
+    """Tests des indicateurs de volatilite"""
     
     def test_bollinger_bands(self, sample_ohlcv_data):
         """Test Bollinger Bands"""
@@ -122,7 +122,7 @@ class TestVolatilityIndicators:
         assert atr is not None
         assert len(atr) == len(close)
         
-        # ATR doit ÃƒÂªtre positif
+        # ATR doit etre positif
         valid_atr = atr[~np.isnan(atr)]
         assert (valid_atr >= 0).all()
 
@@ -171,7 +171,7 @@ class TestVolumeIndicators:
         assert vwap is not None
         assert len(vwap) == len(close)
         
-        # VWAP doit ÃƒÂªtre positif
+        # VWAP doit etre positif
         assert (vwap > 0).all()
     
     def test_mfi(self, sample_ohlcv_data):
@@ -201,7 +201,7 @@ class TestCalculateAll:
         assert df is not None
         assert not df.empty
         
-        # VÃƒÂ©rifier que les indicateurs sont prÃƒÂ©sents
+        # Verifier que les indicateurs sont presents
         expected_columns = [
             'sma_20', 'ema_9', 'ema_21',
             'rsi', 'macd', 'macd_signal', 'macd_hist',
@@ -214,7 +214,7 @@ class TestCalculateAll:
             assert col in df.columns, f"Colonne manquante: {col}"
     
     def test_calculate_all_with_config(self, sample_ohlcv_data):
-        """Test avec configuration personnalisÃƒÂ©e"""
+        """Test avec configuration personnalisee"""
         config = {
             'rsi_period': 10,
             'ema_fast': 5,
@@ -235,14 +235,14 @@ class TestIndicatorEdgeCases:
     """Tests des cas limites"""
     
     def test_empty_data(self):
-        """Test avec donnÃƒÂ©es vides"""
+        """Test avec donnees vides"""
         empty_array = np.array([])
         
         sma = TechnicalIndicators.sma(empty_array, 20)
         assert len(sma) == 0
     
     def test_insufficient_data(self):
-        """Test avec donnÃƒÂ©es insuffisantes"""
+        """Test avec donnees insuffisantes"""
         short_data = np.array([1, 2, 3, 4, 5])
         
         sma = TechnicalIndicators.sma(short_data, 20)
@@ -253,16 +253,16 @@ class TestIndicatorEdgeCases:
         """Test gestion des NaN"""
         data_with_nan = np.array([1, 2, np.nan, 4, 5, 6, 7, 8, 9, 10])
         
-        # Les indicateurs doivent gÃƒÂ©rer les NaN
+        # Les indicateurs doivent gerer les NaN
         sma = TechnicalIndicators.sma(data_with_nan, 3)
         assert sma is not None
 
 
 class TestIndicatorAccuracy:
-    """Tests de prÃƒÂ©cision des indicateurs"""
+    """Tests de precision des indicateurs"""
     
     def test_sma_accuracy(self):
-        """Test prÃƒÂ©cision SMA"""
+        """Test precision SMA"""
         data = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         sma = TechnicalIndicators.sma(data, 3)
         
@@ -270,28 +270,28 @@ class TestIndicatorAccuracy:
         assert abs(sma[-1] - 9.0) < 0.001
     
     def test_ema_accuracy(self):
-        """Test prÃƒÂ©cision EMA"""
+        """Test precision EMA"""
         data = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         ema = TechnicalIndicators.ema(data, 3)
         
-        # EMA doit ÃƒÂªtre diffÃƒÂ©rente de SMA
+        # EMA doit etre differente de SMA
         sma = TechnicalIndicators.sma(data, 3)
         assert not np.array_equal(ema, sma)
     
     def test_rsi_extremes(self):
-        """Test RSI aux extrÃƒÂªmes"""
+        """Test RSI aux extremes"""
         # Prix qui monte constamment
         up_data = np.arange(1, 101)
         rsi_up = TechnicalIndicators.rsi(up_data, 14)
         
-        # RSI devrait ÃƒÂªtre proche de 100
+        # RSI devrait etre proche de 100
         assert rsi_up[-1] > 90
         
         # Prix qui descend constamment
         down_data = np.arange(100, 0, -1)
         rsi_down = TechnicalIndicators.rsi(down_data, 14)
         
-        # RSI devrait ÃƒÂªtre proche de 0
+        # RSI devrait etre proche de 0
         assert rsi_down[-1] < 10
 
 
