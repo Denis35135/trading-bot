@@ -1,6 +1,6 @@
 """
 WebSocket Handler pour The Bot
-Gestion des connexions WebSocket pour les donnÃƒÂ©es en temps rÃƒÂ©el
+Gestion des connexions WebSocket pour les donnees en temps reel
 """
 
 import json
@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 
 class WebSocketHandler:
     """
-    Gestionnaire de WebSocket pour donnÃƒÂ©es temps rÃƒÂ©el
+    Gestionnaire de WebSocket pour donnees temps reel
     
-    ResponsabilitÃƒÂ©s:
+    Responsabilites:
     - Maintenir une connexion WebSocket avec Binance
     - S'abonner aux streams (klines, trades, orderbook)
-    - Distribuer les donnÃƒÂ©es aux callbacks
+    - Distribuer les donnees aux callbacks
     - Reconnexion automatique
     """
     
@@ -39,7 +39,7 @@ class WebSocketHandler:
         self.ping_interval = self.config.get('ping_interval', 20)
         self.reconnect_delay = self.config.get('reconnect_delay', 5)
         
-        # Ãƒâ€°tat
+        # "tat
         self.ws = None
         self.ws_thread = None
         self.is_running = False
@@ -70,25 +70,25 @@ class WebSocketHandler:
         # Derniers messages par type
         self.last_messages = {}
         
-        logger.info("Ã¢Å“â€¦ WebSocket Handler initialisÃƒÂ©")
+        logger.info("""| WebSocket Handler initialise")
     
     def start(self):
-        """DÃƒÂ©marre le WebSocket"""
+        """Demarre le WebSocket"""
         if self.is_running:
-            logger.warning("WebSocket dÃƒÂ©jÃƒÂ  en cours d'exÃƒÂ©cution")
+            logger.warning("WebSocket dej en cours d'execution")
             return
         
         self.is_running = True
         
-        # DÃƒÂ©marrer le thread WebSocket
+        # Demarrer le thread WebSocket
         self.ws_thread = threading.Thread(target=self._run_websocket, daemon=True)
         self.ws_thread.start()
         
-        logger.info("Ã°Å¸Å¡â‚¬ WebSocket dÃƒÂ©marrÃƒÂ©")
+        logger.info(" WebSocket demarre")
     
     def stop(self):
-        """ArrÃƒÂªte le WebSocket"""
-        logger.info("Ã°Å¸â€ºâ€˜ ArrÃƒÂªt du WebSocket...")
+        """Arrete le WebSocket"""
+        logger.info(""" Arret du WebSocket...")
         
         self.is_running = False
         
@@ -98,7 +98,7 @@ class WebSocketHandler:
         if self.ws_thread:
             self.ws_thread.join(timeout=5)
         
-        logger.info("Ã¢Å“â€¦ WebSocket arrÃƒÂªtÃƒÂ©")
+        logger.info("""| WebSocket arrete")
     
     def subscribe_kline(self, symbol: str, interval: str = '5m'):
         """
@@ -111,7 +111,7 @@ class WebSocketHandler:
         stream = f"{symbol.lower()}@kline_{interval}"
         self._subscribe_stream(stream)
         self.symbols.add(symbol)
-        logger.info(f"Ã°Å¸â€œÅ  AbonnÃƒÂ© aux klines: {symbol} {interval}")
+        logger.info(f"" Abonne aux klines: {symbol} {interval}")
     
     def subscribe_trades(self, symbol: str):
         """
@@ -123,7 +123,7 @@ class WebSocketHandler:
         stream = f"{symbol.lower()}@trade"
         self._subscribe_stream(stream)
         self.symbols.add(symbol)
-        logger.info(f"Ã°Å¸â€™Â¹ AbonnÃƒÂ© aux trades: {symbol}")
+        logger.info(f"' Abonne aux trades: {symbol}")
     
     def subscribe_ticker(self, symbol: str):
         """
@@ -135,7 +135,7 @@ class WebSocketHandler:
         stream = f"{symbol.lower()}@ticker"
         self._subscribe_stream(stream)
         self.symbols.add(symbol)
-        logger.info(f"Ã°Å¸â€œË† AbonnÃƒÂ© au ticker: {symbol}")
+        logger.info(f"" Abonne au ticker: {symbol}")
     
     def subscribe_depth(self, symbol: str, levels: int = 10):
         """
@@ -148,11 +148,11 @@ class WebSocketHandler:
         stream = f"{symbol.lower()}@depth{levels}"
         self._subscribe_stream(stream)
         self.symbols.add(symbol)
-        logger.info(f"Ã°Å¸â€œÅ¡ AbonnÃƒÂ© au depth: {symbol} (levels: {levels})")
+        logger.info(f"" Abonne au depth: {symbol} (levels: {levels})")
     
     def subscribe_agg_trades(self, symbol: str):
         """
-        S'abonne aux trades agrÃƒÂ©gÃƒÂ©s
+        S'abonne aux trades agreges
         
         Args:
             symbol: Symbole
@@ -160,7 +160,7 @@ class WebSocketHandler:
         stream = f"{symbol.lower()}@aggTrade"
         self._subscribe_stream(stream)
         self.symbols.add(symbol)
-        logger.info(f"Ã°Å¸â€â‚¬ AbonnÃƒÂ© aux aggTrades: {symbol}")
+        logger.info(f"" Abonne aux aggTrades: {symbol}")
     
     def _subscribe_stream(self, stream: str):
         """Ajoute un stream aux subscriptions"""
@@ -168,7 +168,7 @@ class WebSocketHandler:
     
     def unsubscribe(self, symbol: str):
         """
-        Se dÃƒÂ©sabonne de tous les streams d'un symbole
+        Se desabonne de tous les streams d'un symbole
         
         Args:
             symbol: Symbole
@@ -180,7 +180,7 @@ class WebSocketHandler:
         if symbol in self.symbols:
             self.symbols.remove(symbol)
         
-        logger.info(f"Ã°Å¸Å¡Â« DÃƒÂ©sabonnÃƒÂ© de {symbol}")
+        logger.info(f" Desabonne de {symbol}")
     
     def register_callback(self, stream_type: str, callback: Callable):
         """
@@ -188,13 +188,13 @@ class WebSocketHandler:
         
         Args:
             stream_type: Type (kline, trade, ticker, depth, aggTrade)
-            callback: Fonction ÃƒÂ  appeler lors de la rÃƒÂ©ception de donnÃƒÂ©es
+            callback: Fonction  appeler lors de la reception de donnees
         """
         if stream_type in self.callbacks:
             self.callbacks[stream_type].append(callback)
-            logger.info(f"Ã¢Å“â€¦ Callback enregistrÃƒÂ© pour {stream_type}")
+            logger.info(f"""| Callback enregistre pour {stream_type}")
         else:
-            logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â Type de stream inconnu: {stream_type}")
+            logger.warning(f" Type de stream inconnu: {stream_type}")
     
     def _run_websocket(self):
         """Thread principal du WebSocket"""
@@ -202,16 +202,16 @@ class WebSocketHandler:
             try:
                 # Construire l'URL avec les streams
                 if not self.subscribed_streams:
-                    logger.warning("Aucun stream abonnÃƒÂ©, attente...")
+                    logger.warning("Aucun stream abonne, attente...")
                     time.sleep(5)
                     continue
                 
                 streams = '/'.join(self.subscribed_streams)
                 url = f"{self.base_url}/{streams}"
                 
-                logger.info(f"Ã°Å¸â€Å’ Connexion WebSocket: {len(self.subscribed_streams)} streams")
+                logger.info(f""' Connexion WebSocket: {len(self.subscribed_streams)} streams"")
                 
-                # CrÃƒÂ©er le WebSocket
+                # Creer le WebSocket
                 self.ws = WebSocketApp(
                     url,
                     on_message=self._on_message,
@@ -220,28 +220,28 @@ class WebSocketHandler:
                     on_open=self._on_open
                 )
                 
-                # DÃƒÂ©marrer (bloquant)
+                # Demarrer (bloquant)
                 self.ws.run_forever(ping_interval=self.ping_interval)
                 
-                # Si on arrive ici, la connexion s'est fermÃƒÂ©e
+                # Si on arrive ici, la connexion s'est fermee
                 if self.is_running:
-                    logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â WebSocket fermÃƒÂ©, reconnexion dans {self.reconnect_delay}s...")
+                    logger.warning(f" WebSocket ferme, reconnexion dans {self.reconnect_delay}s...")
                     self.stats['reconnections'] += 1
                     time.sleep(self.reconnect_delay)
                 
             except Exception as e:
-                logger.error(f"Ã¢ÂÅ’ Erreur WebSocket: {e}")
+                logger.error(f"' Erreur WebSocket: {e}")
                 self.stats['errors'] += 1
                 
                 if self.is_running:
                     time.sleep(self.reconnect_delay)
     
     def _on_message(self, ws, message):
-        """Callback appelÃƒÂ© lors de la rÃƒÂ©ception d'un message"""
+        """Callback appele lors de la reception d'un message"""
         try:
             data = json.loads(message)
             
-            # Mettre ÃƒÂ  jour les stats
+            # Mettre  jour les stats
             self.stats['total_messages'] += 1
             self.stats['last_message_time'] = datetime.now()
             
@@ -249,7 +249,7 @@ class WebSocketHandler:
             if 'e' in data:
                 event_type = data['e']
                 
-                # Dispatcher vers les callbacks appropriÃƒÂ©s
+                # Dispatcher vers les callbacks appropries
                 if event_type == 'kline':
                     self._handle_kline(data)
                 elif event_type == 'trade':
@@ -265,22 +265,22 @@ class WebSocketHandler:
             logger.error(f"Erreur traitement message: {e}")
     
     def _on_error(self, ws, error):
-        """Callback appelÃƒÂ© en cas d'erreur"""
-        logger.error(f"Ã¢ÂÅ’ WebSocket erreur: {error}")
+        """Callback appele en cas d'erreur"""
+        logger.error(f"' WebSocket erreur: {error}")
         self.stats['errors'] += 1
     
     def _on_close(self, ws, close_status_code, close_msg):
-        """Callback appelÃƒÂ© ÃƒÂ  la fermeture"""
+        """Callback appele  la fermeture"""
         self.is_connected = False
-        logger.warning(f"Ã°Å¸â€Å’ WebSocket fermÃƒÂ©: {close_status_code} - {close_msg}")
+        logger.warning(f""' WebSocket ferme: {close_status_code} - {close_msg}"")
     
     def _on_open(self, ws):
-        """Callback appelÃƒÂ© ÃƒÂ  l'ouverture"""
+        """Callback appele  l'ouverture"""
         self.is_connected = True
-        logger.info("Ã¢Å“â€¦ WebSocket connectÃƒÂ©")
+        logger.info("""| WebSocket connecte")
     
     def _handle_kline(self, data: Dict):
-        """Traite les donnÃƒÂ©es kline"""
+        """Traite les donnees kline"""
         kline = data['k']
         
         formatted = {
@@ -304,7 +304,7 @@ class WebSocketHandler:
                 logger.error(f"Erreur callback kline: {e}")
     
     def _handle_trade(self, data: Dict):
-        """Traite les donnÃƒÂ©es trade"""
+        """Traite les donnees trade"""
         formatted = {
             'symbol': data['s'],
             'price': float(data['p']),
@@ -322,7 +322,7 @@ class WebSocketHandler:
                 logger.error(f"Erreur callback trade: {e}")
     
     def _handle_ticker(self, data: Dict):
-        """Traite les donnÃƒÂ©es ticker"""
+        """Traite les donnees ticker"""
         formatted = {
             'symbol': data['s'],
             'price_change': float(data['p']),
@@ -342,7 +342,7 @@ class WebSocketHandler:
                 logger.error(f"Erreur callback ticker: {e}")
     
     def _handle_depth(self, data: Dict):
-        """Traite les donnÃƒÂ©es depth"""
+        """Traite les donnees depth"""
         formatted = {
             'symbol': data['s'],
             'bids': [[float(p), float(q)] for p, q in data['b']],
@@ -358,7 +358,7 @@ class WebSocketHandler:
                 logger.error(f"Erreur callback depth: {e}")
     
     def _handle_agg_trade(self, data: Dict):
-        """Traite les donnÃƒÂ©es aggTrade"""
+        """Traite les donnees aggTrade"""
         formatted = {
             'symbol': data['s'],
             'price': float(data['p']),
@@ -387,7 +387,7 @@ class WebSocketHandler:
     
     def get_last_message(self, stream_type: str) -> Optional[Dict]:
         """
-        Retourne le dernier message reÃƒÂ§u d'un type
+        Retourne le dernier message reu d'un type
         
         Args:
             stream_type: Type de stream
@@ -417,42 +417,42 @@ if __name__ == "__main__":
     
     print("\n=== Test WebSocket Handler ===\n")
     
-    # CrÃƒÂ©er le handler
+    # Creer le handler
     handler = WebSocketHandler()
     
-    # DÃƒÂ©finir des callbacks de test
+    # Definir des callbacks de test
     def on_kline(data):
-        print(f"Ã°Å¸â€œÅ  Kline: {data['symbol']} - Close: ${data['close']:,.2f}")
+        print(f"" Kline: {data['symbol']} - Close: ${data['close']:,.2f}")
     
     def on_trade(data):
-        print(f"Ã°Å¸â€™Â¹ Trade: {data['symbol']} - Price: ${data['price']:,.2f}")
+        print(f"' Trade: {data['symbol']} - Price: ${data['price']:,.2f}")
     
     # Enregistrer les callbacks
     handler.register_callback('kline', on_kline)
     handler.register_callback('trade', on_trade)
     
-    # S'abonner ÃƒÂ  des streams
-    print("Ã°Å¸â€œÂ¡ Abonnement aux streams...")
+    # S'abonner  des streams
+    print("" Abonnement aux streams...")
     handler.subscribe_kline('BTCUSDT', '1m')
     handler.subscribe_trades('BTCUSDT')
     
-    # DÃƒÂ©marrer
-    print("Ã°Å¸Å¡â‚¬ DÃƒÂ©marrage du WebSocket...\n")
+    # Demarrer
+    print(" Demarrage du WebSocket...\n")
     handler.start()
     
     # Attendre quelques secondes pour recevoir des messages
-    print("Ã¢ÂÂ³ Ãƒâ€°coute pendant 10 secondes...\n")
+    print(" "coute pendant 10 secondes...\n")
     try:
         time.sleep(10)
     except KeyboardInterrupt:
-        print("\nÃ¢Å¡Â Ã¯Â¸Â Interruption manuelle")
+        print("\n Interruption manuelle")
     
-    # ArrÃƒÂªter
-    print("\nÃ°Å¸â€ºâ€˜ ArrÃƒÂªt du WebSocket...")
+    # Arreter
+    print("\n"" Arret du WebSocket...")
     handler.stop()
     
     # Afficher les stats
-    print("\nÃ°Å¸â€œÅ  Statistiques finales:")
+    print("\n" Statistiques finales:")
     stats = handler.get_stats()
     for key, value in stats.items():
         if key == 'last_message_time' and value:
@@ -465,9 +465,9 @@ if __name__ == "__main__":
     # Dernier message
     last_kline = handler.get_last_message('kline')
     if last_kline:
-        print(f"\nÃ°Å¸â€œÅ  DerniÃƒÂ¨re kline:")
+        print(f"\n" Derniere kline:")
         print(f"   Symbol: {last_kline['symbol']}")
         print(f"   Close: ${last_kline['close']:,.2f}")
         print(f"   Volume: {last_kline['volume']:.2f}")
     
-    print("\nÃ¢Å“â€¦ Tests terminÃƒÂ©s")
+    print("\n""| Tests termines")
