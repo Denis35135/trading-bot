@@ -1,6 +1,6 @@
 """
 Risk Monitor pour The Bot
-Surveillance en temps rÃƒÂ©el et protection du capital
+Surveillance en temps reel et protection du capital
 """
 
 import numpy as np
@@ -25,13 +25,13 @@ class RiskLevel(Enum):
 
 class RiskMonitor:
     """
-    Moniteur de risque en temps rÃƒÂ©el
+    Moniteur de risque en temps reel
     
     Surveille:
     - Drawdown (perte depuis le peak)
     - Exposition totale
-    - CorrÃƒÂ©lations entre positions
-    - VolatilitÃƒÂ© du portfolio
+    - Correlations entre positions
+    - Volatilite du portfolio
     - Circuit breakers multi-niveaux
     - Risk metrics (VaR, Sharpe, etc.)
     """
@@ -42,11 +42,11 @@ class RiskMonitor:
         
         Args:
             config: Configuration avec:
-                - max_drawdown: Drawdown maximum autorisÃƒÂ©
+                - max_drawdown: Drawdown maximum autorise
                 - max_daily_loss: Perte max par jour
                 - max_exposure: Exposition max du portfolio
                 - circuit_breaker_levels: Niveaux de circuit breakers
-                - correlation_threshold: Seuil de corrÃƒÂ©lation
+                - correlation_threshold: Seuil de correlation
         """
         self.config = config
         
@@ -64,14 +64,14 @@ class RiskMonitor:
             'EMERGENCY': 0.08   # 8% drawdown
         })
         
-        # Ãƒâ€°tat du portfolio
+        # Etat du portfolio
         self.capital = getattr(config, 'INITIAL_CAPITAL', 1000)
         self.peak_capital = self.capital
         self.daily_starting_capital = self.capital
         self.positions = {}
         self.closed_trades_today = []
         
-        # MÃƒÂ©triques
+        # Metriques
         self.current_drawdown = 0
         self.daily_pnl = 0
         self.total_pnl = 0
@@ -82,7 +82,7 @@ class RiskMonitor:
         self.drawdown_history = []
         self.exposure_history = []
         
-        # Ãƒâ€°tat des circuit breakers
+        # Etat des circuit breakers
         self.circuit_breaker_active = False
         self.circuit_breaker_until = None
         self.position_reduction_factor = 1.0
@@ -91,43 +91,43 @@ class RiskMonitor:
         self.alerts = []
         self.last_alert_time = {}
         
-        logger.info("Risk Monitor initialisÃƒÂ©")
+        logger.info("Risk Monitor initialise")
         logger.info(f"Max Drawdown: {self.max_drawdown:.1%}, Max Daily Loss: {self.max_daily_loss:.1%}")
     
     def update(self, current_capital: float, positions: Dict) -> Dict:
         """
-        Mise ÃƒÂ  jour principale du risk monitor
+        Mise a jour principale du risk monitor
         
         Args:
             current_capital: Capital actuel
             positions: Dict des positions ouvertes
             
         Returns:
-            Dict avec l'ÃƒÂ©tat du risque et actions recommandÃƒÂ©es
+            Dict avec l'etat du risque et actions recommandees
         """
         try:
-            # Mettre ÃƒÂ  jour le capital
+            # Mettre a jour le capital
             self.capital = current_capital
             self.positions = positions
             
-            # Calculer toutes les mÃƒÂ©triques
+            # Calculer toutes les metriques
             self._update_drawdown()
             self._update_daily_pnl()
             self._update_exposure()
             
-            # VÃƒÂ©rifier les limites de risque
+            # Verifier les limites de risque
             risk_checks = self._check_all_risk_limits()
             
-            # DÃƒÂ©terminer le niveau de risque
+            # Determiner le niveau de risque
             self.current_risk_level = self._determine_risk_level(risk_checks)
             
-            # Appliquer les circuit breakers si nÃƒÂ©cessaire
+            # Appliquer les circuit breakers si necessaire
             actions = self._apply_circuit_breakers()
             
-            # Calculer les mÃƒÂ©triques avancÃƒÂ©es
+            # Calculer les metriques avancees
             advanced_metrics = self._calculate_advanced_metrics()
             
-            # PrÃƒÂ©parer le rapport
+            # Preparer le rapport
             report = {
                 'timestamp': datetime.now(),
                 'risk_level': self.current_risk_level.value,
@@ -135,23 +135,25 @@ class RiskMonitor:
                 'daily_pnl': self.daily_pnl,
                 'daily_pnl_pct': self.daily_pnl / self.daily_starting_capital if self.daily_starting_capital > 0 else 0,
                 'total_exposure': self._calculate_total_exposure(),
+                'total_exposure_pct': self._calculate_total_exposure() / self.capital if self.capital > 0 else 0,
                 'position_count': len(positions),
+                'capital': self.capital,
                 'risk_checks': risk_checks,
                 'required_actions': actions,
                 'advanced_metrics': advanced_metrics,
-                'alerts': self.alerts[-10:]  # 10 derniÃƒÂ¨res alertes
+                'alerts': self.alerts[-10:]  # 10 dernieres alertes
             }
             
-            # Log si niveau ÃƒÂ©levÃƒÂ©
+            # Log si niveau eleve
             if self.current_risk_level != RiskLevel.NORMAL:
-                logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â Risk Level: {self.current_risk_level.value}")
-                logger.warning(f"   Drawdown: {self.current_drawdown:.2%}")
-                logger.warning(f"   Actions: {actions}")
+                logger.warning(f"Risk Level: {self.current_risk_level.value}")
+                logger.warning(f"  Drawdown: {self.current_drawdown:.2%}")
+                logger.warning(f"  Actions: {actions}")
             
             return report
             
         except Exception as e:
-            logger.error(f"Erreur mise ÃƒÂ  jour risk monitor: {e}")
+            logger.error(f"Erreur mise a jour risk monitor: {e}")
             return {'error': str(e), 'risk_level': RiskLevel.EMERGENCY.value}
     
     def _update_drawdown(self):
@@ -176,7 +178,7 @@ class RiskMonitor:
     
     def _update_daily_pnl(self):
         """Calcule le P&L du jour"""
-        # Reset ÃƒÂ  minuit
+        # Reset a minuit
         now = datetime.now()
         if hasattr(self, 'last_pnl_update'):
             if now.date() > self.last_pnl_update.date():
@@ -189,7 +191,7 @@ class RiskMonitor:
         # Calculer P&L
         self.daily_pnl = self.capital - self.daily_starting_capital
         
-        # Ajouter ÃƒÂ  l'historique
+        # Ajouter a l'historique
         self.pnl_history.append({
             'timestamp': now,
             'daily_pnl': self.daily_pnl,
@@ -220,10 +222,10 @@ class RiskMonitor:
     
     def _check_all_risk_limits(self) -> Dict:
         """
-        VÃƒÂ©rifie toutes les limites de risque
+        Verifie toutes les limites de risque
         
         Returns:
-            Dict avec statut de chaque vÃƒÂ©rification
+            Dict avec statut de chaque verification
         """
         checks = {}
         
@@ -276,7 +278,7 @@ class RiskMonitor:
         portfolio_vol = self._estimate_portfolio_volatility()
         checks['volatility'] = {
             'value': portfolio_vol,
-            'limit': 0.05,  # 5% volatilitÃƒÂ© max
+            'limit': 0.05,  # 5% volatilite max
             'exceeded': portfolio_vol >= 0.05,
             'severity': 'HIGH' if portfolio_vol >= 0.07 else 'MEDIUM' if portfolio_vol >= 0.05 else 'LOW'
         }
@@ -284,7 +286,7 @@ class RiskMonitor:
         return checks
     
     def _get_severity(self, value: float, limit: float) -> str:
-        """DÃƒÂ©termine la sÃƒÂ©vÃƒÂ©ritÃƒÂ© d'un dÃƒÂ©passement"""
+        """Determine la severite d'un depassement"""
         ratio = value / limit if limit > 0 else 0
         
         if ratio >= 1.0:
@@ -298,10 +300,10 @@ class RiskMonitor:
     
     def _determine_risk_level(self, risk_checks: Dict) -> RiskLevel:
         """
-        DÃƒÂ©termine le niveau de risque global
+        Determine le niveau de risque global
         
         Args:
-            risk_checks: RÃƒÂ©sultats des vÃƒÂ©rifications
+            risk_checks: Resultats des verifications
             
         Returns:
             RiskLevel
@@ -314,7 +316,7 @@ class RiskMonitor:
         exceeded_count = sum(1 for check in risk_checks.values() 
                            if check.get('exceeded', False))
         
-        # DÃƒÂ©terminer le niveau
+        # Determiner le niveau
         if critical_count >= 2 or self.current_drawdown >= self.max_drawdown:
             return RiskLevel.EMERGENCY
         elif critical_count >= 1 or high_count >= 2:
@@ -331,21 +333,21 @@ class RiskMonitor:
         Applique les circuit breakers selon le niveau de risque
         
         Returns:
-            Liste des actions ÃƒÂ  prendre
+            Liste des actions a prendre
         """
         actions = []
         
-        # VÃƒÂ©rifier si circuit breaker dÃƒÂ©jÃƒÂ  actif
+        # Verifier si circuit breaker deja actif
         if self.circuit_breaker_active:
             if self.circuit_breaker_until and datetime.now() < self.circuit_breaker_until:
                 actions.append(f"CIRCUIT_BREAKER_ACTIVE until {self.circuit_breaker_until}")
                 return actions
             else:
-                # DÃƒÂ©sactiver le circuit breaker
+                # Desactiver le circuit breaker
                 self.circuit_breaker_active = False
                 self.circuit_breaker_until = None
                 self.position_reduction_factor = 1.0
-                logger.info("Circuit breaker dÃƒÂ©sactivÃƒÂ©")
+                logger.info("Circuit breaker desactive")
         
         # Appliquer selon le niveau
         if self.current_risk_level == RiskLevel.EMERGENCY:
@@ -356,7 +358,7 @@ class RiskMonitor:
             ])
             self.circuit_breaker_active = True
             self.circuit_breaker_until = datetime.now() + timedelta(hours=24)
-            self._send_alert("EMERGENCY", "ArrÃƒÂªt d'urgence! Toutes positions fermÃƒÂ©es.")
+            self._send_alert("EMERGENCY", "Arret d'urgence! Toutes positions fermees.")
             
         elif self.current_risk_level == RiskLevel.CRITICAL:
             actions.extend([
@@ -391,31 +393,31 @@ class RiskMonitor:
     
     def _calculate_max_correlation(self) -> float:
         """
-        Calcule la corrÃƒÂ©lation maximale entre positions
+        Calcule la correlation maximale entre positions
         
         Returns:
-            CorrÃƒÂ©lation max (0 ÃƒÂ  1)
+            Correlation max (0 a 1)
         """
         if len(self.positions) < 2:
             return 0
         
-        # Simplified: utiliser les symboles pour estimer corrÃƒÂ©lation
+        # Simplified: utiliser les symboles pour estimer correlation
         # En pratique, utiliser les prix historiques
         symbols = list(self.positions.keys())
         
         # Pour l'instant, estimation basique
-        # MÃƒÂªme base = haute corrÃƒÂ©lation
+        # Meme base = haute correlation
         max_corr = 0
         for i in range(len(symbols)):
             for j in range(i+1, len(symbols)):
-                # Si mÃƒÂªme base asset (ex: BTC dans BTCUSDC et BTCETH)
+                # Si meme base asset (ex: BTC dans BTCUSDC et BTCETH)
                 if symbols[i][:3] == symbols[j][:3]:
                     max_corr = max(max_corr, 0.8)
                 # Si stablecoins
                 elif 'USDC' in symbols[i] and 'USDC' in symbols[j]:
                     max_corr = max(max_corr, 0.3)
                 else:
-                    max_corr = max(max_corr, 0.5)  # DÃƒÂ©faut crypto
+                    max_corr = max(max_corr, 0.5)  # Defaut crypto
         
         return max_corr
     
@@ -438,15 +440,15 @@ class RiskMonitor:
     
     def _estimate_portfolio_volatility(self) -> float:
         """
-        Estime la volatilitÃƒÂ© du portfolio
+        Estime la volatilite du portfolio
         
         Returns:
-            VolatilitÃƒÂ© estimÃƒÂ©e (0 ÃƒÂ  1)
+            Volatilite estimee (0 a 1)
         """
         if len(self.pnl_history) < 20:
-            return 0.02  # DÃƒÂ©faut 2%
+            return 0.02  # Defaut 2%
         
-        # Calculer la volatilitÃƒÂ© des returns rÃƒÂ©cents
+        # Calculer la volatilite des returns recents
         recent_pnls = [h['daily_pnl'] for h in self.pnl_history[-20:]]
         
         if self.capital <= 0:
@@ -459,10 +461,10 @@ class RiskMonitor:
     
     def _calculate_advanced_metrics(self) -> Dict:
         """
-        Calcule les mÃƒÂ©triques avancÃƒÂ©es (VaR, Sharpe, etc.)
+        Calcule les metriques avancees (VaR, Sharpe, etc.)
         
         Returns:
-            Dict des mÃƒÂ©triques avancÃƒÂ©es
+            Dict des metriques avancees
         """
         metrics = {}
         
@@ -471,9 +473,9 @@ class RiskMonitor:
             pnls = [h['daily_pnl'] for h in self.pnl_history[-100:]]
             metrics['var_95'] = np.percentile(pnls, 5) if pnls else 0
         else:
-            metrics['var_95'] = -self.capital * 0.02  # DÃƒÂ©faut -2%
+            metrics['var_95'] = -self.capital * 0.02  # Defaut -2%
         
-        # Sharpe Ratio (simplifiÃƒÂ©)
+        # Sharpe Ratio (simplifie)
         if len(self.pnl_history) >= 30:
             returns = []
             for i in range(1, min(30, len(self.pnl_history))):
@@ -507,50 +509,43 @@ class RiskMonitor:
         
         return metrics
     
-    def approve_new_trade(self, signal: Dict, proposed_size: float) -> Tuple[bool, float, str]:
+    def approve_trade(self, signal: Dict) -> bool:
         """
         Approuve ou rejette un nouveau trade
         
         Args:
             signal: Signal de trading
-            proposed_size: Taille proposÃƒÂ©e en USDC
             
         Returns:
-            Tuple (approved, adjusted_size, reason)
+            True si approuve
         """
-        # VÃƒÂ©rifier circuit breaker
+        # Verifier circuit breaker
         if self.circuit_breaker_active:
-            return False, 0, "Circuit breaker actif"
+            logger.warning("Trade rejete: Circuit breaker actif")
+            return False
         
-        # VÃƒÂ©rifier niveau de risque
+        # Verifier niveau de risque
         if self.current_risk_level == RiskLevel.EMERGENCY:
-            return False, 0, "Niveau d'urgence - trading arrÃƒÂªtÃƒÂ©"
+            logger.warning("Trade rejete: Niveau d'urgence")
+            return False
         
         if self.current_risk_level == RiskLevel.CRITICAL:
-            return False, 0, "Niveau critique - nouvelles positions interdites"
+            logger.warning("Trade rejete: Niveau critique")
+            return False
         
-        # VÃƒÂ©rifier limites
+        # Verifier confiance du signal
+        min_confidence = 0.7 if self.current_risk_level == RiskLevel.HIGH else 0.6
+        if signal.get('confidence', 0) < min_confidence:
+            logger.info(f"Trade rejete: Confiance {signal.get('confidence', 0):.2%} < {min_confidence:.0%}")
+            return False
+        
+        # Verifier exposition
         current_exposure = self._calculate_total_exposure()
-        new_exposure = current_exposure + proposed_size
-        exposure_pct = new_exposure / self.capital if self.capital > 0 else 1
+        if current_exposure / self.capital >= self.max_exposure:
+            logger.warning(f"Trade rejete: Exposition max atteinte")
+            return False
         
-        if exposure_pct > self.max_exposure:
-            # Calculer taille max possible
-            max_possible = max(0, (self.max_exposure * self.capital) - current_exposure)
-            if max_possible < 50:  # Minimum trade size
-                return False, 0, f"Exposition max atteinte ({exposure_pct:.1%})"
-            else:
-                return True, max_possible, f"Taille rÃƒÂ©duite pour exposition (max: ${max_possible:.2f})"
-        
-        # Appliquer rÃƒÂ©duction si nÃƒÂ©cessaire
-        adjusted_size = proposed_size * self.position_reduction_factor
-        
-        if self.position_reduction_factor < 1.0:
-            reason = f"Taille rÃƒÂ©duite de {(1-self.position_reduction_factor):.0%} (risk management)"
-        else:
-            reason = "ApprouvÃƒÂ©"
-        
-        return True, adjusted_size, reason
+        return True
     
     def register_trade_close(self, symbol: str, entry_price: float, 
                            exit_price: float, size_usdc: float, side: str):
@@ -559,7 +554,7 @@ class RiskMonitor:
         
         Args:
             symbol: Symbole
-            entry_price: Prix d'entrÃƒÂ©e
+            entry_price: Prix d'entree
             exit_price: Prix de sortie
             size_usdc: Taille en USDC
             side: BUY ou SELL
@@ -572,7 +567,7 @@ class RiskMonitor:
         
         profit_usdc = size_usdc * profit_pct
         
-        # Ajouter ÃƒÂ  l'historique du jour
+        # Ajouter a l'historique du jour
         self.closed_trades_today.append({
             'symbol': symbol,
             'entry_price': entry_price,
@@ -583,11 +578,11 @@ class RiskMonitor:
             'timestamp': datetime.now()
         })
         
-        # Mettre ÃƒÂ  jour P&L
+        # Mettre a jour P&L
         self.total_pnl += profit_usdc
         self.daily_pnl += profit_usdc
         
-        logger.info(f"Trade fermÃƒÂ©: {symbol} P&L: ${profit_usdc:.2f} ({profit_pct:.2%})")
+        logger.info(f"Trade ferme: {symbol} P&L: ${profit_usdc:.2f} ({profit_pct:.2%})")
     
     def _send_alert(self, level: str, message: str):
         """Envoie une alerte"""
@@ -599,36 +594,36 @@ class RiskMonitor:
         
         self.alerts.append(alert)
         
-        # Limiter ÃƒÂ  100 alertes
+        # Limiter a 100 alertes
         if len(self.alerts) > 100:
             self.alerts.pop(0)
         
         # Log selon niveau
         if level == 'EMERGENCY':
-            logger.critical(f"Ã°Å¸Å¡Â¨ {message}")
+            logger.critical(f"[ALERT] {message}")
         elif level == 'CRITICAL':
-            logger.error(f"Ã¢ÂÅ’ {message}")
+            logger.error(f"[ALERT] {message}")
         else:
-            logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â {message}")
+            logger.warning(f"[ALERT] {message}")
     
     def get_risk_summary(self) -> str:
         """
-        GÃƒÂ©nÃƒÂ¨re un rÃƒÂ©sumÃƒÂ© textuel du risque
+        Genere un resume textuel du risque
         
         Returns:
-            RÃƒÂ©sumÃƒÂ© formatÃƒÂ©
+            Resume formate
         """
         summary = f"""
-Ã¢â€¢â€Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢â€”
-Ã¢â€¢â€˜                 RISK MONITOR SUMMARY                 Ã¢â€¢â€˜
-Ã¢â€¢Â Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â£
-Ã¢â€¢â€˜ Risk Level:     {self.current_risk_level.value:>37} Ã¢â€¢â€˜
-Ã¢â€¢â€˜ Drawdown:       {self.current_drawdown:>36.2%} Ã¢â€¢â€˜
-Ã¢â€¢â€˜ Daily P&L:      ${self.daily_pnl:>35,.2f} Ã¢â€¢â€˜
-Ã¢â€¢â€˜ Exposure:       {self._calculate_total_exposure()/self.capital if self.capital > 0 else 0:>36.1%} Ã¢â€¢â€˜
-Ã¢â€¢â€˜ Positions:      {len(self.positions):>37} Ã¢â€¢â€˜
-Ã¢â€¢â€˜ Circuit Breaker: {'ACTIVE' if self.circuit_breaker_active else 'OFF':>36} Ã¢â€¢â€˜
-Ã¢â€¢Å¡Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+========================================================
+                RISK MONITOR SUMMARY                 
+========================================================
+Risk Level:     {self.current_risk_level.value:>37}
+Drawdown:       {self.current_drawdown:>36.2%}
+Daily P&L:      ${self.daily_pnl:>35,.2f}
+Exposure:       {self._calculate_total_exposure()/self.capital if self.capital > 0 else 0:>36.1%}
+Positions:      {len(self.positions):>37}
+Circuit Breaker: {'ACTIVE' if self.circuit_breaker_active else 'OFF':>36}
+========================================================
         """
         return summary
 
@@ -658,9 +653,9 @@ if __name__ == "__main__":
         'BNBUSDC': {'size_usdc': 100, 'entry_price': 400}
     }
     
-    # Test 1: Ãƒâ€°tat normal
+    # Test 1: Etat normal
     print("=" * 60)
-    print("TEST 1: Ãƒâ€°tat Normal")
+    print("TEST 1: Etat Normal")
     report = monitor.update(1000, positions)
     print(f"Risk Level: {report['risk_level']}")
     print(f"Drawdown: {report['current_drawdown']:.2%}")
@@ -684,10 +679,8 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("TEST 4: Approbation nouveau trade")
     signal = {'symbol': 'ADAUSDC', 'confidence': 0.75}
-    approved, size, reason = monitor.approve_new_trade(signal, 200)
-    print(f"ApprouvÃƒÂ©: {approved}")
-    print(f"Taille ajustÃƒÂ©e: ${size:.2f}")
-    print(f"Raison: {reason}")
+    approved = monitor.approve_trade(signal)
+    print(f"Approuve: {approved}")
     
-    # Afficher rÃƒÂ©sumÃƒÂ©
+    # Afficher resume
     print("\n" + monitor.get_risk_summary())
