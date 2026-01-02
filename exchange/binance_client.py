@@ -1,6 +1,6 @@
 """
 Client Binance complet pour The Bot
-GÃƒÂ¨re REST API + WebSocket + Ordres + Reconnexion automatique
+Gere REST API + WebSocket + Ordres + Reconnexion automatique
 """
 
 import time
@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 
 from binance.client import Client
 from binance.exceptions import BinanceAPIException, BinanceOrderException
-# WebSocket gÃ©rÃ© via binance.streams (ancienne API websockets supprimÃ©e)
+from binance import BinanceSocketManager  # CORRECTION ICI
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 class BinanceClient:
     """
-    Client Binance complet avec toutes les fonctionnalitÃƒÂ©s nÃƒÂ©cessaires
+    Client Binance complet avec toutes les fonctionnalites necessaires
     """
     
     def __init__(self, api_key: str, secret_key: str, testnet: bool = False):
@@ -29,8 +29,8 @@ class BinanceClient:
         Initialise le client Binance
         
         Args:
-            api_key: ClÃƒÂ© API Binance
-            secret_key: ClÃƒÂ© secrÃƒÂ¨te Binance
+            api_key: Cle API Binance
+            secret_key: Cle secrete Binance
             testnet: Utiliser le testnet (pour tests)
         """
         self.api_key = api_key
@@ -44,7 +44,7 @@ class BinanceClient:
         self.bm = None
         self.ws_connections = {}
         
-        # Cache des donnÃƒÂ©es
+        # Cache des donnees
         self.symbols_info = {}
         self.account_info = {}
         self.open_orders = {}
@@ -62,7 +62,7 @@ class BinanceClient:
             'trade': []
         }
         
-        # Ãƒâ€°tat
+        # Etat
         self.connected = False
         self.ws_running = False
         
@@ -80,19 +80,19 @@ class BinanceClient:
                     self.secret_key,
                     testnet=True
                 )
-                logger.info("Client initialisÃƒÂ© en mode TESTNET")
+                logger.info("Client initialise en mode TESTNET")
             else:
                 # Production
                 self.client = Client(self.api_key, self.secret_key)
-                logger.info("Client initialisÃƒÂ© en mode PRODUCTION")
+                logger.info("Client initialise en mode PRODUCTION")
                 
             # Test de connexion
             self.client.ping()
             self.connected = True
-            logger.info("Ã¢Å“â€¦ Connexion Binance ÃƒÂ©tablie")
+            logger.info("[OK] Connexion Binance etablie")
             
         except Exception as e:
-            logger.error(f"Ã¢ÂÅ’ Erreur initialisation: {e}")
+            logger.error(f"Erreur initialisation: {e}")
             raise
     
     def _load_exchange_info(self):
@@ -123,21 +123,21 @@ class BinanceClient:
                         elif filter['filterType'] == 'PRICE_FILTER':
                             self.symbols_info[symbol['symbol']]['tick_size'] = float(filter['tickSize'])
             
-            logger.info(f"Ã¢Å“â€¦ {len(self.symbols_info)} symboles chargÃƒÂ©s")
+            logger.info(f"[OK] {len(self.symbols_info)} symboles charges")
             
         except Exception as e:
             logger.error(f"Erreur chargement exchange info: {e}")
     
     # =============================================================
-    # MÃƒâ€°THODES REST API
+    # METHODES REST API
     # =============================================================
     
     def get_account_balance(self, asset: str = 'USDC') -> float:
         """
-        RÃƒÂ©cupÃƒÂ¨re la balance d'un actif
+        Recupere la balance d'un actif
         
         Args:
-            asset: L'actif (dÃƒÂ©faut: USDC)
+            asset: L'actif (defaut: USDC)
             
         Returns:
             Balance disponible
@@ -152,12 +152,12 @@ class BinanceClient:
             return 0.0
             
         except Exception as e:
-            logger.error(f"Erreur rÃƒÂ©cupÃƒÂ©ration balance: {e}")
+            logger.error(f"Erreur recuperation balance: {e}")
             return 0.0
     
     def get_symbol_ticker(self, symbol: str) -> Dict:
         """
-        RÃƒÂ©cupÃƒÂ¨re le ticker d'un symbole
+        Recupere le ticker d'un symbole
         
         Args:
             symbol: Le symbole (ex: BTCUSDC)
@@ -179,12 +179,12 @@ class BinanceClient:
             }
             
         except Exception as e:
-            logger.error(f"Erreur rÃƒÂ©cupÃƒÂ©ration ticker {symbol}: {e}")
+            logger.error(f"Erreur recuperation ticker {symbol}: {e}")
             return None
     
     def get_orderbook(self, symbol: str, limit: int = 20) -> Dict:
         """
-        RÃƒÂ©cupÃƒÂ¨re l'orderbook d'un symbole
+        Recupere l'orderbook d'un symbole
         
         Args:
             symbol: Le symbole
@@ -203,12 +203,12 @@ class BinanceClient:
             }
             
         except Exception as e:
-            logger.error(f"Erreur rÃƒÂ©cupÃƒÂ©ration orderbook {symbol}: {e}")
+            logger.error(f"Erreur recuperation orderbook {symbol}: {e}")
             return {'bids': [], 'asks': [], 'timestamp': 0}
     
     def get_klines(self, symbol: str, interval: str = '5m', limit: int = 100) -> pd.DataFrame:
         """
-        RÃƒÂ©cupÃƒÂ¨re les chandeliers (klines)
+        Recupere les chandeliers (klines)
         
         Args:
             symbol: Le symbole
@@ -242,15 +242,15 @@ class BinanceClient:
             return df[['open', 'high', 'low', 'close', 'volume']]
             
         except Exception as e:
-            logger.error(f"Erreur rÃƒÂ©cupÃƒÂ©ration klines {symbol}: {e}")
+            logger.error(f"Erreur recuperation klines {symbol}: {e}")
             return pd.DataFrame()
     
     def get_24h_stats(self, symbol: str = None) -> List[Dict]:
         """
-        RÃƒÂ©cupÃƒÂ¨re les statistiques 24h
+        Recupere les statistiques 24h
         
         Args:
-            symbol: Symbole spÃƒÂ©cifique ou None pour tous
+            symbol: Symbole specifique ou None pour tous
             
         Returns:
             Liste des stats 24h
@@ -275,7 +275,7 @@ class BinanceClient:
             return result
             
         except Exception as e:
-            logger.error(f"Erreur rÃƒÂ©cupÃƒÂ©ration stats 24h: {e}")
+            logger.error(f"Erreur recuperation stats 24h: {e}")
             return []
     
     # =============================================================
@@ -283,7 +283,7 @@ class BinanceClient:
     # =============================================================
     
     def _round_quantity(self, symbol: str, quantity: float) -> float:
-        """Arrondit la quantitÃƒÂ© selon les rÃƒÂ¨gles du symbole"""
+        """Arrondit la quantite selon les regles du symbole"""
         if symbol not in self.symbols_info:
             return quantity
             
@@ -297,7 +297,7 @@ class BinanceClient:
         return quantity
     
     def _round_price(self, symbol: str, price: float) -> float:
-        """Arrondit le prix selon les rÃƒÂ¨gles du symbole"""
+        """Arrondit le prix selon les regles du symbole"""
         if symbol not in self.symbols_info:
             return price
             
@@ -312,27 +312,27 @@ class BinanceClient:
     
     def place_market_order(self, symbol: str, side: str, quantity: float) -> Dict:
         """
-        Place un ordre au marchÃƒÂ©
+        Place un ordre au marche
         
         Args:
             symbol: Le symbole
             side: 'BUY' ou 'SELL'
-            quantity: QuantitÃƒÂ© (sera arrondie automatiquement)
+            quantity: Quantite (sera arrondie automatiquement)
             
         Returns:
-            DÃƒÂ©tails de l'ordre ou None si ÃƒÂ©chec
+            Details de l'ordre ou None si echec
         """
         try:
-            # Arrondir la quantitÃƒÂ©
+            # Arrondir la quantite
             quantity = self._round_quantity(symbol, quantity)
             
-            # VÃƒÂ©rifier les limites
+            # Verifier les limites
             if symbol in self.symbols_info:
                 min_qty = self.symbols_info[symbol]['min_qty']
                 max_qty = self.symbols_info[symbol]['max_qty']
                 
                 if quantity < min_qty:
-                    logger.error(f"QuantitÃƒÂ© {quantity} < minimum {min_qty}")
+                    logger.error(f"Quantite {quantity} < minimum {min_qty}")
                     return None
                 if quantity > max_qty:
                     quantity = max_qty
@@ -344,7 +344,7 @@ class BinanceClient:
                 quantity=quantity
             )
             
-            logger.info(f"Ã¢Å“â€¦ Ordre MARKET {side} placÃƒÂ©: {quantity} {symbol}")
+            logger.info(f"[OK] Ordre MARKET {side} place: {quantity} {symbol}")
             
             return {
                 'order_id': order['orderId'],
@@ -370,18 +370,18 @@ class BinanceClient:
         Args:
             symbol: Le symbole
             side: 'BUY' ou 'SELL'
-            quantity: QuantitÃƒÂ©
+            quantity: Quantite
             price: Prix limite
             
         Returns:
-            DÃƒÂ©tails de l'ordre ou None si ÃƒÂ©chec
+            Details de l'ordre ou None si echec
         """
         try:
-            # Arrondir quantitÃƒÂ© et prix
+            # Arrondir quantite et prix
             quantity = self._round_quantity(symbol, quantity)
             price = self._round_price(symbol, price)
             
-            # VÃƒÂ©rifier notional minimum
+            # Verifier notional minimum
             if symbol in self.symbols_info:
                 min_notional = self.symbols_info[symbol]['min_notional']
                 if quantity * price < min_notional:
@@ -396,7 +396,7 @@ class BinanceClient:
                 price=price
             )
             
-            logger.info(f"Ã¢Å“â€¦ Ordre LIMIT {side} placÃƒÂ©: {quantity} {symbol} @ {price}")
+            logger.info(f"[OK] Ordre LIMIT {side} place: {quantity} {symbol} @ {price}")
             
             return {
                 'order_id': order['orderId'],
@@ -424,14 +424,14 @@ class BinanceClient:
             order_id: L'ID de l'ordre
             
         Returns:
-            True si succÃƒÂ¨s, False sinon
+            True si succes, False sinon
         """
         try:
             result = self.client.cancel_order(
                 symbol=symbol,
                 orderId=order_id
             )
-            logger.info(f"Ã¢Å“â€¦ Ordre {order_id} annulÃƒÂ©")
+            logger.info(f"[OK] Ordre {order_id} annule")
             return True
             
         except Exception as e:
@@ -440,10 +440,10 @@ class BinanceClient:
     
     def get_open_orders(self, symbol: str = None) -> List[Dict]:
         """
-        RÃƒÂ©cupÃƒÂ¨re les ordres ouverts
+        Recupere les ordres ouverts
         
         Args:
-            symbol: Symbole spÃƒÂ©cifique ou None pour tous
+            symbol: Symbole specifique ou None pour tous
             
         Returns:
             Liste des ordres ouverts
@@ -470,12 +470,12 @@ class BinanceClient:
             return result
             
         except Exception as e:
-            logger.error(f"Erreur rÃƒÂ©cupÃƒÂ©ration ordres ouverts: {e}")
+            logger.error(f"Erreur recuperation ordres ouverts: {e}")
             return []
     
     def get_order_status(self, symbol: str, order_id: int) -> Dict:
         """
-        RÃƒÂ©cupÃƒÂ¨re le statut d'un ordre
+        Recupere le statut d'un ordre
         
         Args:
             symbol: Le symbole
@@ -498,7 +498,7 @@ class BinanceClient:
             }
             
         except Exception as e:
-            logger.error(f"Erreur rÃƒÂ©cupÃƒÂ©ration statut ordre {order_id}: {e}")
+            logger.error(f"Erreur recuperation statut ordre {order_id}: {e}")
             return None
     
     # =============================================================
@@ -506,26 +506,26 @@ class BinanceClient:
     # =============================================================
     
     def start_websocket(self):
-        """DÃƒÂ©marre le WebSocket manager"""
+        """Demarre le WebSocket manager"""
         try:
             self.bm = BinanceSocketManager(self.client)
             self.bm.start()
             self.ws_running = True
-            logger.info("Ã¢Å“â€¦ WebSocket manager dÃƒÂ©marrÃƒÂ©")
+            logger.info("[OK] WebSocket manager demarre")
             
         except Exception as e:
-            logger.error(f"Erreur dÃƒÂ©marrage WebSocket: {e}")
+            logger.error(f"Erreur demarrage WebSocket: {e}")
     
     def stop_websocket(self):
-        """ArrÃƒÂªte le WebSocket manager"""
+        """Arrete le WebSocket manager"""
         try:
             if self.bm:
                 self.bm.stop()
                 self.ws_running = False
-                logger.info("WebSocket manager arrÃƒÂªtÃƒÂ©")
+                logger.info("WebSocket manager arrete")
                 
         except Exception as e:
-            logger.error(f"Erreur arrÃƒÂªt WebSocket: {e}")
+            logger.error(f"Erreur arret WebSocket: {e}")
     
     def subscribe_ticker(self, symbol: str, callback: Callable):
         """
@@ -533,7 +533,7 @@ class BinanceClient:
         
         Args:
             symbol: Le symbole
-            callback: Fonction ÃƒÂ  appeler ÃƒÂ  chaque update
+            callback: Fonction a appeler a chaque update
         """
         try:
             def process_message(msg):
@@ -553,7 +553,7 @@ class BinanceClient:
             
             conn_key = self.bm.start_symbol_ticker_socket(symbol, process_message)
             self.ws_connections[f'ticker_{symbol}'] = conn_key
-            logger.info(f"Ã¢Å“â€¦ Souscription ticker {symbol}")
+            logger.info(f"[OK] Souscription ticker {symbol}")
             
         except Exception as e:
             logger.error(f"Erreur souscription ticker {symbol}: {e}")
@@ -589,14 +589,14 @@ class BinanceClient:
             
             conn_key = self.bm.start_kline_socket(symbol, process_message, interval=interval)
             self.ws_connections[f'kline_{symbol}_{interval}'] = conn_key
-            logger.info(f"Ã¢Å“â€¦ Souscription kline {symbol} {interval}")
+            logger.info(f"[OK] Souscription kline {symbol} {interval}")
             
         except Exception as e:
             logger.error(f"Erreur souscription kline {symbol}: {e}")
     
     def subscribe_orderbook(self, symbol: str, callback: Callable, depth: int = 20):
         """
-        Souscrit ÃƒÂ  l'orderbook d'un symbole
+        Souscrit a l'orderbook d'un symbole
         
         Args:
             symbol: Le symbole
@@ -625,7 +625,7 @@ class BinanceClient:
                 conn_key = self.bm.start_depth_socket(symbol, process_message)
                 
             self.ws_connections[f'depth_{symbol}'] = conn_key
-            logger.info(f"Ã¢Å“â€¦ Souscription orderbook {symbol}")
+            logger.info(f"[OK] Souscription orderbook {symbol}")
             
         except Exception as e:
             logger.error(f"Erreur souscription orderbook {symbol}: {e}")
@@ -655,14 +655,14 @@ class BinanceClient:
             
             conn_key = self.bm.start_trade_socket(symbol, process_message)
             self.ws_connections[f'trades_{symbol}'] = conn_key
-            logger.info(f"Ã¢Å“â€¦ Souscription trades {symbol}")
+            logger.info(f"[OK] Souscription trades {symbol}")
             
         except Exception as e:
             logger.error(f"Erreur souscription trades {symbol}: {e}")
     
     def unsubscribe(self, connection_name: str):
         """
-        DÃƒÂ©souscrit d'un stream WebSocket
+        Desouscrit d'un stream WebSocket
         
         Args:
             connection_name: Nom de la connexion
@@ -671,34 +671,34 @@ class BinanceClient:
             if connection_name in self.ws_connections:
                 self.bm.stop_socket(self.ws_connections[connection_name])
                 del self.ws_connections[connection_name]
-                logger.info(f"DÃƒÂ©souscription {connection_name}")
+                logger.info(f"Desouscription {connection_name}")
                 
         except Exception as e:
-            logger.error(f"Erreur dÃƒÂ©souscription {connection_name}: {e}")
+            logger.error(f"Erreur desouscription {connection_name}: {e}")
     
     # =============================================================
-    # MÃƒâ€°THODES UTILITAIRES
+    # METHODES UTILITAIRES
     # =============================================================
     
     def test_connection(self) -> bool:
-        """Test la connexion ÃƒÂ  Binance"""
+        """Test la connexion a Binance"""
         try:
             self.client.ping()
             server_time = self.client.get_server_time()
             local_time = int(time.time() * 1000)
             time_diff = abs(server_time['serverTime'] - local_time)
             
-            if time_diff > 5000:  # 5 secondes de diffÃƒÂ©rence max
-                logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â DÃƒÂ©calage horaire important: {time_diff}ms")
+            if time_diff > 5000:  # 5 secondes de difference max
+                logger.warning(f"Decalage horaire important: {time_diff}ms")
             
             return True
             
         except Exception as e:
-            logger.error(f"Test connexion ÃƒÂ©chouÃƒÂ©: {e}")
+            logger.error(f"Test connexion echoue: {e}")
             return False
     
     def get_exchange_status(self) -> Dict:
-        """RÃƒÂ©cupÃƒÂ¨re le statut de l'exchange"""
+        """Recupere le statut de l'exchange"""
         try:
             status = self.client.get_system_status()
             
@@ -708,15 +708,15 @@ class BinanceClient:
             }
             
         except Exception as e:
-            logger.error(f"Erreur rÃƒÂ©cupÃƒÂ©ration statut: {e}")
+            logger.error(f"Erreur recuperation statut: {e}")
             return {'status': False, 'msg': str(e)}
     
     def get_trading_fees(self, symbol: str = None) -> Dict:
         """
-        RÃƒÂ©cupÃƒÂ¨re les frais de trading
+        Recupere les frais de trading
         
         Args:
-            symbol: Symbole spÃƒÂ©cifique ou None pour les frais gÃƒÂ©nÃƒÂ©raux
+            symbol: Symbole specifique ou None pour les frais generaux
             
         Returns:
             Frais maker et taker
@@ -736,45 +736,45 @@ class BinanceClient:
                 }
                 
         except Exception as e:
-            logger.error(f"Erreur rÃƒÂ©cupÃƒÂ©ration frais: {e}")
-            # Frais par dÃƒÂ©faut Binance
+            logger.error(f"Erreur recuperation frais: {e}")
+            # Frais par defaut Binance
             return {'maker': 0.001, 'taker': 0.001}
     
     def calculate_quantity_from_usdc(self, symbol: str, usdc_amount: float) -> float:
         """
-        Calcule la quantitÃƒÂ© ÃƒÂ  acheter avec un montant USDC
+        Calcule la quantite a acheter avec un montant USDC
         
         Args:
             symbol: Le symbole
             usdc_amount: Montant en USDC
             
         Returns:
-            QuantitÃƒÂ© arrondie selon les rÃƒÂ¨gles du symbole
+            Quantite arrondie selon les regles du symbole
         """
         try:
-            # RÃƒÂ©cupÃƒÂ¨re le prix actuel
+            # Recupere le prix actuel
             ticker = self.get_symbol_ticker(symbol)
             if not ticker:
                 return 0
             
             price = ticker['price']
             
-            # Calcule la quantitÃƒÂ©
+            # Calcule la quantite
             quantity = usdc_amount / price
             
-            # Arrondit selon les rÃƒÂ¨gles
+            # Arrondit selon les regles
             quantity = self._round_quantity(symbol, quantity)
             
             return quantity
             
         except Exception as e:
-            logger.error(f"Erreur calcul quantitÃƒÂ©: {e}")
+            logger.error(f"Erreur calcul quantite: {e}")
             return 0
     
     def close(self):
         """Ferme proprement le client"""
         try:
-            # ArrÃƒÂªte WebSocket
+            # Arrete WebSocket
             if self.ws_running:
                 self.stop_websocket()
             
@@ -785,7 +785,7 @@ class BinanceClient:
             self.positions.clear()
             
             self.connected = False
-            logger.info("Client Binance fermÃƒÂ©")
+            logger.info("Client Binance ferme")
             
         except Exception as e:
             logger.error(f"Erreur fermeture client: {e}")
@@ -804,7 +804,7 @@ if __name__ == "__main__":
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
     
-    # Remplace par tes clÃƒÂ©s API
+    # Remplace par tes cles API
     API_KEY = "your_api_key"
     SECRET_KEY = "your_secret_key"
     
@@ -823,7 +823,7 @@ if __name__ == "__main__":
     # Test klines
     df = client.get_klines('BTCUSDC', '5m', limit=20)
     if not df.empty:
-        print(f"\nDerniÃƒÂ¨res bougies:")
+        print(f"\nDernieres bougies:")
         print(df.tail())
     
     # Test WebSocket
@@ -837,5 +837,4 @@ if __name__ == "__main__":
     time.sleep(10)
     
     # Cleanup
-
     client.close()
