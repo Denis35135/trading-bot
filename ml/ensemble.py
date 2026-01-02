@@ -1,6 +1,6 @@
 """
 Ensemble ML pour The Bot
-Ensemble de 3 modÃƒÂ¨les optimisÃƒÂ©s pour CPU: LightGBM, XGBoost, RandomForest
+Ensemble de 3 modeles optimises pour CPU: LightGBM, XGBoost, RandomForest
 """
 
 import numpy as np
@@ -19,26 +19,26 @@ logger = logging.getLogger(__name__)
 
 class MLEnsemble:
     """
-    Ensemble de 3 modÃƒÂ¨les lÃƒÂ©gers mais performants
+    Ensemble de 3 modeles legers mais performants
     
-    ModÃƒÂ¨les:
+    Modeles:
     - LightGBM: Rapide et efficace
-    - XGBoost: PrÃƒÂ©cis avec tree_method='hist'
+    - XGBoost: Precis avec tree_method='hist'
     - RandomForest: Robuste et stable
     
-    PrÃƒÂ©diction par vote majoritaire avec seuil de confiance ÃƒÂ©levÃƒÂ©
+    Prediction par vote majoritaire avec seuil de confiance eleve
     """
     
     def __init__(self, config: Optional[Dict] = None):
         """
-        Initialise l'ensemble de modÃƒÂ¨les
+        Initialise l'ensemble de modeles
         
         Args:
-            config: Configuration des modÃƒÂ¨les
+            config: Configuration des modeles
         """
         self.config = config or {}
         
-        # ParamÃƒÂ¨tres par dÃƒÂ©faut optimisÃƒÂ©s pour PC classique
+        # Parametres par defaut optimises pour PC classique
         self.n_estimators = self.config.get('n_estimators', 100)
         self.max_depth_lgb = self.config.get('max_depth_lgb', 6)
         self.max_depth_xgb = self.config.get('max_depth_xgb', 5)
@@ -46,10 +46,10 @@ class MLEnsemble:
         self.learning_rate = self.config.get('learning_rate', 0.1)
         self.n_jobs = self.config.get('n_jobs', 4)
         
-        # Seuil de confiance pour prÃƒÂ©dictions
+        # Seuil de confiance pour predictions
         self.confidence_threshold = self.config.get('confidence_threshold', 0.65)
         
-        # Initialiser les modÃƒÂ¨les
+        # Initialiser les modeles
         self.models = self._initialize_models()
         
         # Statistiques
@@ -57,13 +57,13 @@ class MLEnsemble:
         self.training_scores = {}
         self.feature_importance = None
         
-        logger.info(f"Ã¢Å“â€¦ ML Ensemble initialisÃƒÂ© (3 modÃƒÂ¨les, n_jobs={self.n_jobs})")
+        logger.info(f"""| ML Ensemble initialise (3 modeles, n_jobs={self.n_jobs})")
     
     def _initialize_models(self) -> Dict:
-        """Initialise les 3 modÃƒÂ¨les"""
+        """Initialise les 3 modeles"""
         models = {}
         
-        # 1. LightGBM - TrÃƒÂ¨s rapide
+        # 1. LightGBM - Tres rapide
         models['lgb'] = LGBMClassifier(
             n_estimators=self.n_estimators,
             max_depth=self.max_depth_lgb,
@@ -74,7 +74,7 @@ class MLEnsemble:
             verbose=-1
         )
         
-        # 2. XGBoost - PrÃƒÂ©cis
+        # 2. XGBoost - Precis
         models['xgb'] = XGBClassifier(
             n_estimators=self.n_estimators,
             max_depth=self.max_depth_xgb,
@@ -98,29 +98,31 @@ class MLEnsemble:
         return models
     
     def train(self, X_train: np.ndarray, y_train: np.ndarray,
-             X_val: Optional[np.ndarray] = None,
+    """
+    X_val: Optional[np.ndarray] = None,
+    """
              y_val: Optional[np.ndarray] = None) -> Dict:
         """
-        EntraÃƒÂ®ne tous les modÃƒÂ¨les
+        Entrane tous les modeles
         
         Args:
-            X_train: Features d'entraÃƒÂ®nement
-            y_train: Labels d'entraÃƒÂ®nement
+            X_train: Features d'entranement
+            y_train: Labels d'entranement
             X_val: Features de validation (optionnel)
             y_val: Labels de validation (optionnel)
             
         Returns:
-            Dict avec les scores de chaque modÃƒÂ¨le
+            Dict avec les scores de chaque modele
         """
-        logger.info(f"EntraÃƒÂ®nement de l'ensemble sur {len(X_train)} samples...")
+        logger.info(f"Entranement de l'ensemble sur {len(X_train)} samples...")
         
         scores = {}
         
         for name, model in self.models.items():
             try:
-                logger.info(f"  EntraÃƒÂ®nement {name}...")
+                logger.info(f"  Entranement {name}...")
                 
-                # EntraÃƒÂ®ner
+                # Entraner
                 model.fit(X_train, y_train)
                 
                 # Score sur train
@@ -136,42 +138,42 @@ class MLEnsemble:
                     logger.info(f"    {name}: Train={train_score:.2%}")
                 
             except Exception as e:
-                logger.error(f"Erreur entraÃƒÂ®nement {name}: {e}")
+                logger.error(f"Erreur entranement {name}: {e}")
                 scores[f'{name}_error'] = str(e)
         
         self.is_trained = True
         self.training_scores = scores
         
-        # Calculer l'importance des features (moyenne des 3 modÃƒÂ¨les)
+        # Calculer l'importance des features (moyenne des 3 modeles)
         self._calculate_feature_importance()
         
-        logger.info("Ã¢Å“â€¦ EntraÃƒÂ®nement terminÃƒÂ©")
+        logger.info("""| Entranement termine")
         
         return scores
     
     def predict(self, X: np.ndarray, return_probabilities: bool = False) -> Tuple[int, float]:
         """
-        PrÃƒÂ©dit avec vote majoritaire
+        Predit avec vote majoritaire
         
         Args:
             X: Features (1 sample, shape: [n_features])
-            return_probabilities: Si True, retourne aussi les probas dÃƒÂ©taillÃƒÂ©es
+            return_probabilities: Si True, retourne aussi les probas detaillees
             
         Returns:
-            (signal, confidence) oÃƒÂ¹:
+            (signal, confidence) o:
             - signal: 1 (BUY), -1 (SELL), 0 (HOLD)
             - confidence: Niveau de confiance (0-1)
         """
         if not self.is_trained:
-            logger.warning("ModÃƒÂ¨les non entraÃƒÂ®nÃƒÂ©s, retour HOLD")
+            logger.warning("Modeles non entranes, retour HOLD")
             return 0, 0.0
         
         try:
-            # Reshape si nÃƒÂ©cessaire
+            # Reshape si necessaire
             if X.ndim == 1:
                 X = X.reshape(1, -1)
             
-            # PrÃƒÂ©dictions de chaque modÃƒÂ¨le
+            # Predictions de chaque modele
             predictions = []
             probabilities = []
             
@@ -181,14 +183,14 @@ class MLEnsemble:
                     probabilities.append(proba)
                     predictions.append(proba)
                 except Exception as e:
-                    logger.error(f"Erreur prÃƒÂ©diction {name}: {e}")
-                    # PrÃƒÂ©diction neutre en cas d'erreur
+                    logger.error(f"Erreur prediction {name}: {e}")
+                    # Prediction neutre en cas d'erreur
                     probabilities.append(np.array([0.5, 0.5]))
             
-            # Moyenne des probabilitÃƒÂ©s
+            # Moyenne des probabilites
             avg_proba = np.mean(probabilities, axis=0)
             
-            # DÃƒÂ©cision avec seuil de confiance
+            # Decision avec seuil de confiance
             if avg_proba[1] > self.confidence_threshold:  # BUY
                 signal = 1
                 confidence = avg_proba[1]
@@ -205,12 +207,12 @@ class MLEnsemble:
             return signal, confidence
             
         except Exception as e:
-            logger.error(f"Erreur prÃƒÂ©diction ensemble: {e}")
+            logger.error(f"Erreur prediction ensemble: {e}")
             return 0, 0.0
     
     def predict_batch(self, X: np.ndarray) -> np.ndarray:
         """
-        PrÃƒÂ©dit sur un batch de samples
+        Predit sur un batch de samples
         
         Args:
             X: Features (shape: [n_samples, n_features])
@@ -241,7 +243,7 @@ class MLEnsemble:
             
             if importances:
                 self.feature_importance = np.mean(importances, axis=0)
-                logger.debug(f"Feature importance calculÃƒÂ©e: {len(self.feature_importance)} features")
+                logger.debug(f"Feature importance calculee: {len(self.feature_importance)} features")
             
         except Exception as e:
             logger.error(f"Erreur calcul feature importance: {e}")
@@ -254,7 +256,7 @@ class MLEnsemble:
         
         Args:
             feature_names: Noms des features (optionnel)
-            top_n: Nombre de top features ÃƒÂ  retourner
+            top_n: Nombre de top features  retourner
             
         Returns:
             Dict avec les features et leur importance
@@ -262,7 +264,7 @@ class MLEnsemble:
         if self.feature_importance is None:
             return {}
         
-        # CrÃƒÂ©er un dict avec importance
+        # Creer un dict avec importance
         if feature_names:
             importance_dict = dict(zip(feature_names, self.feature_importance))
         else:
@@ -277,7 +279,7 @@ class MLEnsemble:
     
     def save(self, filepath: str):
         """
-        Sauvegarde les modÃƒÂ¨les
+        Sauvegarde les modeles
         
         Args:
             filepath: Chemin du fichier (sans extension)
@@ -286,12 +288,12 @@ class MLEnsemble:
             save_path = Path(filepath)
             save_path.parent.mkdir(parents=True, exist_ok=True)
             
-            # Sauvegarder chaque modÃƒÂ¨le
+            # Sauvegarder chaque modele
             for name, model in self.models.items():
                 model_path = save_path.parent / f"{save_path.stem}_{name}.joblib"
                 joblib.dump(model, model_path)
             
-            # Sauvegarder les mÃƒÂ©tadonnÃƒÂ©es
+            # Sauvegarder les metadonnees
             metadata = {
                 'is_trained': self.is_trained,
                 'training_scores': self.training_scores,
@@ -301,14 +303,14 @@ class MLEnsemble:
             meta_path = save_path.parent / f"{save_path.stem}_meta.joblib"
             joblib.dump(metadata, meta_path)
             
-            logger.info(f"Ã¢Å“â€¦ ModÃƒÂ¨les sauvegardÃƒÂ©s: {save_path.parent}")
+            logger.info(f"""| Modeles sauvegardes: {save_path.parent}")
             
         except Exception as e:
-            logger.error(f"Erreur sauvegarde modÃƒÂ¨les: {e}")
+            logger.error(f"Erreur sauvegarde modeles: {e}")
     
     def load(self, filepath: str):
         """
-        Charge les modÃƒÂ¨les
+        Charge les modeles
         
         Args:
             filepath: Chemin du fichier (sans extension)
@@ -316,15 +318,15 @@ class MLEnsemble:
         try:
             load_path = Path(filepath)
             
-            # Charger chaque modÃƒÂ¨le
+            # Charger chaque modele
             for name in self.models.keys():
                 model_path = load_path.parent / f"{load_path.stem}_{name}.joblib"
                 if model_path.exists():
                     self.models[name] = joblib.load(model_path)
                 else:
-                    logger.warning(f"ModÃƒÂ¨le {name} introuvable: {model_path}")
+                    logger.warning(f"Modele {name} introuvable: {model_path}")
             
-            # Charger les mÃƒÂ©tadonnÃƒÂ©es
+            # Charger les metadonnees
             meta_path = load_path.parent / f"{load_path.stem}_meta.joblib"
             if meta_path.exists():
                 metadata = joblib.load(meta_path)
@@ -332,13 +334,13 @@ class MLEnsemble:
                 self.training_scores = metadata.get('training_scores', {})
                 self.feature_importance = metadata.get('feature_importance', None)
             
-            logger.info(f"Ã¢Å“â€¦ ModÃƒÂ¨les chargÃƒÂ©s: {load_path.parent}")
+            logger.info(f"""| Modeles charges: {load_path.parent}")
             
         except Exception as e:
-            logger.error(f"Erreur chargement modÃƒÂ¨les: {e}")
+            logger.error(f"Erreur chargement modeles: {e}")
     
     def get_model_info(self) -> Dict:
-        """Retourne les informations sur les modÃƒÂ¨les"""
+        """Retourne les informations sur les modeles"""
         return {
             'is_trained': self.is_trained,
             'models': list(self.models.keys()),
@@ -358,14 +360,14 @@ if __name__ == "__main__":
     
     print("\n=== Test ML Ensemble ===\n")
     
-    # DonnÃƒÂ©es de test
+    # Donnees de test
     np.random.seed(42)
     n_samples = 1000
     n_features = 30
     
-    # GÃƒÂ©nÃƒÂ©rer des donnÃƒÂ©es synthÃƒÂ©tiques
+    # Generer des donnees synthetiques
     X = np.random.randn(n_samples, n_features)
-    # Labels: 0 (SELL) ou 1 (BUY) basÃƒÂ© sur une combinaison de features
+    # Labels: 0 (SELL) ou 1 (BUY) base sur une combinaison de features
     y = (X[:, 0] + X[:, 1] - X[:, 2] > 0).astype(int)
     
     # Split train/val
@@ -377,43 +379,43 @@ if __name__ == "__main__":
     print(f"Val: {len(X_val)} samples")
     print(f"Features: {n_features}")
     
-    # CrÃƒÂ©er l'ensemble
+    # Creer l'ensemble
     ensemble = MLEnsemble({'confidence_threshold': 0.65})
     
-    # EntraÃƒÂ®ner
+    # Entraner
     import time
     start = time.time()
     scores = ensemble.train(X_train, y_train, X_val, y_val)
     elapsed = time.time() - start
     
-    print(f"\nÃ¢ÂÂ±Ã¯Â¸Â  Temps d'entraÃƒÂ®nement: {elapsed:.2f}s")
-    print("\nÃ°Å¸â€œÅ  Scores:")
+    print(f"\n  Temps d'entranement: {elapsed:.2f}s")
+    print("\n" Scores:")
     for name, score in scores.items():
         if isinstance(score, float):
             print(f"  {name}: {score:.2%}")
     
-    # Tester des prÃƒÂ©dictions
-    print("\nÃ°Å¸â€Â® Test de prÃƒÂ©dictions:")
+    # Tester des predictions
+    print("\n" Test de predictions:")
     for i in range(5):
         signal, confidence = ensemble.predict(X_val[i])
         signal_name = {1: 'BUY', -1: 'SELL', 0: 'HOLD'}[signal]
         print(f"  Sample {i}: {signal_name} (confidence: {confidence:.2%})")
     
     # Feature importance
-    print("\nÃ°Å¸Å½Â¯ Top 10 features importantes:")
+    print("\n Top 10 features importantes:")
     importance = ensemble.get_feature_importance(top_n=10)
     for feature, imp in importance.items():
         print(f"  {feature}: {imp:.4f}")
     
     # Sauvegarder et recharger
-    print("\nÃ°Å¸â€™Â¾ Test sauvegarde/chargement...")
+    print("\n' Test sauvegarde/chargement...")
     ensemble.save('data/models/test_ensemble')
     
     ensemble2 = MLEnsemble()
     ensemble2.load('data/models/test_ensemble')
     
-    # VÃƒÂ©rifier que ÃƒÂ§a fonctionne aprÃƒÂ¨s chargement
+    # Verifier que a fonctionne apres chargement
     signal, confidence = ensemble2.predict(X_val[0])
-    print(f"  PrÃƒÂ©diction aprÃƒÂ¨s chargement: {signal}, conf: {confidence:.2%}")
+    print(f"  Prediction apres chargement: {signal}, conf: {confidence:.2%}")
     
-    print("\nÃ¢Å“â€¦ Tests terminÃƒÂ©s")
+    print("\n""| Tests termines")
