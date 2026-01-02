@@ -1,6 +1,6 @@
 """
 Execution Thread pour The Bot
-Thread d'exÃƒÂ©cution des ordres avec gestion intelligente
+Thread d'execution des ordres avec gestion intelligente
 """
 
 import time
@@ -15,19 +15,19 @@ logger = logging.getLogger(__name__)
 
 class ExecutionThread:
     """
-    Thread d'exÃƒÂ©cution des ordres
+    Thread d'execution des ordres
     
-    ResponsabilitÃƒÂ©s:
+    Responsabilites:
     - Consommer les signaux de trading depuis la queue
     - Valider les signaux avec le risk manager
     - Calculer la taille des positions
-    - ExÃƒÂ©cuter les ordres avec retry
+    - Executer les ordres avec retry
     - Tracker les positions ouvertes
     """
     
     def __init__(self, bot_instance):
         """
-        Initialise le thread d'exÃƒÂ©cution
+        Initialise le thread d'execution
         
         Args:
             bot_instance: Instance du bot principal
@@ -39,7 +39,7 @@ class ExecutionThread:
         # Queues
         self.signal_queue = Queue(maxsize=100)
         
-        # Ãƒâ€°tat
+        # Etat
         self.pending_orders = {}
         self.execution_stats = {
             'total_signals': 0,
@@ -50,12 +50,12 @@ class ExecutionThread:
             'total_execution_time_ms': 0
         }
         
-        logger.info("Execution Thread initialisÃƒÂ©")
+        logger.info("Execution Thread initialise")
     
     def start(self):
-        """DÃƒÂ©marre le thread"""
+        """Demarre le thread"""
         if self.is_running:
-            logger.warning("Execution Thread dÃƒÂ©jÃƒÂ  en cours")
+            logger.warning("Execution Thread deja en cours")
             return
         
         self.is_running = True
@@ -66,10 +66,10 @@ class ExecutionThread:
         )
         self.thread.start()
         
-        logger.info("Ã¢Å“â€¦ Execution Thread dÃƒÂ©marrÃƒÂ©")
+        logger.info("[OK] Execution Thread demarre")
     
     def stop(self):
-        """ArrÃƒÂªte le thread"""
+        """Arrete le thread"""
         if not self.is_running:
             return
         
@@ -78,28 +78,28 @@ class ExecutionThread:
         if self.thread:
             self.thread.join(timeout=10)
         
-        logger.info("Execution Thread arrÃƒÂªtÃƒÂ©")
+        logger.info("Execution Thread arrete")
     
     def add_signal(self, signal: Dict):
         """
-        Ajoute un signal ÃƒÂ  la queue d'exÃƒÂ©cution
+        Ajoute un signal a la queue d'execution
         
         Args:
-            signal: Signal de trading ÃƒÂ  exÃƒÂ©cuter
+            signal: Signal de trading a executer
         """
         try:
             self.signal_queue.put(signal, timeout=1)
-            logger.debug(f"Signal ajoutÃƒÂ© ÃƒÂ  la queue: {signal['symbol']} {signal['side']}")
+            logger.debug(f"Signal ajoute a la queue: {signal['symbol']} {signal['side']}")
         except Exception as e:
             logger.error(f"Erreur ajout signal: {e}")
     
     def _run(self):
         """Boucle principale du thread"""
-        logger.info("Ã°Å¸â€â€ž Execution Thread running...")
+        logger.info("Execution Thread running...")
         
         while self.is_running:
             try:
-                # RÃƒÂ©cupÃƒÂ©rer un signal (timeout 1 seconde)
+                # Recuperer un signal (timeout 1 seconde)
                 try:
                     signal = self.signal_queue.get(timeout=1)
                 except Empty:
@@ -112,14 +112,14 @@ class ExecutionThread:
                 logger.error(f"Erreur dans execution thread: {e}", exc_info=True)
                 time.sleep(5)
         
-        logger.info("Execution Thread terminÃƒÂ©")
+        logger.info("Execution Thread termine")
     
     def _process_signal(self, signal: Dict):
         """
         Traite un signal de trading
         
         Args:
-            signal: Signal ÃƒÂ  traiter
+            signal: Signal a traiter
         """
         start_time = time.time()
         self.execution_stats['total_signals'] += 1
@@ -128,11 +128,11 @@ class ExecutionThread:
             symbol = signal['symbol']
             side = signal['side']
             
-            logger.info(f"Ã°Å¸â€œÅ  Traitement signal: {symbol} {side} (confiance: {signal['confidence']:.2%})")
+            logger.info(f"Traitement signal: {symbol} {side} (confiance: {signal['confidence']:.2%})")
             
-            # 1. VÃƒÂ©rification avec Risk Manager
+            # 1. Verification avec Risk Manager
             if not self._validate_with_risk_manager(signal):
-                logger.warning(f"Ã¢ÂÅ’ Signal rejetÃƒÂ© par risk manager: {symbol}")
+                logger.warning(f"Signal rejete par risk manager: {symbol}")
                 self.execution_stats['signals_rejected'] += 1
                 return
             
@@ -141,23 +141,23 @@ class ExecutionThread:
             # 2. Calcul de la taille de position
             position_size = self._calculate_position_size(signal)
             if not position_size or position_size <= 0:
-                logger.warning(f"Ã¢ÂÅ’ Taille de position invalide: {position_size}")
+                logger.warning(f"Taille de position invalide: {position_size}")
                 return
             
-            # 3. ExÃƒÂ©cution de l'ordre
+            # 3. Execution de l'ordre
             order_result = self._execute_order(signal, position_size)
             
             if order_result['success']:
                 logger.info(
-                    f"Ã¢Å“â€¦ Ordre exÃƒÂ©cutÃƒÂ©: {symbol} {side} "
+                    f"[OK] Ordre execute: {symbol} {side} "
                     f"{position_size:.6f} @ ${order_result['price']:.2f}"
                 )
                 self.execution_stats['orders_executed'] += 1
                 
-                # Notifier le succÃƒÂ¨s
+                # Notifier le succes
                 self._notify_execution_success(signal, order_result)
             else:
-                logger.error(f"Ã¢ÂÅ’ Ãƒâ€°chec exÃƒÂ©cution: {order_result.get('error')}")
+                logger.error(f"[ERREUR] Echec execution: {order_result.get('error')}")
                 self.execution_stats['orders_failed'] += 1
         
         except Exception as e:
@@ -165,31 +165,31 @@ class ExecutionThread:
             self.execution_stats['orders_failed'] += 1
         
         finally:
-            # Mesurer le temps d'exÃƒÂ©cution
+            # Mesurer le temps d'execution
             elapsed_ms = (time.time() - start_time) * 1000
             self.execution_stats['total_execution_time_ms'] += elapsed_ms
-            logger.debug(f"Ã¢ÂÂ±Ã¯Â¸Â Signal traitÃƒÂ© en {elapsed_ms:.0f}ms")
+            logger.debug(f"Signal traite en {elapsed_ms:.0f}ms")
     
     def _validate_with_risk_manager(self, signal: Dict) -> bool:
         """
         Valide un signal avec le risk manager
         
         Args:
-            signal: Signal ÃƒÂ  valider
+            signal: Signal a valider
             
         Returns:
-            True si approuvÃƒÂ©
+            True si approuve
         """
         try:
             if not hasattr(self.bot, 'risk_monitor'):
-                logger.warning("Risk monitor non disponible, validation bypassÃƒÂ©e")
+                logger.warning("Risk monitor non disponible, validation bypassee")
                 return True
             
             # Demander l'approbation
             approved = self.bot.risk_monitor.approve_trade(signal)
             
             if not approved:
-                logger.info(f"Signal rejetÃƒÂ©: {signal['symbol']} - Raison: limites de risque")
+                logger.info(f"Signal rejete: {signal['symbol']} - Raison: limites de risque")
             
             return approved
             
@@ -229,21 +229,21 @@ class ExecutionThread:
     
     def _execute_order(self, signal: Dict, quantity: float) -> Dict[str, Any]:
         """
-        ExÃƒÂ©cute un ordre
+        Execute un ordre
         
         Args:
             signal: Signal de trading
-            quantity: QuantitÃƒÂ© ÃƒÂ  trader
+            quantity: Quantite a trader
             
         Returns:
-            Dict avec rÃƒÂ©sultat
+            Dict avec resultat
         """
         try:
             if not hasattr(self.bot, 'order_manager'):
                 logger.error("Order manager non disponible")
                 return {'success': False, 'error': 'No order manager'}
             
-            # PrÃƒÂ©parer les paramÃƒÂ¨tres d'ordre
+            # Preparer les parametres d'ordre
             order_params = {
                 'symbol': signal['symbol'],
                 'side': signal['side'],
@@ -265,7 +265,7 @@ class ExecutionThread:
                 time.sleep(0.1)
                 waited += 0.1
             
-            # RÃƒÂ©sultat
+            # Resultat
             if order.status == 'FILLED':
                 return {
                     'success': True,
@@ -282,7 +282,7 @@ class ExecutionThread:
                 }
         
         except Exception as e:
-            logger.error(f"Erreur exÃƒÂ©cution ordre: {e}")
+            logger.error(f"Erreur execution ordre: {e}")
             return {
                 'success': False,
                 'error': str(e)
@@ -290,11 +290,11 @@ class ExecutionThread:
     
     def _notify_execution_success(self, signal: Dict, result: Dict):
         """
-        Notifie le succÃƒÂ¨s d'une exÃƒÂ©cution
+        Notifie le succes d'une execution
         
         Args:
-            signal: Signal exÃƒÂ©cutÃƒÂ©
-            result: RÃƒÂ©sultat de l'exÃƒÂ©cution
+            signal: Signal execute
+            result: Resultat de l'execution
         """
         try:
             # Notifier le strategy manager
@@ -304,7 +304,7 @@ class ExecutionThread:
                     execution_result=result
                 )
             
-            # Envoyer notification si configurÃƒÂ©
+            # Envoyer notification si configure
             if hasattr(self.bot, 'notification_manager'):
                 self.bot.notification_manager.notify_trade(
                     symbol=signal['symbol'],
@@ -318,7 +318,7 @@ class ExecutionThread:
     
     def get_stats(self) -> Dict[str, Any]:
         """
-        Retourne les statistiques d'exÃƒÂ©cution
+        Retourne les statistiques d'execution
         
         Returns:
             Dict avec stats
@@ -350,7 +350,7 @@ class ExecutionThread:
         return len(self.pending_orders)
     
     def clear_stats(self):
-        """RÃƒÂ©initialise les statistiques"""
+        """Reinitialise les statistiques"""
         self.execution_stats = {
             'total_signals': 0,
             'signals_approved': 0,
@@ -359,18 +359,18 @@ class ExecutionThread:
             'orders_failed': 0,
             'total_execution_time_ms': 0
         }
-        logger.info("Statistiques d'exÃƒÂ©cution rÃƒÂ©initialisÃƒÂ©es")
+        logger.info("Statistiques d'execution reinitialisees")
 
 
 class OrderExecutor:
     """
-    ExÃƒÂ©cuteur d'ordres avec retry et gestion d'erreurs
-    UtilisÃƒÂ© par ExecutionThread
+    Executeur d'ordres avec retry et gestion d'erreurs
+    Utilise par ExecutionThread
     """
     
     def __init__(self, exchange_client, max_retries: int = 3):
         """
-        Initialise l'exÃƒÂ©cuteur
+        Initialise l'executeur
         
         Args:
             exchange_client: Client d'exchange
@@ -381,13 +381,13 @@ class OrderExecutor:
     
     def execute_with_retry(self, order_params: Dict) -> Dict[str, Any]:
         """
-        ExÃƒÂ©cute un ordre avec retry automatique
+        Execute un ordre avec retry automatique
         
         Args:
-            order_params: ParamÃƒÂ¨tres de l'ordre
+            order_params: Parametres de l'ordre
             
         Returns:
-            Dict avec rÃƒÂ©sultat
+            Dict avec resultat
         """
         last_error = None
         
@@ -395,7 +395,7 @@ class OrderExecutor:
             try:
                 logger.debug(f"Tentative {attempt}/{self.max_retries}")
                 
-                # ExÃƒÂ©cuter l'ordre
+                # Executer l'ordre
                 result = self.exchange.create_order(**order_params)
                 
                 return {
@@ -406,14 +406,14 @@ class OrderExecutor:
                 
             except Exception as e:
                 last_error = e
-                logger.warning(f"Tentative {attempt} ÃƒÂ©chouÃƒÂ©e: {e}")
+                logger.warning(f"Tentative {attempt} echouee: {e}")
                 
                 if attempt < self.max_retries:
                     # Attendre avant retry (backoff exponentiel)
                     wait_time = 2 ** (attempt - 1)
                     time.sleep(wait_time)
         
-        # Toutes les tentatives ont ÃƒÂ©chouÃƒÂ©
+        # Toutes les tentatives ont echoue
         return {
             'success': False,
             'error': str(last_error),
