@@ -1,6 +1,6 @@
 """
 Model Evaluation pour The Bot
-Ãƒâ€°valuation dÃƒÂ©taillÃƒÂ©e des modÃƒÂ¨les ML
+"valuation detaillee des modeles ML
 """
 
 import numpy as np
@@ -18,41 +18,43 @@ logger = logging.getLogger(__name__)
 
 class ModelEvaluator:
     """
-    Ãƒâ€°valuateur de modÃƒÂ¨les ML
+    "valuateur de modeles ML
     
-    ResponsabilitÃƒÂ©s:
-    - Ãƒâ€°valuer les performances avec mÃƒÂ©triques dÃƒÂ©taillÃƒÂ©es
-    - Comparer plusieurs modÃƒÂ¨les
-    - GÃƒÂ©nÃƒÂ©rer des rapports formatÃƒÂ©s
+    Responsabilites:
+    - "valuer les performances avec metriques detaillees
+    - Comparer plusieurs modeles
+    - Generer des rapports formates
     - Analyser la matrice de confusion
     """
     
     def __init__(self):
-        """Initialise l'ÃƒÂ©valuateur"""
-        logger.info("Ã¢Å“â€¦ Model Evaluator initialisÃƒÂ©")
+        """Initialise l'evaluateur"""
+        logger.info("""| Model Evaluator initialise")
     
     def evaluate_detailed(self, 
-                         ensemble: MLEnsemble,
+    """
+    ensemble: MLEnsemble,
+    """
                          X_test: np.ndarray,
                          y_test: np.ndarray) -> Dict:
         """
-        Ãƒâ€°valuation dÃƒÂ©taillÃƒÂ©e d'un ensemble
+        "valuation detaillee d'un ensemble
         
         Args:
-            ensemble: Ensemble ÃƒÂ  ÃƒÂ©valuer
+            ensemble: Ensemble  evaluer
             X_test: Features de test
             y_test: Labels de test (0 ou 1)
             
         Returns:
-            Dict avec mÃƒÂ©triques dÃƒÂ©taillÃƒÂ©es
+            Dict avec metriques detaillees
         """
-        logger.info(f"Ã°Å¸â€œÅ  Ãƒâ€°valuation dÃƒÂ©taillÃƒÂ©e sur {len(X_test)} samples")
+        logger.info(f"" "valuation detaillee sur {len(X_test)} samples")
         
-        # PrÃƒÂ©dictions
+        # Predictions
         y_pred = ensemble.predict_batch(X_test)
         y_pred_binary = (y_pred > 0).astype(int)
         
-        # MÃƒÂ©triques de base
+        # Metriques de base
         accuracy = accuracy_score(y_test, y_pred_binary)
         precision = precision_score(y_test, y_pred_binary, zero_division=0)
         recall = recall_score(y_test, y_pred_binary, zero_division=0)
@@ -62,7 +64,7 @@ class ModelEvaluator:
         cm = confusion_matrix(y_test, y_pred_binary)
         tn, fp, fn, tp = cm.ravel()
         
-        # MÃƒÂ©triques additionnelles
+        # Metriques additionnelles
         specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
         false_positive_rate = fp / (fp + tn) if (fp + tn) > 0 else 0
         false_negative_rate = fn / (fn + tp) if (fn + tp) > 0 else 0
@@ -70,19 +72,19 @@ class ModelEvaluator:
         # Negative Predictive Value
         npv = tn / (tn + fn) if (tn + fn) > 0 else 0
         
-        # Distribution des prÃƒÂ©dictions
+        # Distribution des predictions
         buy_signals = np.sum(y_pred == 1)
         sell_signals = np.sum(y_pred == -1)
         hold_signals = np.sum(y_pred == 0)
         
         results = {
-            # MÃƒÂ©triques principales
+            # Metriques principales
             'accuracy': float(accuracy),
             'precision': float(precision),
             'recall': float(recall),
             'f1_score': float(f1),
             
-            # MÃƒÂ©triques additionnelles
+            # Metriques additionnelles
             'specificity': float(specificity),
             'npv': float(npv),
             'false_positive_rate': float(false_positive_rate),
@@ -121,7 +123,7 @@ class ModelEvaluator:
                       X_test: np.ndarray,
                       y_test: np.ndarray) -> Dict:
         """
-        Compare plusieurs modÃƒÂ¨les
+        Compare plusieurs modeles
         
         Args:
             models_dict: Dict {name: ensemble}
@@ -129,18 +131,18 @@ class ModelEvaluator:
             y_test: Labels de test
             
         Returns:
-            Dict avec comparaison dÃƒÂ©taillÃƒÂ©e
+            Dict avec comparaison detaillee
         """
-        logger.info(f"Ã°Å¸â€Â Comparaison de {len(models_dict)} modÃƒÂ¨les")
+        logger.info(f"" Comparaison de {len(models_dict)} modeles")
         
         comparison = {}
         
         for name, ensemble in models_dict.items():
-            logger.info(f"  Ãƒâ€°valuation {name}...")
+            logger.info(f"  "valuation {name}...")
             results = self.evaluate_detailed(ensemble, X_test, y_test)
             comparison[name] = results
         
-        # Trouver le meilleur modÃƒÂ¨le selon diffÃƒÂ©rentes mÃƒÂ©triques
+        # Trouver le meilleur modele selon differentes metriques
         best_accuracy = max(comparison.items(), key=lambda x: x[1]['accuracy'])
         best_precision = max(comparison.items(), key=lambda x: x[1]['precision'])
         best_recall = max(comparison.items(), key=lambda x: x[1]['recall'])
@@ -170,20 +172,20 @@ class ModelEvaluator:
     
     def generate_report(self, evaluation: Dict) -> str:
         """
-        GÃƒÂ©nÃƒÂ¨re un rapport textuel d'ÃƒÂ©valuation
+        Genere un rapport textuel d'evaluation
         
         Args:
-            evaluation: RÃƒÂ©sultats de evaluate_detailed()
+            evaluation: Resultats de evaluate_detailed()
             
         Returns:
-            Rapport formatÃƒÂ© pour affichage console
+            Rapport formate pour affichage console
         """
         report = "\n" + "="*70 + "\n"
         report += "MODEL EVALUATION REPORT\n"
         report += "="*70 + "\n\n"
         
-        # MÃƒÂ©triques principales
-        report += "Ã°Å¸â€œÅ  MAIN METRICS\n"
+        # Metriques principales
+        report += "" MAIN METRICS\n"
         report += "-"*70 + "\n"
         report += f"Accuracy:         {evaluation['accuracy']:>8.2%}\n"
         report += f"Precision:        {evaluation['precision']:>8.2%}\n"
@@ -194,7 +196,7 @@ class ModelEvaluator:
         report += "\n"
         
         # Taux d'erreur
-        report += "Ã¢Å¡Â Ã¯Â¸Â  ERROR RATES\n"
+        report += "  ERROR RATES\n"
         report += "-"*70 + "\n"
         report += f"False Positive:   {evaluation['false_positive_rate']:>8.2%}\n"
         report += f"False Negative:   {evaluation['false_negative_rate']:>8.2%}\n"
@@ -202,7 +204,7 @@ class ModelEvaluator:
         
         # Matrice de confusion
         cm = evaluation['confusion_matrix']
-        report += "Ã°Å¸Å½Â¯ CONFUSION MATRIX\n"
+        report += " CONFUSION MATRIX\n"
         report += "-"*70 + "\n"
         report += f"                  Predicted Negative    Predicted Positive\n"
         report += f"Actual Negative   {cm['true_negative']:>18}    {cm['false_positive']:>18}\n"
@@ -212,7 +214,7 @@ class ModelEvaluator:
         # Distribution des signaux
         dist = evaluation['signal_distribution']
         pct = evaluation['percentages']
-        report += "Ã°Å¸â€œË† SIGNAL DISTRIBUTION\n"
+        report += "" SIGNAL DISTRIBUTION\n"
         report += "-"*70 + "\n"
         report += f"Buy Signals:      {dist['buy']:>6}   ({pct['buy_pct']:>6.1%})\n"
         report += f"Sell Signals:     {dist['sell']:>6}   ({pct['sell_pct']:>6.1%})\n"
@@ -220,26 +222,26 @@ class ModelEvaluator:
         report += f"Total:            {dist['total']:>6}   (100.0%)\n"
         report += "\n"
         
-        # InterprÃƒÂ©tation
-        report += "Ã°Å¸â€™Â¡ INTERPRETATION\n"
+        # Interpretation
+        report += "' INTERPRETATION\n"
         report += "-"*70 + "\n"
         
         if evaluation['accuracy'] >= 0.70:
-            report += "Ã¢Å“â€¦ Excellent: Accuracy >= 70%\n"
+            report += """| Excellent: Accuracy >= 70%\n"
         elif evaluation['accuracy'] >= 0.60:
-            report += "Ã¢Å“â€œ  Good: Accuracy >= 60%\n"
+            report += """  Good: Accuracy >= 60%\n"
         else:
-            report += "Ã¢Å¡Â Ã¯Â¸Â  Needs Improvement: Accuracy < 60%\n"
+            report += "  Needs Improvement: Accuracy < 60%\n"
         
         if evaluation['precision'] >= 0.70:
-            report += "Ã¢Å“â€¦ Low False Positives: Precision >= 70%\n"
+            report += """| Low False Positives: Precision >= 70%\n"
         else:
-            report += "Ã¢Å¡Â Ã¯Â¸Â  High False Positives: Precision < 70%\n"
+            report += "  High False Positives: Precision < 70%\n"
         
         if evaluation['recall'] >= 0.70:
-            report += "Ã¢Å“â€¦ Low False Negatives: Recall >= 70%\n"
+            report += """| Low False Negatives: Recall >= 70%\n"
         else:
-            report += "Ã¢Å¡Â Ã¯Â¸Â  High False Negatives: Recall < 70%\n"
+            report += "  High False Negatives: Recall < 70%\n"
         
         report += "\n" + "="*70 + "\n"
         
@@ -247,13 +249,13 @@ class ModelEvaluator:
     
     def generate_comparison_report(self, comparison: Dict) -> str:
         """
-        GÃƒÂ©nÃƒÂ¨re un rapport de comparaison de modÃƒÂ¨les
+        Genere un rapport de comparaison de modeles
         
         Args:
-            comparison: RÃƒÂ©sultat de compare_models()
+            comparison: Resultat de compare_models()
             
         Returns:
-            Rapport formatÃƒÂ©
+            Rapport formate
         """
         report = "\n" + "="*80 + "\n"
         report += "MODEL COMPARISON REPORT\n"
@@ -272,8 +274,8 @@ class ModelEvaluator:
         
         report += "\n"
         
-        # Meilleurs modÃƒÂ¨les par mÃƒÂ©trique
-        report += "Ã°Å¸Ââ€  BEST MODELS BY METRIC\n"
+        # Meilleurs modeles par metrique
+        report += "" BEST MODELS BY METRIC\n"
         report += "-"*80 + "\n"
         
         best = comparison['best_by_metric']
@@ -291,23 +293,23 @@ class ModelEvaluator:
                                  y_pred_signals: np.ndarray,
                                  returns: np.ndarray) -> Dict:
         """
-        Calcule des mÃƒÂ©triques spÃƒÂ©cifiques au trading
+        Calcule des metriques specifiques au trading
         
         Args:
-            y_true: Labels rÃƒÂ©els (0 ou 1)
-            y_pred_signals: Signaux prÃƒÂ©dits (-1, 0, 1)
-            returns: Returns rÃƒÂ©alisÃƒÂ©s pour chaque trade
+            y_true: Labels reels (0 ou 1)
+            y_pred_signals: Signaux predits (-1, 0, 1)
+            returns: Returns realises pour chaque trade
             
         Returns:
-            Dict avec mÃƒÂ©triques de trading
+            Dict avec metriques de trading
         """
         # Convertir signaux en positions
         y_pred_binary = (y_pred_signals > 0).astype(int)
         
-        # Identifier les vrais positifs et nÃƒÂ©gatifs
+        # Identifier les vrais positifs et negatifs
         correct_predictions = (y_true == y_pred_binary)
         
-        # Profits sur prÃƒÂ©dictions correctes vs incorrectes
+        # Profits sur predictions correctes vs incorrectes
         correct_returns = returns[correct_predictions]
         incorrect_returns = returns[~correct_predictions]
         
@@ -332,7 +334,7 @@ if __name__ == "__main__":
     
     from .ensemble import MLEnsemble
     
-    # DonnÃƒÂ©es synthÃƒÂ©tiques
+    # Donnees synthetiques
     np.random.seed(42)
     n_samples = 500
     n_features = 30
@@ -340,34 +342,34 @@ if __name__ == "__main__":
     X_test = np.random.randn(n_samples, n_features)
     y_test = (X_test[:, 0] + X_test[:, 1] - X_test[:, 2] > 0).astype(int)
     
-    print(f"DonnÃƒÂ©es test: {n_samples} samples")
+    print(f"Donnees test: {n_samples} samples")
     print(f"Distribution: {np.sum(y_test)} positifs ({np.sum(y_test)/len(y_test):.1%})")
     
-    # CrÃƒÂ©er et entraÃƒÂ®ner un ensemble de test
+    # Creer et entraner un ensemble de test
     ensemble = MLEnsemble({'n_estimators': 50})
     X_train = np.random.randn(1000, n_features)
     y_train = (X_train[:, 0] + X_train[:, 1] - X_train[:, 2] > 0).astype(int)
     ensemble.train(X_train, y_train)
     
-    # CrÃƒÂ©er l'ÃƒÂ©valuateur
+    # Creer l'evaluateur
     evaluator = ModelEvaluator()
     
-    # Ãƒâ€°valuation dÃƒÂ©taillÃƒÂ©e
-    print("\nÃ°Å¸â€œÅ  Ãƒâ€°valuation dÃƒÂ©taillÃƒÂ©e:")
+    # "valuation detaillee
+    print("\n" "valuation detaillee:")
     evaluation = evaluator.evaluate_detailed(ensemble, X_test, y_test)
     
-    # GÃƒÂ©nÃƒÂ©rer et afficher le rapport
+    # Generer et afficher le rapport
     report = evaluator.generate_report(evaluation)
     print(report)
     
-    # Test mÃƒÂ©triques de trading
-    print("\nÃ°Å¸â€™Â° MÃƒÂ©triques de trading:")
+    # Test metriques de trading
+    print("\n' Metriques de trading:")
     y_pred = ensemble.predict_batch(X_test)
-    returns = np.random.randn(n_samples) * 0.02  # Returns simulÃƒÂ©s
+    returns = np.random.randn(n_samples) * 0.02  # Returns simules
     
     trading_metrics = evaluator.calculate_trading_metrics(y_test, y_pred, returns)
     for key, value in trading_metrics.items():
         if isinstance(value, float):
             print(f"  {key}: {value:.4f}")
     
-    print("\nÃ¢Å“â€¦ Tests terminÃƒÂ©s")
+    print("\n""| Tests termines")
