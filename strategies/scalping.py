@@ -1,6 +1,6 @@
 """
-StratÃƒÂ©gie de Scalping Intelligent pour The Bot
-Vise des profits rapides de 0.3-0.5% avec haute frÃƒÂ©quence
+Strategie de Scalping Intelligent pour The Bot
+Vise des profits rapides de 0.3-0.5% avec haute frequence
 """
 
 import numpy as np
@@ -17,24 +17,24 @@ logger = logging.getLogger(__name__)
 
 class ScalpingStrategy:
     """
-    StratÃƒÂ©gie de scalping optimisÃƒÂ©e pour Binance
+    Strategie de scalping optimisee pour Binance
     
-    CaractÃƒÂ©ristiques:
+    Caracteristiques:
     - Trades courts (1-15 minutes)
-    - Profits visÃƒÂ©s: 0.3-0.5%
-    - Stop loss serrÃƒÂ©: 0.2-0.3%
-    - Haute frÃƒÂ©quence: 20-50 trades/jour
-    - Win rate visÃƒÂ©: 65-70%
+    - Profits vises: 0.3-0.5%
+    - Stop loss serre: 0.2-0.3%
+    - Haute frequence: 20-50 trades/jour
+    - Win rate vise: 65-70%
     """
     
     def __init__(self, config: dict = None):
         """
-        Initialise la stratÃƒÂ©gie de scalping
+        Initialise la strategie de scalping
         
         Args:
-            config: Configuration personnalisÃƒÂ©e
+            config: Configuration personnalisee
         """
-        # Configuration par dÃƒÂ©faut
+        # Configuration par defaut
         self.config = {
             'rsi_period': 14,
             'rsi_oversold': 30,
@@ -53,7 +53,7 @@ class ScalpingStrategy:
         if config:
             self.config.update(config)
         
-        # Ãƒâ€°tat interne
+        # "tat interne
         self.positions = {}
         self.signals_history = []
         self.performance_stats = {
@@ -66,18 +66,18 @@ class ScalpingStrategy:
         # Indicateurs
         self.indicators = TechnicalIndicators()
         
-        logger.info("StratÃƒÂ©gie Scalping initialisÃƒÂ©e")
+        logger.info("Strategie Scalping initialisee")
         logger.info(f"Config: {self.config}")
     
     def analyze(self, data: Dict) -> Optional[Dict]:
         """
-        Analyse les donnÃƒÂ©es et gÃƒÂ©nÃƒÂ¨re un signal de trading
+        Analyse les donnees et genere un signal de trading
         
         Args:
             data: Dict contenant:
                 - df: DataFrame avec OHLCV et indicateurs
                 - orderbook: Orderbook actuel
-                - recent_trades: Trades rÃƒÂ©cents
+                - recent_trades: Trades recents
                 - symbol: Le symbole
                 
         Returns:
@@ -91,15 +91,15 @@ class ScalpingStrategy:
             symbol = data.get('symbol', 'UNKNOWN')
             orderbook = data.get('orderbook', {})
             
-            # Calculer indicateurs si pas dÃƒÂ©jÃƒÂ  fait
+            # Calculer indicateurs si pas dej fait
             if 'rsi' not in df.columns:
                 df = self.indicators.calculate_all(df, self.config)
             
-            # DonnÃƒÂ©es actuelles
+            # Donnees actuelles
             current = df.iloc[-1]
             prev = df.iloc[-2]
             
-            # Analyse multi-critÃƒÂ¨res
+            # Analyse multi-criteres
             signal = self._analyze_entry_conditions(df, current, prev, orderbook)
             
             if signal:
@@ -112,7 +112,7 @@ class ScalpingStrategy:
                 
                 return signal
             
-            # VÃƒÂ©rifier les positions existantes pour sortie
+            # Verifier les positions existantes pour sortie
             exit_signal = self._check_exit_conditions(symbol, current)
             if exit_signal:
                 return exit_signal
@@ -126,10 +126,10 @@ class ScalpingStrategy:
     def _analyze_entry_conditions(self, df: pd.DataFrame, current: pd.Series, 
                                  prev: pd.Series, orderbook: Dict) -> Optional[Dict]:
         """
-        Analyse les conditions d'entrÃƒÂ©e
+        Analyse les conditions d'entree
         
         Returns:
-            Signal d'entrÃƒÂ©e ou None
+            Signal d'entree ou None
         """
         signals = {
             'long': [],
@@ -142,7 +142,7 @@ class ScalpingStrategy:
         
         # 1. RSI Oversold avec momentum shift
         if current['rsi'] < self.config['rsi_oversold']:
-            if current['rsi'] > prev['rsi']:  # RSI commence ÃƒÂ  remonter
+            if current['rsi'] > prev['rsi']:  # RSI commence  remonter
                 signals['long'].append(('rsi_oversold_reversal', 0.8))
         
         # 2. Bollinger Bands squeeze et breakout
@@ -178,7 +178,7 @@ class ScalpingStrategy:
         # 7. Orderbook imbalance (plus d'acheteurs)
         if self.config['use_orderbook'] and orderbook:
             imbalance = self._calculate_orderbook_imbalance(orderbook)
-            if imbalance > 0.6:  # 60% cÃƒÂ´tÃƒÂ© achat
+            if imbalance > 0.6:  # 60% cte achat
                 signals['long'].append(('orderbook_buy_pressure', 0.65))
         
         # ===========================================
@@ -187,7 +187,7 @@ class ScalpingStrategy:
         
         # 1. RSI Overbought avec momentum shift
         if current['rsi'] > self.config['rsi_overbought']:
-            if current['rsi'] < prev['rsi']:  # RSI commence ÃƒÂ  descendre
+            if current['rsi'] < prev['rsi']:  # RSI commence  descendre
                 signals['short'].append(('rsi_overbought_reversal', 0.8))
         
         # 2. Bollinger Bands upper rejection
@@ -219,11 +219,11 @@ class ScalpingStrategy:
         # 7. Orderbook imbalance (plus de vendeurs)
         if self.config['use_orderbook'] and orderbook:
             imbalance = self._calculate_orderbook_imbalance(orderbook)
-            if imbalance < 0.4:  # 40% cÃƒÂ´tÃƒÂ© achat = 60% vente
+            if imbalance < 0.4:  # 40% cte achat = 60% vente
                 signals['short'].append(('orderbook_sell_pressure', 0.65))
         
         # ===========================================
-        # GÃƒâ€°NÃƒâ€°RATION DU SIGNAL
+        # G"N"RATION DU SIGNAL
         # ===========================================
         
         # Calculer le score pour chaque direction
@@ -257,7 +257,7 @@ class ScalpingStrategy:
     
     def _check_exit_conditions(self, symbol: str, current: pd.Series) -> Optional[Dict]:
         """
-        VÃƒÂ©rifie les conditions de sortie pour les positions ouvertes
+        Verifie les conditions de sortie pour les positions ouvertes
         
         Returns:
             Signal de sortie ou None
@@ -317,7 +317,7 @@ class ScalpingStrategy:
     
     def _create_signal(self, side: str, price: float, confidence: float, 
                       reasons: List[Tuple], data: pd.Series) -> Dict:
-        """CrÃƒÂ©e un signal de trading formatÃƒÂ©"""
+        """Cree un signal de trading formate"""
         
         # Calcul des targets
         if side == 'BUY':
@@ -347,7 +347,7 @@ class ScalpingStrategy:
     
     def _create_exit_signal(self, symbol: str, side: str, price: float, 
                            reason: str, profit_pct: float) -> Dict:
-        """CrÃƒÂ©e un signal de sortie"""
+        """Cree un signal de sortie"""
         
         signal = {
             'type': 'EXIT',
@@ -361,7 +361,7 @@ class ScalpingStrategy:
             'timestamp': datetime.now()
         }
         
-        # Mise ÃƒÂ  jour des stats
+        # Mise  jour des stats
         if profit_pct > 0:
             self.performance_stats['winning_trades'] += 1
         else:
@@ -389,7 +389,7 @@ class ScalpingStrategy:
         return None
     
     def _find_nearest_resistance(self, df: pd.DataFrame) -> Optional[float]:
-        """Trouve la rÃƒÂ©sistance la plus proche"""
+        """Trouve la resistance la plus proche"""
         current_price = df['close'].iloc[-1]
         recent_highs = df['high'].rolling(20).max()
         
@@ -399,12 +399,12 @@ class ScalpingStrategy:
                 resistances.append(recent_highs.iloc[i])
         
         if resistances:
-            return min(resistances)  # RÃƒÂ©sistance la plus proche
+            return min(resistances)  # Resistance la plus proche
         return None
     
     def _calculate_orderbook_imbalance(self, orderbook: Dict) -> float:
         """
-        Calcule le dÃƒÂ©sÃƒÂ©quilibre de l'orderbook
+        Calcule le desequilibre de l'orderbook
         
         Returns:
             Ratio entre 0 (que des vendeurs) et 1 (que des acheteurs)
@@ -412,7 +412,7 @@ class ScalpingStrategy:
         if not orderbook or 'bids' not in orderbook or 'asks' not in orderbook:
             return 0.5
         
-        # Calculer volume pondÃƒÂ©rÃƒÂ© des 10 premiers niveaux
+        # Calculer volume pondere des 10 premiers niveaux
         bid_volume = sum(price * qty for price, qty in orderbook['bids'][:10])
         ask_volume = sum(price * qty for price, qty in orderbook['asks'][:10])
         
@@ -432,7 +432,7 @@ class ScalpingStrategy:
         if len(self.signals_history) > 100:
             self.signals_history.pop(0)
         
-        logger.info(f"Ã°Å¸â€œÅ  Signal Scalping: {signal['side']} @ {signal['price']:.4f}")
+        logger.info(f"" Signal Scalping: {signal['side']} @ {signal['price']:.4f}")
         logger.info(f"   Confidence: {signal['confidence']:.2%}")
         logger.info(f"   Raisons: {[r[0] for r in signal['reasons']]}")
     
@@ -443,8 +443,8 @@ class ScalpingStrategy:
         Args:
             symbol: Le symbole
             side: BUY ou SELL
-            entry_price: Prix d'entrÃƒÂ©e
-            quantity: QuantitÃƒÂ©
+            entry_price: Prix d'entree
+            quantity: Quantite
         """
         self.positions[symbol] = {
             'side': side,
@@ -453,7 +453,7 @@ class ScalpingStrategy:
             'entry_time': datetime.now()
         }
         
-        logger.info(f"Position enregistrÃƒÂ©e: {symbol} {side} @ {entry_price}")
+        logger.info(f"Position enregistree: {symbol} {side} @ {entry_price}")
     
     def get_performance_stats(self) -> Dict:
         """Retourne les statistiques de performance"""
@@ -480,7 +480,7 @@ class ScalpingStrategy:
 # =============================================================
 
 if __name__ == "__main__":
-    """Test de la stratÃƒÂ©gie de scalping"""
+    """Test de la strategie de scalping"""
     
     import sys
     sys.path.append('..')
@@ -493,10 +493,10 @@ if __name__ == "__main__":
         'stop_loss_percent': 0.002
     }
     
-    # Initialiser la stratÃƒÂ©gie
+    # Initialiser la strategie
     strategy = ScalpingStrategy(config)
     
-    # CrÃƒÂ©er des donnÃƒÂ©es de test
+    # Creer des donnees de test
     np.random.seed(42)
     size = 100
     
@@ -531,7 +531,7 @@ if __name__ == "__main__":
     for i in range(5):
         signal = strategy.analyze(data)
         if signal:
-            print(f"\nÃ¢Å“â€¦ Signal dÃƒÂ©tectÃƒÂ©!")
+            print(f"\n""| Signal detecte!")
             print(f"Type: {signal['type']}")
             print(f"Side: {signal['side']}")
             print(f"Prix: {signal['price']:.2f}")
@@ -544,8 +544,8 @@ if __name__ == "__main__":
     
     # Afficher stats
     stats = strategy.get_performance_stats()
-    print(f"\nÃ°Å¸â€œÅ  Statistiques:")
-    print(f"Signaux gÃƒÂ©nÃƒÂ©rÃƒÂ©s: {stats['total_signals']}")
+    print(f"\n" Statistiques:")
+    print(f"Signaux generes: {stats['total_signals']}")
     print(f"Trades: {stats['total_trades']}")
     print(f"Win rate: {stats['win_rate']:.1%}")
     print(f"Profit moyen: {stats['avg_profit']:.3%}")
