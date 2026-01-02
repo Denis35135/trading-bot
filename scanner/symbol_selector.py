@@ -1,6 +1,6 @@
 """
 Symbol Selector
-SÃƒÂ©lectionne intelligemment les meilleurs symboles ÃƒÂ  trader
+Selectionne intelligemment les meilleurs symboles  trader
 """
 
 import numpy as np
@@ -14,20 +14,20 @@ logger = logging.getLogger(__name__)
 
 class SymbolSelector:
     """
-    SÃƒÂ©lecteur intelligent de symboles
+    Selecteur intelligent de symboles
     
-    CritÃƒÂ¨res de sÃƒÂ©lection:
+    Criteres de selection:
     - Volume 24h
-    - VolatilitÃƒÂ© optimale
+    - Volatilite optimale
     - Spread bid/ask
-    - LiquiditÃƒÂ©
-    - Tendance rÃƒÂ©cente
+    - Liquidite
+    - Tendance recente
     - Performance historique
     """
     
     def __init__(self, config: Dict = None):
         """
-        Initialise le sÃƒÂ©lecteur
+        Initialise le selecteur
         
         Args:
             config: Configuration
@@ -55,15 +55,15 @@ else:
         self.symbol_scores = {}
         self.symbol_data = {}
         
-        logger.info("Ã°Å¸Å½Â¯ Symbol Selector initialisÃƒÂ©")
+        logger.info(" Symbol Selector initialise")
     
     def add_symbol(self, symbol: str, data: Dict):
         """
-        Ajoute un symbole avec ses donnÃƒÂ©es
+        Ajoute un symbole avec ses donnees
         
         Args:
             symbol: Le symbole
-            data: Dict avec donnÃƒÂ©es (df, ticker, etc.)
+            data: Dict avec donnees (df, ticker, etc.)
         """
         self.symbol_data[symbol] = data
     
@@ -74,7 +74,7 @@ else:
         Returns:
             Dict {symbol: score}
         """
-        logger.info(f"Ã°Å¸â€œÅ  Calcul des scores pour {len(self.symbol_data)} symboles")
+        logger.info(f"" Calcul des scores pour {len(self.symbol_data)} symboles")
         
         scores = {}
         
@@ -88,7 +88,7 @@ else:
         
         self.symbol_scores = scores
         
-        logger.info(f"Ã¢Å“â€¦ {len(scores)} symboles scorÃƒÂ©s")
+        logger.info(f"""| {len(scores)} symboles scores")
         
         return scores
     
@@ -98,7 +98,7 @@ else:
         
         Args:
             symbol: Le symbole
-            data: DonnÃƒÂ©es du symbole
+            data: Donnees du symbole
             
         Returns:
             Score (0-100)
@@ -108,7 +108,7 @@ else:
         # 1. Volume Score (0-30 points)
         volume_24h = data.get('volume_24h', 0)
         if volume_24h < self.config['min_volume_24h']:
-            return 0.0  # DisqualifiÃƒÂ©
+            return 0.0  # Disqualifie
         
         # Score logarithmique du volume
         volume_score = min(30, 10 * np.log10(volume_24h / self.config['min_volume_24h']))
@@ -120,7 +120,7 @@ else:
             returns = df['close'].pct_change().dropna()
             volatility = returns.std()
             
-            # VolatilitÃƒÂ© optimale entre min et max
+            # Volatilite optimale entre min et max
             if volatility < self.config['min_volatility']:
                 vol_score = 0
             elif volatility > self.config['max_volatility']:
@@ -153,10 +153,10 @@ else:
         
         # 5. Trend Score (0-15 points)
         if df is not None and len(df) >= 20:
-            # Tendance rÃƒÂ©cente (20 derniÃƒÂ¨res pÃƒÂ©riodes)
+            # Tendance recente (20 dernieres periodes)
             recent_change = (df['close'].iloc[-1] - df['close'].iloc[-20]) / df['close'].iloc[-20]
             
-            # Bonus pour tendance positive modÃƒÂ©rÃƒÂ©e
+            # Bonus pour tendance positive moderee
             if 0 < recent_change < 0.1:  # Entre 0% et 10%
                 trend_score = 15
             elif recent_change > 0:
@@ -176,16 +176,16 @@ else:
             n: Nombre de symboles (utilise config si None)
             
         Returns:
-            Liste des symboles triÃƒÂ©s par score
+            Liste des symboles tries par score
         """
         if not self.symbol_scores:
-            logger.warning("Aucun score calculÃƒÂ©, appeler calculate_scores() d'abord")
+            logger.warning("Aucun score calcule, appeler calculate_scores() d'abord")
             return []
         
         if n is None:
             n = self.config['top_n']
         
-        # Trier par score dÃƒÂ©croissant
+        # Trier par score decroissant
         sorted_symbols = sorted(
             self.symbol_scores.items(),
             key=lambda x: x[1],
@@ -194,7 +194,7 @@ else:
         
         top = [symbol for symbol, score in sorted_symbols[:n]]
         
-        logger.info(f"Ã°Å¸Ââ€  Top {len(top)} symboles sÃƒÂ©lectionnÃƒÂ©s")
+        logger.info(f"" Top {len(top)} symboles selectionnes")
         for i, (symbol, score) in enumerate(sorted_symbols[:5], 1):
             logger.info(f"   {i}. {symbol}: {score:.1f} points")
         
@@ -202,13 +202,13 @@ else:
     
     def filter_by_criteria(self, criteria: Dict) -> List[str]:
         """
-        Filtre les symboles selon des critÃƒÂ¨res personnalisÃƒÂ©s
+        Filtre les symboles selon des criteres personnalises
         
         Args:
-            criteria: Dict avec critÃƒÂ¨res (min_score, min_volume, etc.)
+            criteria: Dict avec criteres (min_score, min_volume, etc.)
             
         Returns:
-            Liste des symboles qualifiÃƒÂ©s
+            Liste des symboles qualifies
         """
         qualified = []
         
@@ -219,7 +219,7 @@ else:
         for symbol, score in self.symbol_scores.items():
             data = self.symbol_data.get(symbol, {})
             
-            # VÃƒÂ©rifier les critÃƒÂ¨res
+            # Verifier les criteres
             if score < min_score:
                 continue
             
@@ -231,16 +231,16 @@ else:
             
             qualified.append(symbol)
         
-        logger.info(f"Ã¢Å“â€¦ {len(qualified)} symboles qualifiÃƒÂ©s selon critÃƒÂ¨res")
+        logger.info(f"""| {len(qualified)} symboles qualifies selon criteres")
         
         return qualified
     
     def get_symbols_by_category(self) -> Dict[str, List[str]]:
         """
-        Groupe les symboles par catÃƒÂ©gorie (haute/moyenne/basse volatilitÃƒÂ©)
+        Groupe les symboles par categorie (haute/moyenne/basse volatilite)
         
         Returns:
-            Dict {catÃƒÂ©gorie: [symboles]}
+            Dict {categorie: [symboles]}
         """
         categories = {
             'high_volatility': [],
@@ -263,7 +263,7 @@ else:
             else:  # < 1%
                 categories['low_volatility'].append(symbol)
         
-        logger.info("Ã°Å¸â€œÅ  Symboles par catÃƒÂ©gorie:")
+        logger.info("" Symboles par categorie:")
         for cat, symbols in categories.items():
             logger.info(f"   {cat}: {len(symbols)}")
         
@@ -271,13 +271,13 @@ else:
     
     def recommend_for_strategy(self, strategy_type: str) -> List[str]:
         """
-        Recommande des symboles pour un type de stratÃƒÂ©gie
+        Recommande des symboles pour un type de strategie
         
         Args:
             strategy_type: Type (scalping, momentum, mean_reversion)
             
         Returns:
-            Liste de symboles recommandÃƒÂ©s
+            Liste de symboles recommandes
         """
         if not self.symbol_scores:
             return []
@@ -285,7 +285,7 @@ else:
         recommendations = []
         
         if strategy_type == 'scalping':
-            # Scalping: haute liquiditÃƒÂ©, faible spread, volatilitÃƒÂ© modÃƒÂ©rÃƒÂ©e
+            # Scalping: haute liquidite, faible spread, volatilite moderee
             for symbol, data in self.symbol_data.items():
                 if symbol not in self.symbol_scores:
                     continue
@@ -297,14 +297,14 @@ else:
                 if df is not None and len(df) >= 20:
                     vol = df['close'].pct_change().std()
                     
-                    # CritÃƒÂ¨res scalping
+                    # Criteres scalping
                     if (volume > 10_000_000 and 
                         spread < 0.001 and 
                         0.005 < vol < 0.02):
                         recommendations.append(symbol)
         
         elif strategy_type == 'momentum':
-            # Momentum: haute volatilitÃƒÂ©, volume ÃƒÂ©levÃƒÂ©, tendance forte
+            # Momentum: haute volatilite, volume eleve, tendance forte
             for symbol, data in self.symbol_data.items():
                 if symbol not in self.symbol_scores:
                     continue
@@ -316,14 +316,14 @@ else:
                     vol = df['close'].pct_change().std()
                     trend = (df['close'].iloc[-1] - df['close'].iloc[-20]) / df['close'].iloc[-20]
                     
-                    # CritÃƒÂ¨res momentum
+                    # Criteres momentum
                     if (volume > 5_000_000 and 
                         vol > 0.015 and 
                         abs(trend) > 0.03):
                         recommendations.append(symbol)
         
         elif strategy_type == 'mean_reversion':
-            # Mean reversion: volatilitÃƒÂ© moyenne, range-bound
+            # Mean reversion: volatilite moyenne, range-bound
             for symbol, data in self.symbol_data.items():
                 if symbol not in self.symbol_scores:
                     continue
@@ -339,27 +339,27 @@ else:
                     current = df['close'].iloc[-1]
                     position = (current - low_50) / (high_50 - low_50)
                     
-                    # CritÃƒÂ¨res mean reversion
+                    # Criteres mean reversion
                     if (0.008 < vol < 0.025 and 
-                        0.2 < position < 0.8):  # Pas aux extrÃƒÂªmes
+                        0.2 < position < 0.8):  # Pas aux extremes
                         recommendations.append(symbol)
         
-        logger.info(f"Ã°Å¸â€™Â¡ {len(recommendations)} symboles recommandÃƒÂ©s pour {strategy_type}")
+        logger.info(f"' {len(recommendations)} symboles recommandes pour {strategy_type}")
         
         return recommendations[:15]  # Max 15 recommandations
     
     def get_symbol_details(self, symbol: str) -> Dict:
         """
-        Retourne les dÃƒÂ©tails d'un symbole
+        Retourne les details d'un symbole
         
         Args:
             symbol: Le symbole
             
         Returns:
-            Dict avec dÃƒÂ©tails
+            Dict avec details
         """
         if symbol not in self.symbol_data:
-            return {'error': 'Symbole non trouvÃƒÂ©'}
+            return {'error': 'Symbole non trouve'}
         
         data = self.symbol_data[symbol]
         score = self.symbol_scores.get(symbol, 0)
@@ -411,7 +411,7 @@ else:
 if __name__ == "__main__":
     """Test du Symbol Selector"""
     
-    # DonnÃƒÂ©es de test
+    # Donnees de test
     dates = pd.date_range(start='2024-01-01', periods=100, freq='5min')
     
     test_symbols = {
@@ -459,7 +459,7 @@ if __name__ == "__main__":
     # Calculer les scores
     scores = selector.calculate_scores()
     
-    print("\n1. Scores calculÃƒÂ©s:")
+    print("\n1. Scores calcules:")
     for symbol, score in scores.items():
         print(f"   {symbol}: {score:.1f}")
     
@@ -471,7 +471,7 @@ if __name__ == "__main__":
     scalping_symbols = selector.recommend_for_strategy('scalping')
     print(f"   {', '.join(scalping_symbols) if scalping_symbols else 'Aucun'}")
     
-    print("\n4. CatÃƒÂ©gories:")
+    print("\n4. Categories:")
     categories = selector.get_symbols_by_category()
     for cat, symbols in categories.items():
         if symbols:
