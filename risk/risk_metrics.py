@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-📊 Risk Metrics Calculator
-Calcule toutes les métriques de risque pour le bot
+ Risk Metrics Calculator
+Calcule toutes les metriques de risque pour le bot
 """
 
 import numpy as np
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class RiskMetrics:
-    """Calcule et suit les métriques de risque"""
+    """Calcule et suit les metriques de risque"""
     
     def __init__(self, initial_capital: float):
         """
@@ -30,17 +30,17 @@ class RiskMetrics:
         self.returns = []
         self.trades_history = []
         
-        # Métriques
+        # Metriques
         self.total_trades = 0
         self.winning_trades = 0
         self.losing_trades = 0
         
     def update_capital(self, new_capital: float):
-        """Met à jour le capital"""
+        """Met a jour le capital"""
         self.current_capital = new_capital
         self.equity_curve.append(new_capital)
         
-        # Met à jour le peak
+        # Met a jour le peak
         if new_capital > self.peak_capital:
             self.peak_capital = new_capital
             
@@ -57,9 +57,9 @@ class RiskMetrics:
         
         Args:
             pnl: Profit/Loss du trade
-            entry_price: Prix d'entrée
+            entry_price: Prix d'entree
             exit_price: Prix de sortie
-            symbol: Symbole tradé
+            symbol: Symbole trade
             side: 'long' ou 'short'
             size: Taille de la position
         """
@@ -87,7 +87,7 @@ class RiskMetrics:
         Calcule le drawdown actuel
         
         Returns:
-            Drawdown en % (0.0 à 1.0)
+            Drawdown en % (0.0 a 1.0)
         """
         if self.peak_capital <= 0:
             return 0.0
@@ -123,24 +123,24 @@ class RiskMetrics:
         Calcule le Sharpe Ratio
         
         Args:
-            risk_free_rate: Taux sans risque annuel (0.0 par défaut)
+            risk_free_rate: Taux sans risque annuel (0.0 par defaut)
             
         Returns:
-            Sharpe ratio (annualisé)
+            Sharpe ratio (annualise)
         """
         if not self.returns or len(self.returns) < 2:
             return 0.0
             
         returns = np.array(self.returns)
         
-        # Moyenne et écart-type
+        # Moyenne et ecart-type
         mean_return = np.mean(returns)
         std_return = np.std(returns, ddof=1)
         
         if std_return == 0:
             return 0.0
             
-        # Sharpe ratio (annualisé pour trading journalier)
+        # Sharpe ratio (annualise pour trading journalier)
         # On suppose 365 jours de trading
         sharpe = (mean_return - risk_free_rate) / std_return * np.sqrt(365)
         
@@ -161,7 +161,7 @@ class RiskMetrics:
         # Moyenne
         mean_return = np.mean(returns)
         
-        # Downside deviation (seulement returns négatifs)
+        # Downside deviation (seulement returns negatifs)
         negative_returns = returns[returns < 0]
         
         if len(negative_returns) == 0:
@@ -172,7 +172,7 @@ class RiskMetrics:
         if downside_std == 0:
             return 0.0
             
-        # Sortino ratio annualisé
+        # Sortino ratio annualise
         sortino = (mean_return - risk_free_rate) / downside_std * np.sqrt(365)
         
         return sortino
@@ -182,7 +182,7 @@ class RiskMetrics:
         Calcule le win rate
         
         Returns:
-            Win rate en % (0.0 à 1.0)
+            Win rate en % (0.0 a 1.0)
         """
         if self.total_trades == 0:
             return 0.0
@@ -258,7 +258,7 @@ class RiskMetrics:
             confidence_level: Niveau de confiance (0.95 = 95%)
             
         Returns:
-            VaR en USDC (perte maximale à X% de confiance)
+            VaR en USDC (perte maximale a X% de confiance)
         """
         if not self.returns or len(self.returns) < 10:
             return 0.0
@@ -285,7 +285,7 @@ class RiskMetrics:
         if max_dd == 0:
             return float('inf')
             
-        # Return annualisé
+        # Return annualise
         if not self.returns or len(self.returns) < 2:
             return 0.0
             
@@ -296,10 +296,10 @@ class RiskMetrics:
         
     def get_all_metrics(self) -> Dict:
         """
-        Retourne toutes les métriques de risque
+        Retourne toutes les metriques de risque
         
         Returns:
-            Dict avec toutes les métriques
+            Dict avec toutes les metriques
         """
         return {
             'capital': {
@@ -334,26 +334,26 @@ class RiskMetrics:
         }
         
     def print_metrics(self):
-        """Affiche toutes les métriques"""
+        """Affiche toutes les metriques"""
         metrics = self.get_all_metrics()
         
         print("\n" + "="*60)
-        print("📊 RISK METRICS REPORT")
+        print(" RISK METRICS REPORT")
         print("="*60)
         
-        print("\n💰 CAPITAL:")
+        print("\n CAPITAL:")
         print(f"  Initial:  ${metrics['capital']['initial']:,.2f}")
         print(f"  Current:  ${metrics['capital']['current']:,.2f}")
         print(f"  Peak:     ${metrics['capital']['peak']:,.2f}")
         print(f"  Net P&L:  ${metrics['capital']['net_pnl']:+,.2f} ({metrics['capital']['return_pct']:+.2f}%)")
         
-        print("\n⚠️  RISK:")
+        print("\n  RISK:")
         print(f"  Current DD:  {metrics['risk']['current_drawdown']:.2%}")
         print(f"  Max DD:      {metrics['risk']['max_drawdown']:.2%}")
         print(f"  VaR 95%:     ${metrics['risk']['var_95']:,.2f}")
         print(f"  VaR 99%:     ${metrics['risk']['var_99']:,.2f}")
         
-        print("\n📈 PERFORMANCE:")
+        print("\n PERFORMANCE:")
         sharpe = metrics['performance']['sharpe_ratio']
         print(f"  Sharpe:      {sharpe:.2f}")
         sortino = metrics['performance']['sortino_ratio']
@@ -363,7 +363,7 @@ class RiskMetrics:
         recovery = metrics['performance']['recovery_factor']
         print(f"  Recovery:    {recovery:.2f}")
         
-        print("\n📊 TRADING:")
+        print("\n TRADING:")
         print(f"  Total Trades:    {metrics['trading']['total_trades']}")
         print(f"  Winning:         {metrics['trading']['winning_trades']}")
         print(f"  Losing:          {metrics['trading']['losing_trades']}")
@@ -378,7 +378,7 @@ class RiskMetrics:
 
 # Test du module
 if __name__ == "__main__":
-    print("📊 Test du Risk Metrics Calculator...\n")
+    print(" Test du Risk Metrics Calculator...\n")
     
     # Simule des trades
     rm = RiskMetrics(initial_capital=1000.0)
@@ -394,5 +394,5 @@ if __name__ == "__main__":
     rm.add_trade(pnl=-20, entry_price=150, exit_price=145, symbol='SOL/USDC', side='long', size=1)
     rm.update_capital(1060)
     
-    # Affiche les métriques
+    # Affiche les metriques
     rm.print_metrics()
