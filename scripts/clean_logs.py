@@ -13,7 +13,7 @@ import gzip
 import shutil
 import argparse
 
-# Ajouter le rÃƒÂ©pertoire parent au path
+# Ajouter le repertoire parent au path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 logging.basicConfig(
@@ -29,9 +29,9 @@ class LogCleaner:
     
     Fonctions:
     - Supprime les logs plus vieux que X jours
-    - Compresse les logs rÃƒÂ©cents pour ÃƒÂ©conomiser de l'espace
+    - Compresse les logs recents pour economiser de l'espace
     - Archive les logs critiques
-    - GÃƒÂ©nÃƒÂ¨re des rapports de nettoyage
+    - Genere des rapports de nettoyage
     """
     
     def __init__(self, config: dict = None):
@@ -45,7 +45,7 @@ class LogCleaner:
             'logs_dir': 'data/logs',
             'archive_dir': 'data/logs/archive',
             'retention_days': 7,  # Garder 7 jours
-            'compress_after_days': 1,  # Compresser aprÃƒÂ¨s 1 jour
+            'compress_after_days': 1,  # Compresser apres 1 jour
             'critical_patterns': ['ERROR', 'CRITICAL', 'FATAL'],
             'keep_critical': True
         }
@@ -53,13 +53,13 @@ class LogCleaner:
         self.logs_dir = Path(self.config['logs_dir'])
         self.archive_dir = Path(self.config['archive_dir'])
         
-        # CrÃƒÂ©er les dossiers si nÃƒÂ©cessaire
+        # Creer les dossiers si necessaire
         self.logs_dir.mkdir(parents=True, exist_ok=True)
         self.archive_dir.mkdir(parents=True, exist_ok=True)
         
-        logger.info(f"Ã°Å¸Â§Â¹ Log Cleaner initialisÃƒÂ©")
+        logger.info(f" Log Cleaner initialise")
         logger.info(f"   Dossier logs: {self.logs_dir}")
-        logger.info(f"   RÃƒÂ©tention: {self.config['retention_days']} jours")
+        logger.info(f"   Retention: {self.config['retention_days']} jours")
     
     def clean_logs(self) -> dict:
         """
@@ -69,7 +69,7 @@ class LogCleaner:
             Statistiques du nettoyage
         """
         try:
-            logger.info("Ã°Å¸â€â€ž DÃƒÂ©but du nettoyage des logs...")
+            logger.info(""" Debut du nettoyage des logs...")
             
             stats = {
                 'total_files': 0,
@@ -102,9 +102,9 @@ class LogCleaner:
                         log_file.unlink()
                         stats['deleted_files'] += 1
                         stats['space_freed_mb'] += size_mb
-                        logger.info(f"   Ã¢Å“â€œ SupprimÃƒÂ©: {log_file.name} ({size_mb:.2f} MB)")
+                        logger.info(f"   "" Supprime: {log_file.name} ({size_mb:.2f} MB)")
                     
-                    # 3. Compresser les logs rÃƒÂ©cents non compressÃƒÂ©s
+                    # 3. Compresser les logs recents non compresses
                     elif file_age < compress_date and not log_file.suffix == '.gz':
                         if self._compress_log(log_file):
                             stats['compressed_files'] += 1
@@ -113,30 +113,30 @@ class LogCleaner:
                 
                 except Exception as e:
                     error_msg = f"Erreur traitement {log_file.name}: {e}"
-                    logger.error(f"   Ã¢Å“â€” {error_msg}")
+                    logger.error(f"   """ {error_msg}"")
                     stats['errors'].append(error_msg)
             
-            # 4. Nettoyer les logs compressÃƒÂ©s trop vieux
+            # 4. Nettoyer les logs compresses trop vieux
             self._clean_compressed_logs(cutoff_date, stats)
             
-            # 5. GÃƒÂ©nÃƒÂ©rer un rapport
+            # 5. Generer un rapport
             self._generate_cleaning_report(stats)
             
-            logger.info(f"Ã¢Å“â€¦ Nettoyage terminÃƒÂ©!")
-            logger.info(f"   Fichiers traitÃƒÂ©s: {stats['total_files']}")
-            logger.info(f"   Fichiers supprimÃƒÂ©s: {stats['deleted_files']}")
-            logger.info(f"   Fichiers compressÃƒÂ©s: {stats['compressed_files']}")
-            logger.info(f"   Espace libÃƒÂ©rÃƒÂ©: {stats['space_freed_mb']:.2f} MB")
+            logger.info(f"""| Nettoyage termine!")
+            logger.info(f"   Fichiers traites: {stats['total_files']}")
+            logger.info(f"   Fichiers supprimes: {stats['deleted_files']}")
+            logger.info(f"   Fichiers compresses: {stats['compressed_files']}")
+            logger.info(f"   Espace libere: {stats['space_freed_mb']:.2f} MB")
             
             return stats
             
         except Exception as e:
-            logger.error(f"Ã¢ÂÅ’ Erreur nettoyage logs: {e}")
+            logger.error(f"' Erreur nettoyage logs: {e}")
             return None
     
     def _is_critical_log(self, log_file: Path) -> bool:
         """
-        VÃƒÂ©rifie si un log contient des messages critiques
+        Verifie si un log contient des messages critiques
         
         Args:
             log_file: Fichier de log
@@ -160,10 +160,10 @@ class LogCleaner:
             log_file: Fichier de log
             
         Returns:
-            True si succÃƒÂ¨s
+            True si succes
         """
         try:
-            # CrÃƒÂ©er un sous-dossier par date
+            # Creer un sous-dossier par date
             date_folder = self.archive_dir / datetime.now().strftime('%Y-%m')
             date_folder.mkdir(parents=True, exist_ok=True)
             
@@ -177,11 +177,11 @@ class LogCleaner:
             # Compresser l'archive
             self._compress_log(archive_path)
             
-            logger.info(f"   Ã¢Å“â€œ ArchivÃƒÂ© (critique): {log_file.name}")
+            logger.info(f"   "" Archive (critique): {log_file.name}")
             return True
             
         except Exception as e:
-            logger.error(f"   Ã¢Å“â€” Erreur archivage {log_file.name}: {e}")
+            logger.error(f"   """ Erreur archivage {log_file.name}: {e}")
             return False
     
     def _compress_log(self, log_file: Path) -> bool:
@@ -192,7 +192,7 @@ class LogCleaner:
             log_file: Fichier de log
             
         Returns:
-            True si succÃƒÂ¨s
+            True si succes
         """
         try:
             gz_file = log_file.with_suffix(log_file.suffix + '.gz')
@@ -204,20 +204,20 @@ class LogCleaner:
             # Supprimer l'original
             log_file.unlink()
             
-            logger.info(f"   Ã¢Å“â€œ CompressÃƒÂ©: {log_file.name}")
+            logger.info(f"   "" Compresse: {log_file.name}")
             return True
             
         except Exception as e:
-            logger.error(f"   Ã¢Å“â€” Erreur compression {log_file.name}: {e}")
+            logger.error(f"   """ Erreur compression {log_file.name}: {e}")
             return False
     
     def _clean_compressed_logs(self, cutoff_date: datetime, stats: dict):
         """
-        Nettoie les logs compressÃƒÂ©s trop vieux
+        Nettoie les logs compresses trop vieux
         
         Args:
             cutoff_date: Date limite
-            stats: Statistiques ÃƒÂ  mettre ÃƒÂ  jour
+            stats: Statistiques  mettre  jour
         """
         for gz_file in self.logs_dir.rglob('*.gz'):
             try:
@@ -229,14 +229,14 @@ class LogCleaner:
                     gz_file.unlink()
                     stats['deleted_files'] += 1
                     stats['space_freed_mb'] += size_mb
-                    logger.info(f"   Ã¢Å“â€œ SupprimÃƒÂ© (gz): {gz_file.name}")
+                    logger.info(f"   "" Supprime (gz): {gz_file.name}")
                     
             except Exception as e:
-                logger.error(f"   Ã¢Å“â€” Erreur suppression {gz_file.name}: {e}")
+                logger.error(f"   """ Erreur suppression {gz_file.name}: {e}")
     
     def _generate_cleaning_report(self, stats: dict):
         """
-        GÃƒÂ©nÃƒÂ¨re un rapport de nettoyage
+        Genere un rapport de nettoyage
         
         Args:
             stats: Statistiques du nettoyage
@@ -251,21 +251,21 @@ class LogCleaner:
                 f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
                 
                 f.write("Statistiques:\n")
-                f.write(f"  - Fichiers traitÃƒÂ©s: {stats['total_files']}\n")
-                f.write(f"  - Fichiers supprimÃƒÂ©s: {stats['deleted_files']}\n")
-                f.write(f"  - Fichiers compressÃƒÂ©s: {stats['compressed_files']}\n")
-                f.write(f"  - Fichiers archivÃƒÂ©s: {stats['archived_files']}\n")
-                f.write(f"  - Espace libÃƒÂ©rÃƒÂ©: {stats['space_freed_mb']:.2f} MB\n\n")
+                f.write(f"  - Fichiers traites: {stats['total_files']}\n")
+                f.write(f"  - Fichiers supprimes: {stats['deleted_files']}\n")
+                f.write(f"  - Fichiers compresses: {stats['compressed_files']}\n")
+                f.write(f"  - Fichiers archives: {stats['archived_files']}\n")
+                f.write(f"  - Espace libere: {stats['space_freed_mb']:.2f} MB\n\n")
                 
                 if stats['errors']:
-                    f.write("Erreurs rencontrÃƒÂ©es:\n")
+                    f.write("Erreurs rencontrees:\n")
                     for error in stats['errors']:
                         f.write(f"  - {error}\n")
             
-            logger.info(f"   Ã¢Å“â€œ Rapport gÃƒÂ©nÃƒÂ©rÃƒÂ©: {report_file.name}")
+            logger.info(f"   "" Rapport genere: {report_file.name}")
             
         except Exception as e:
-            logger.error(f"   Ã¢Å“â€” Erreur gÃƒÂ©nÃƒÂ©ration rapport: {e}")
+            logger.error(f"   """ Erreur generation rapport: {e}")
     
     def get_logs_stats(self) -> dict:
         """
@@ -334,12 +334,12 @@ class LogCleaner:
 
 
 def main():
-    """Point d'entrÃƒÂ©e du script"""
+    """Point d'entree du script"""
     parser = argparse.ArgumentParser(description='Nettoyage des logs')
     parser.add_argument('action', choices=['clean', 'list', 'stats', 'compress'],
-                       help='Action ÃƒÂ  effectuer')
+                       help='Action  effectuer')
     parser.add_argument('--retention', type=int, default=7,
-                       help='Jours de rÃƒÂ©tention (dÃƒÂ©faut: 7)')
+                       help='Jours de retention (defaut: 7)')
     parser.add_argument('--pattern', help='Pattern de recherche (pour list)')
     parser.add_argument('--no-critical', action='store_true',
                        help='Ne pas archiver les logs critiques')
@@ -358,59 +358,59 @@ def main():
     
     cleaner = LogCleaner(config)
     
-    # ExÃƒÂ©cuter l'action
+    # Executer l'action
     if args.action == 'clean':
         print("\n" + "="*50)
-        print("Ã°Å¸Â§Â¹ NETTOYAGE DES LOGS")
+        print(" NETTOYAGE DES LOGS")
         print("="*50)
         stats = cleaner.clean_logs()
         
         if stats:
-            print(f"\nÃ¢Å“â€¦ Nettoyage terminÃƒÂ©!")
-            print(f"Ã°Å¸â€œÅ  RÃƒÂ©sultats:")
-            print(f"   - Fichiers traitÃƒÂ©s: {stats['total_files']}")
-            print(f"   - Fichiers supprimÃƒÂ©s: {stats['deleted_files']}")
-            print(f"   - Fichiers compressÃƒÂ©s: {stats['compressed_files']}")
-            print(f"   - Fichiers archivÃƒÂ©s: {stats['archived_files']}")
-            print(f"   - Espace libÃƒÂ©rÃƒÂ©: {stats['space_freed_mb']:.2f} MB")
+            print(f"\n""| Nettoyage termine!")
+            print(f"" Resultats:")
+            print(f"   - Fichiers traites: {stats['total_files']}")
+            print(f"   - Fichiers supprimes: {stats['deleted_files']}")
+            print(f"   - Fichiers compresses: {stats['compressed_files']}")
+            print(f"   - Fichiers archives: {stats['archived_files']}")
+            print(f"   - Espace libere: {stats['space_freed_mb']:.2f} MB")
             
             if stats['errors']:
-                print(f"\nÃ¢Å¡Â Ã¯Â¸Â Erreurs: {len(stats['errors'])}")
+                print(f"\n Erreurs: {len(stats['errors'])}")
         else:
-            print("\nÃ¢ÂÅ’ Ãƒâ€°chec du nettoyage")
+            print("\n' "chec du nettoyage")
     
     elif args.action == 'list':
         print("\n" + "="*50)
-        print("Ã°Å¸â€œâ€¹ LISTE DES LOGS")
+        print(""" LISTE DES LOGS")
         print("="*50)
         logs = cleaner.list_logs(args.pattern)
         
         if not logs:
-            print("\nÃ¢â€žÂ¹Ã¯Â¸Â  Aucun log trouvÃƒÂ©")
+            print("\n"  Aucun log trouve")
         else:
             print(f"\nTotal: {len(logs)} log(s)\n")
             for i, log in enumerate(logs, 1):
-                icon = "Ã°Å¸â€œÂ¦" if log['compressed'] else "Ã°Å¸â€œâ€ž"
+                icon = ""|" if log['compressed'] else """"
                 print(f"{i}. {icon} {log['name']}")
                 print(f"   Taille: {log['size_mb']:.2f} MB")
-                print(f"   ModifiÃƒÂ©: {log['modified'].strftime('%Y-%m-%d %H:%M:%S')}")
+                print(f"   Modifie: {log['modified'].strftime('%Y-%m-%d %H:%M:%S')}")
                 print()
     
     elif args.action == 'stats':
         print("\n" + "="*50)
-        print("Ã°Å¸â€œÅ  STATISTIQUES DES LOGS")
+        print("" STATISTIQUES DES LOGS")
         print("="*50)
         stats = cleaner.get_logs_stats()
         
         print(f"\nTotal fichiers: {stats['total_files']}")
         print(f"Taille totale: {stats['total_size_mb']:.2f} MB")
-        print(f"Fichiers compressÃƒÂ©s: {stats['compressed_files']}")
+        print(f"Fichiers compresses: {stats['compressed_files']}")
         print(f"Plus ancien: {stats['oldest_log']}")
-        print(f"Plus rÃƒÂ©cent: {stats['newest_log']}")
+        print(f"Plus recent: {stats['newest_log']}")
     
     elif args.action == 'compress':
         print("\n" + "="*50)
-        print("Ã°Å¸â€œÂ¦ COMPRESSION DES LOGS")
+        print(""| COMPRESSION DES LOGS")
         print("="*50)
         
         compressed = 0
@@ -418,7 +418,7 @@ def main():
             if cleaner._compress_log(log_file):
                 compressed += 1
         
-        print(f"\nÃ¢Å“â€¦ {compressed} fichier(s) compressÃƒÂ©(s)")
+        print(f"\n""| {compressed} fichier(s) compresse(s)")
     
     print("\n" + "="*50 + "\n")
 
