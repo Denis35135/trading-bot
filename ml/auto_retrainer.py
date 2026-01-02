@@ -1,6 +1,6 @@
 """
 Auto Retrainer pour The Bot
-RÃƒÂ©entraÃƒÂ®nement automatique des modÃƒÂ¨les ML
+Reentranement automatique des modeles ML
 """
 
 import numpy as np
@@ -18,13 +18,13 @@ logger = logging.getLogger(__name__)
 
 class AutoRetrainer:
     """
-    RÃƒÂ©entraÃƒÂ®nement automatique des modÃƒÂ¨les
+    Reentranement automatique des modeles
     
-    ResponsabilitÃƒÂ©s:
-    - DÃƒÂ©tecter quand rÃƒÂ©entraÃƒÂ®ner (heure, performance, rÃƒÂ©gime marchÃƒÂ©)
-    - Charger les donnÃƒÂ©es rÃƒÂ©centes
-    - RÃƒÂ©entraÃƒÂ®ner les modÃƒÂ¨les
-    - Valider avant dÃƒÂ©ploiement (ne dÃƒÂ©ploie que si meilleur)
+    Responsabilites:
+    - Detecter quand reentraner (heure, performance, regime marche)
+    - Charger les donnees recentes
+    - Reentraner les modeles
+    - Valider avant deploiement (ne deploie que si meilleur)
     """
     
     def __init__(self, config: Optional[Dict] = None):
@@ -36,13 +36,13 @@ class AutoRetrainer:
         """
         self.config = config or {}
         
-        # ParamÃƒÂ¨tres
-        self.retrain_hour = self.config.get('retrain_hour', 3)  # 3h du matin par dÃƒÂ©faut
+        # Parametres
+        self.retrain_hour = self.config.get('retrain_hour', 3)  # 3h du matin par defaut
         self.min_samples = self.config.get('min_samples', 10000)
         self.performance_threshold = self.config.get('performance_threshold', 0.6)
         self.retrain_frequency_days = self.config.get('retrain_frequency_days', 7)
         
-        # Ãƒâ€°tat
+        # "tat
         self.last_retrain = None
         self.current_performance = 0.0
         self.retrain_history = []
@@ -51,42 +51,42 @@ class AutoRetrainer:
         self.feature_engineer = FeatureEngineer()
         self.ensemble = None
         
-        logger.info(f"Ã¢Å“â€¦ Auto Retrainer initialisÃƒÂ© (heure: {self.retrain_hour}h, freq: {self.retrain_frequency_days}j)")
+        logger.info(f"""| Auto Retrainer initialise (heure: {self.retrain_hour}h, freq: {self.retrain_frequency_days}j)")
     
     def should_retrain(self) -> bool:
         """
-        DÃƒÂ©termine si un rÃƒÂ©entraÃƒÂ®nement est nÃƒÂ©cessaire
+        Determine si un reentranement est necessaire
         
-        CritÃƒÂ¨res:
-        1. Heure programmÃƒÂ©e atteinte
-        2. Performance dÃƒÂ©gradÃƒÂ©e
-        3. Changement de rÃƒÂ©gime de marchÃƒÂ©
+        Criteres:
+        1. Heure programmee atteinte
+        2. Performance degradee
+        3. Changement de regime de marche
         
         Returns:
-            True si rÃƒÂ©entraÃƒÂ®nement nÃƒÂ©cessaire
+            True si reentranement necessaire
         """
         now = datetime.now()
         
-        # 1. VÃƒÂ©rifier l'heure programmÃƒÂ©e
+        # 1. Verifier l'heure programmee
         if now.hour == self.retrain_hour:
-            # VÃƒÂ©rifier la frÃƒÂ©quence
+            # Verifier la frequence
             if self.last_retrain is None:
-                logger.info("Ã¢ÂÂ° Premier rÃƒÂ©entraÃƒÂ®nement")
+                logger.info(" Premier reentranement")
                 return True
             
             days_since_last = (now - self.last_retrain).days
             if days_since_last >= self.retrain_frequency_days:
-                logger.info(f"Ã¢ÂÂ° Heure de rÃƒÂ©entraÃƒÂ®nement ({days_since_last} jours depuis le dernier)")
+                logger.info(f" Heure de reentranement ({days_since_last} jours depuis le dernier)")
                 return True
         
-        # 2. VÃƒÂ©rifier la performance
+        # 2. Verifier la performance
         if self.current_performance > 0 and self.current_performance < self.performance_threshold:
-            logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â Performance dÃƒÂ©gradÃƒÂ©e: {self.current_performance:.2%} < {self.performance_threshold:.2%}")
+            logger.warning(f" Performance degradee: {self.current_performance:.2%} < {self.performance_threshold:.2%}")
             return True
         
-        # 3. VÃƒÂ©rifier changement de rÃƒÂ©gime de marchÃƒÂ©
+        # 3. Verifier changement de regime de marche
         if self.detect_regime_change():
-            logger.info("Ã°Å¸â€œÅ  Changement de rÃƒÂ©gime de marchÃƒÂ© dÃƒÂ©tectÃƒÂ©")
+            logger.info("" Changement de regime de marche detecte")
             return True
         
         return False
@@ -97,35 +97,35 @@ class AutoRetrainer:
                model_save_path: str,
                test_size: float = 0.2) -> Dict:
         """
-        RÃƒÂ©entraÃƒÂ®ne les modÃƒÂ¨les
+        Reentrane les modeles
         
         Args:
             trades_data: DataFrame avec historique des trades
             ohlcv_data: Dict {symbol: DataFrame OHLCV}
-            model_save_path: Chemin pour sauvegarder les modÃƒÂ¨les
+            model_save_path: Chemin pour sauvegarder les modeles
             test_size: Taille du set de validation
             
         Returns:
-            Dict avec les rÃƒÂ©sultats du rÃƒÂ©entraÃƒÂ®nement
+            Dict avec les resultats du reentranement
         """
-        logger.info("Ã°Å¸â€â€ž DÃƒÂ©but rÃƒÂ©entraÃƒÂ®nement automatique...")
+        logger.info(""" Debut reentranement automatique...")
         
         try:
-            # 1. VÃƒÂ©rifier qu'on a assez de donnÃƒÂ©es
+            # 1. Verifier qu'on a assez de donnees
             if len(trades_data) < self.min_samples:
-                logger.warning(f"Pas assez de donnÃƒÂ©es: {len(trades_data)} < {self.min_samples}")
+                logger.warning(f"Pas assez de donnees: {len(trades_data)} < {self.min_samples}")
                 return {
                     'status': 'skipped',
                     'reason': 'insufficient_data',
                     'trades_count': len(trades_data)
                 }
             
-            # 2. PrÃƒÂ©parer les donnÃƒÂ©es d'entraÃƒÂ®nement
-            logger.info("Ã°Å¸â€œÅ  PrÃƒÂ©paration des donnÃƒÂ©es...")
+            # 2. Preparer les donnees d'entranement
+            logger.info("" Preparation des donnees..."")
             X, y = self._prepare_training_data(trades_data, ohlcv_data)
             
             if len(X) < self.min_samples:
-                logger.warning(f"Pas assez de samples aprÃƒÂ¨s prÃƒÂ©paration: {len(X)}")
+                logger.warning(f"Pas assez de samples apres preparation: {len(X)}")
                 return {
                     'status': 'skipped',
                     'reason': 'insufficient_samples',
@@ -140,14 +140,14 @@ class AutoRetrainer:
             
             logger.info(f"Split: {len(X_train)} train, {len(X_val)} val")
             
-            # 4. CrÃƒÂ©er un nouvel ensemble
+            # 4. Creer un nouvel ensemble
             new_ensemble = MLEnsemble(self.config.get('ensemble_config', {}))
             
-            # 5. EntraÃƒÂ®ner
-            logger.info("Ã°Å¸Å½Â¯ EntraÃƒÂ®nement...")
+            # 5. Entraner
+            logger.info(" Entranement...")
             scores = new_ensemble.train(X_train, y_train, X_val, y_val)
             
-            # 6. Ãƒâ€°valuer la performance
+            # 6. "valuer la performance
             from sklearn.metrics import accuracy_score
             y_pred = new_ensemble.predict_batch(X_val)
             y_pred_binary = (y_pred > 0).astype(int)
@@ -156,22 +156,22 @@ class AutoRetrainer:
             logger.info(f"Nouvelle performance: {new_performance:.2%}")
             logger.info(f"Performance actuelle: {self.current_performance:.2%}")
             
-            # 7. DÃƒÂ©cider si on dÃƒÂ©ploie
+            # 7. Decider si on deploie
             if new_performance >= self.current_performance:
-                # Sauvegarder les nouveaux modÃƒÂ¨les
+                # Sauvegarder les nouveaux modeles
                 new_ensemble.save(model_save_path)
                 
-                # Mettre ÃƒÂ  jour l'ÃƒÂ©tat
+                # Mettre  jour l'etat
                 self.ensemble = new_ensemble
                 self.current_performance = new_performance
                 self.last_retrain = datetime.now()
                 
                 status = 'success'
-                logger.info(f"Ã¢Å“â€¦ Nouveaux modÃƒÂ¨les dÃƒÂ©ployÃƒÂ©s: {new_performance:.2%} >= {self.current_performance:.2%}")
+                logger.info(f"""| Nouveaux modeles deployes: {new_performance:.2%} >= {self.current_performance:.2%}")
             else:
                 status = 'rejected'
-                logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â Nouveaux modÃƒÂ¨les rejetÃƒÂ©s: {new_performance:.2%} < {self.current_performance:.2%}")
-                logger.warning("Anciens modÃƒÂ¨les conservÃƒÂ©s")
+                logger.warning(f" Nouveaux modeles rejetes: {new_performance:.2%} < {self.current_performance:.2%}")
+                logger.warning("Anciens modeles conserves")
             
             # 8. Enregistrer dans l'historique
             result = {
@@ -190,7 +190,7 @@ class AutoRetrainer:
             return result
             
         except Exception as e:
-            logger.error(f"Ã¢ÂÅ’ Erreur rÃƒÂ©entraÃƒÂ®nement: {e}")
+            logger.error(f"' Erreur reentranement: {e}")
             return {
                 'status': 'error',
                 'error': str(e),
@@ -198,16 +198,18 @@ class AutoRetrainer:
             }
     
     def _prepare_training_data(self, 
-                              trades_data: pd.DataFrame,
+    """
+    trades_data: pd.DataFrame,
+    """
                               ohlcv_data: Dict[str, pd.DataFrame],
                               lookback_periods: int = 50) -> tuple:
         """
-        PrÃƒÂ©pare les donnÃƒÂ©es d'entraÃƒÂ®nement ÃƒÂ  partir des trades
+        Prepare les donnees d'entranement  partir des trades
         
         Args:
             trades_data: DataFrame avec les trades
-            ohlcv_data: Dict avec donnÃƒÂ©es OHLCV
-            lookback_periods: Nombre de pÃƒÂ©riodes en arriÃƒÂ¨re
+            ohlcv_data: Dict avec donnees OHLCV
+            lookback_periods: Nombre de periodes en arriere
             
         Returns:
             (X, y) Features et labels
@@ -221,13 +223,13 @@ class AutoRetrainer:
                 entry_time = trade['entry_time']
                 profit = trade['profit']
                 
-                # VÃƒÂ©rifier qu'on a les donnÃƒÂ©es
+                # Verifier qu'on a les donnees
                 if symbol not in ohlcv_data:
                     continue
                 
                 df = ohlcv_data[symbol]
                 
-                # Filtrer jusqu'ÃƒÂ  l'entrÃƒÂ©e
+                # Filtrer jusqu' l'entree
                 df_before = df[df['timestamp'] <= entry_time].tail(lookback_periods)
                 
                 if len(df_before) < lookback_periods:
@@ -236,7 +238,7 @@ class AutoRetrainer:
                 # Calculer les features
                 features = self.feature_engineer.calculate_features(df_before)
                 
-                # Prendre la derniÃƒÂ¨re ligne
+                # Prendre la derniere ligne
                 X_list.append(features[-1])
                 
                 # Label: 1 si profit, 0 si perte
@@ -249,58 +251,58 @@ class AutoRetrainer:
         X = np.array(X_list)
         y = np.array(y_list)
         
-        logger.info(f"DonnÃƒÂ©es prÃƒÂ©parÃƒÂ©es: {len(X)} samples")
+        logger.info(f"Donnees preparees: {len(X)} samples")
         logger.info(f"Distribution: {np.sum(y)} wins ({np.sum(y)/len(y):.1%}), {len(y) - np.sum(y)} losses")
         
         return X, y
     
     def detect_regime_change(self) -> bool:
         """
-        DÃƒÂ©tecte un changement de rÃƒÂ©gime de marchÃƒÂ©
+        Detecte un changement de regime de marche
         
         Analyse:
-        - VolatilitÃƒÂ©
+        - Volatilite
         - Volume
-        - CorrÃƒÂ©lations
+        - Correlations
         - Tendance
         
         Returns:
-            True si changement dÃƒÂ©tectÃƒÂ©
+            True si changement detecte
         """
-        # TODO: ImplÃƒÂ©menter la dÃƒÂ©tection de changement de rÃƒÂ©gime
+        # TODO: Implementer la detection de changement de regime
         # Pour l'instant, retourner False
         # 
-        # Dans une version complÃƒÂ¨te:
-        # - Analyser la volatilitÃƒÂ© rÃƒÂ©cente vs historique
-        # - DÃƒÂ©tecter des changements de corrÃƒÂ©lations entre actifs
+        # Dans une version complete:
+        # - Analyser la volatilite recente vs historique
+        # - Detecter des changements de correlations entre actifs
         # - Identifier des changements de volume
-        # - DÃƒÂ©tecter des changements de tendance
+        # - Detecter des changements de tendance
         
         return False
     
     def update_performance(self, performance: float):
         """
-        Met ÃƒÂ  jour la performance actuelle du modÃƒÂ¨le
+        Met  jour la performance actuelle du modele
         
         Args:
-            performance: Performance mesurÃƒÂ©e (accuracy, win rate, etc.)
+            performance: Performance mesuree (accuracy, win rate, etc.)
         """
         self.current_performance = performance
-        logger.debug(f"Performance mise ÃƒÂ  jour: {performance:.2%}")
+        logger.debug(f"Performance mise  jour: {performance:.2%}")
     
     def load_current_models(self, model_path: str):
         """
-        Charge les modÃƒÂ¨les actuels
+        Charge les modeles actuels
         
         Args:
-            model_path: Chemin vers les modÃƒÂ¨les
+            model_path: Chemin vers les modeles
         """
         try:
             self.ensemble = MLEnsemble()
             self.ensemble.load(model_path)
-            logger.info(f"Ã¢Å“â€¦ ModÃƒÂ¨les actuels chargÃƒÂ©s: {model_path}")
+            logger.info(f"""| Modeles actuels charges: {model_path}")
         except Exception as e:
-            logger.error(f"Erreur chargement modÃƒÂ¨les: {e}")
+            logger.error(f"Erreur chargement modeles: {e}")
     
     def get_status(self) -> Dict:
         """
@@ -319,9 +321,9 @@ class AutoRetrainer:
         }
     
     def _get_next_scheduled_retrain(self) -> Optional[str]:
-        """Calcule la prochaine heure de rÃƒÂ©entraÃƒÂ®nement programmÃƒÂ©e"""
+        """Calcule la prochaine heure de reentranement programmee"""
         if self.last_retrain is None:
-            return "Non programmÃƒÂ© (premier rÃƒÂ©entraÃƒÂ®nement)"
+            return "Non programme (premier reentranement)"
         
         next_retrain = self.last_retrain + timedelta(days=self.retrain_frequency_days)
         next_retrain = next_retrain.replace(hour=self.retrain_hour, minute=0, second=0)
@@ -330,13 +332,13 @@ class AutoRetrainer:
     
     def get_history(self, limit: int = 10) -> list:
         """
-        Retourne l'historique des rÃƒÂ©entraÃƒÂ®nements
+        Retourne l'historique des reentranements
         
         Args:
-            limit: Nombre max d'entrÃƒÂ©es
+            limit: Nombre max d'entrees
             
         Returns:
-            Liste des rÃƒÂ©entraÃƒÂ®nements rÃƒÂ©cents
+            Liste des reentranements recents
         """
         return self.retrain_history[-limit:]
 
@@ -358,24 +360,24 @@ if __name__ == "__main__":
         'retrain_frequency_days': 1
     }
     
-    # CrÃƒÂ©er l'auto-retrainer
+    # Creer l'auto-retrainer
     retrainer = AutoRetrainer(config)
     
     # Status
-    print("Ã°Å¸â€œÅ  Status initial:")
+    print("" Status initial:")
     status = retrainer.get_status()
     for key, value in status.items():
         print(f"  {key}: {value}")
     
     # Test should_retrain
-    print(f"\nÃ°Å¸â€Â Should retrain: {retrainer.should_retrain()}")
+    print(f"\n" Should retrain: {retrainer.should_retrain()}")
     
     # Simuler une performance
     retrainer.update_performance(0.55)
-    print(f"\nÃ¢Å¡Â Ã¯Â¸Â  Performance dÃƒÂ©gradÃƒÂ©e: {retrainer.should_retrain()}")
+    print(f"\n  Performance degradee: {retrainer.should_retrain()}")
     
-    # CrÃƒÂ©er des donnÃƒÂ©es de test
-    print("\nÃ°Å¸â€œÂ¦ CrÃƒÂ©ation donnÃƒÂ©es de test...")
+    # Creer des donnees de test
+    print("\n"| Creation donnees de test...")
     trades_data = pd.DataFrame({
         'symbol': ['BTCUSDT'] * 200,
         'entry_time': pd.date_range(start='2024-01-01', periods=200, freq='1h'),
@@ -393,16 +395,16 @@ if __name__ == "__main__":
         })
     }
     
-    # Test rÃƒÂ©entraÃƒÂ®nement
-    print("\nÃ°Å¸Å½Â¯ Test rÃƒÂ©entraÃƒÂ®nement...")
+    # Test reentranement
+    print("\n Test reentranement...")
     result = retrainer.retrain(
         trades_data, 
         ohlcv_data, 
         'data/models/test_retrain'
     )
     
-    print(f"\nRÃƒÂ©sultat: {result['status']}")
+    print(f"\nResultat: {result['status']}")
     if 'new_performance' in result:
         print(f"Performance: {result['new_performance']:.2%}")
     
-    print("\nÃ¢Å“â€¦ Test terminÃƒÂ©")
+    print("\n""| Test termine")
