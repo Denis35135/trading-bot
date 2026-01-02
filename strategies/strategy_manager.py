@@ -1,6 +1,6 @@
 """
-Strategy Manager pour The Bot - IMPORTS CORRIGÃƒâ€°S
-Coordonne toutes les stratÃƒÂ©gies et gÃƒÂ¨re l'allocation du capital
+Strategy Manager pour The Bot - IMPORTS CORRIG"S
+Coordonne toutes les strategies et gere l'allocation du capital
 """
 
 import time
@@ -14,15 +14,15 @@ from queue import Queue
 from collections import defaultdict
 import logging
 
-# CrÃƒÂ©er l'enum OrderPriority localement puisqu'elle n'existe pas dans order_manager
+# Creer l'enum OrderPriority localement puisqu'elle n'existe pas dans order_manager
 class OrderPriority(Enum):
-    """Niveaux de prioritÃƒÂ© des ordres"""
+    """Niveaux de priorite des ordres"""
     LOW = 1
     NORMAL = 2
     HIGH = 3
     CRITICAL = 4
 
-# Import des composants du bot (CORRIGÃƒâ€°S)
+# Import des composants du bot (CORRIG"S)
 from risk.position_sizing import PositionSizer
 from risk.risk_monitor import RiskMonitor, RiskLevel  # RiskLevel existe bien dans risk_monitor.py
 from exchange.order_manager import OrderManager  # Sans OrderPriority
@@ -31,19 +31,19 @@ from strategies.scalping import ScalpingStrategy
 logger = logging.getLogger(__name__)
 
 # Reste du code de StrategyManager...
-# Note: Dans les mÃƒÂ©thodes qui utilisent OrderPriority, elle est maintenant dÃƒÂ©finie localement
+# Note: Dans les methodes qui utilisent OrderPriority, elle est maintenant definie localement
 
 class StrategyManager:
     """
-    Gestionnaire central des stratÃƒÂ©gies de trading
+    Gestionnaire central des strategies de trading
     
-    ResponsabilitÃƒÂ©s:
-    - Charger et initialiser les stratÃƒÂ©gies
-    - Distribuer les donnÃƒÂ©es aux stratÃƒÂ©gies
+    Responsabilites:
+    - Charger et initialiser les strategies
+    - Distribuer les donnees aux strategies
     - Collecter et filtrer les signaux
-    - GÃƒÂ©rer l'allocation du capital entre stratÃƒÂ©gies
+    - Gerer l'allocation du capital entre strategies
     - Coordonner avec risk monitor et order manager
-    - Tracker la performance par stratÃƒÂ©gie
+    - Tracker la performance par strategie
     """
     
     def __init__(self, 
@@ -68,12 +68,12 @@ class StrategyManager:
         self.position_sizer = position_sizer
         self.risk_monitor = risk_monitor
         
-        # StratÃƒÂ©gies configurÃƒÂ©es
+        # Strategies configurees
         self.strategy_configs = getattr(config, 'STRATEGIES', [])
         self.active_strategies = {}
         self.strategy_allocations = {}
         
-        # Ãƒâ€°tat
+        # "tat
         self.is_running = False
         self.trading_enabled = True
         self.positions = {}  # Positions ouvertes par symbole
@@ -96,14 +96,14 @@ class StrategyManager:
         self.market_data_cache = {}
         self.last_data_update = {}
         
-        # Initialiser les stratÃƒÂ©gies
+        # Initialiser les strategies
         self._initialize_strategies()
         
-        logger.info("Strategy Manager initialisÃƒÂ©")
-        logger.info(f"StratÃƒÂ©gies actives: {list(self.active_strategies.keys())}")
+        logger.info("Strategy Manager initialise")
+        logger.info(f"Strategies actives: {list(self.active_strategies.keys())}")
     
     def _initialize_strategies(self):
-        """Initialise toutes les stratÃƒÂ©gies configurÃƒÂ©es"""
+        """Initialise toutes les strategies configurees"""
         total_allocation = 0
         
         for strat_config in self.strategy_configs:
@@ -112,11 +112,11 @@ class StrategyManager:
             enabled = strat_getattr(config, 'ENABLED', True)
             
             if not enabled:
-                logger.info(f"StratÃƒÂ©gie {name} dÃƒÂ©sactivÃƒÂ©e")
+                logger.info(f"Strategie {name} desactivee")
                 continue
             
             try:
-                # Charger la stratÃƒÂ©gie dynamiquement
+                # Charger la strategie dynamiquement
                 strategy = self._load_strategy(name, strat_config)
                 
                 if strategy:
@@ -124,30 +124,30 @@ class StrategyManager:
                     self.strategy_allocations[name] = allocation
                     total_allocation += allocation
                     
-                    logger.info(f"Ã¢Å“â€¦ StratÃƒÂ©gie {name} chargÃƒÂ©e (allocation: {allocation:.1%})")
+                    logger.info(f"""| Strategie {name} chargee (allocation: {allocation:.1%})")
                 
             except Exception as e:
-                logger.error(f"Erreur chargement stratÃƒÂ©gie {name}: {e}")
+                logger.error(f"Erreur chargement strategie {name}: {e}")
         
         # Normaliser les allocations
         if total_allocation > 0 and total_allocation != 1.0:
             for name in self.strategy_allocations:
                 self.strategy_allocations[name] /= total_allocation
-            logger.info(f"Allocations normalisÃƒÂ©es (total ÃƒÂ©tait {total_allocation:.1%})")
+            logger.info(f"Allocations normalisees (total etait {total_allocation:.1%})")
     
     def _load_strategy(self, name: str, config: Dict):
         """
-        Charge une stratÃƒÂ©gie par son nom
+        Charge une strategie par son nom
         
         Args:
-            name: Nom de la stratÃƒÂ©gie
-            config: Configuration spÃƒÂ©cifique
+            name: Nom de la strategie
+            config: Configuration specifique
             
         Returns:
-            Instance de la stratÃƒÂ©gie
+            Instance de la strategie
         """
-        # Pour l'instant, seulement scalping implÃƒÂ©mentÃƒÂ©
-        # Ajouter les autres stratÃƒÂ©gies au fur et ÃƒÂ  mesure
+        # Pour l'instant, seulement scalping implemente
+        # Ajouter les autres strategies au fur et  mesure
         
         if name == 'scalping':
             return ScalpingStrategy(getattr(config, 'PARAMS', {}))
@@ -161,52 +161,52 @@ class StrategyManager:
         #     return MeanReversionStrategy(getattr(config, 'PARAMS', {}))
         
         else:
-            logger.warning(f"StratÃƒÂ©gie {name} non trouvÃƒÂ©e")
+            logger.warning(f"Strategie {name} non trouvee")
             return None
     
     def start(self):
-        """DÃƒÂ©marre le strategy manager"""
+        """Demarre le strategy manager"""
         if self.is_running:
-            logger.warning("Strategy Manager dÃƒÂ©jÃƒÂ  en cours")
+            logger.warning("Strategy Manager dej en cours")
             return
         
         self.is_running = True
         
-        # DÃƒÂ©marrer le processeur de signaux
+        # Demarrer le processeur de signaux
         self.signal_processor_thread = threading.Thread(
             target=self._signal_processing_loop,
             daemon=True
         )
         self.signal_processor_thread.start()
         
-        # DÃƒÂ©marrer le tracker de performance
+        # Demarrer le tracker de performance
         self.performance_tracker_thread = threading.Thread(
             target=self._performance_tracking_loop,
             daemon=True
         )
         self.performance_tracker_thread.start()
         
-        logger.info("Strategy Manager dÃƒÂ©marrÃƒÂ©")
+        logger.info("Strategy Manager demarre")
     
     def stop(self):
-        """ArrÃƒÂªte le strategy manager"""
+        """Arrete le strategy manager"""
         self.is_running = False
         
-        # Attendre l'arrÃƒÂªt des threads
+        # Attendre l'arret des threads
         if self.signal_processor_thread:
             self.signal_processor_thread.join(timeout=5)
         if self.performance_tracker_thread:
             self.performance_tracker_thread.join(timeout=5)
         
-        logger.info("Strategy Manager arrÃƒÂªtÃƒÂ©")
+        logger.info("Strategy Manager arrete")
     
     def process_market_data(self, symbol: str, data: Dict):
         """
-        Traite les donnÃƒÂ©es de marchÃƒÂ© et gÃƒÂ©nÃƒÂ¨re des signaux
+        Traite les donnees de marche et genere des signaux
         
         Args:
             symbol: Le symbole
-            data: DonnÃƒÂ©es de marchÃƒÂ© (OHLCV, orderbook, etc.)
+            data: Donnees de marche (OHLCV, orderbook, etc.)
         """
         if not self.trading_enabled:
             return
@@ -215,25 +215,25 @@ class StrategyManager:
         self.market_data_cache[symbol] = data
         self.last_data_update[symbol] = datetime.now()
         
-        # VÃƒÂ©rifier qu'on a assez de donnÃƒÂ©es
+        # Verifier qu'on a assez de donnees
         if 'df' not in data or len(data['df']) < 50:
             return
         
-        # Envoyer aux stratÃƒÂ©gies pour analyse
+        # Envoyer aux strategies pour analyse
         for strategy_name, strategy in self.active_strategies.items():
             try:
-                # VÃƒÂ©rifier l'allocation
+                # Verifier l'allocation
                 if self.strategy_allocations[strategy_name] <= 0:
                     continue
                 
-                # VÃƒÂ©rifier si pas dÃƒÂ©jÃƒÂ  en position
+                # Verifier si pas dej en position
                 if self._has_position(symbol, strategy_name):
-                    # VÃƒÂ©rifier conditions de sortie seulement
+                    # Verifier conditions de sortie seulement
                     signal = strategy.analyze(data)
                     if signal and signal.get('type') == 'EXIT':
                         self._queue_signal(signal, strategy_name, symbol)
                 else:
-                    # Chercher signal d'entrÃƒÂ©e
+                    # Chercher signal d'entree
                     signal = strategy.analyze(data)
                     if signal and signal.get('type') == 'ENTRY':
                         self._queue_signal(signal, strategy_name, symbol)
@@ -243,12 +243,12 @@ class StrategyManager:
     
     def _queue_signal(self, signal: Dict, strategy_name: str, symbol: str):
         """
-        Ajoute un signal ÃƒÂ  la queue de traitement
+        Ajoute un signal  la queue de traitement
         
         Args:
-            signal: Le signal gÃƒÂ©nÃƒÂ©rÃƒÂ©
-            strategy_name: Nom de la stratÃƒÂ©gie
-            symbol: Symbole concernÃƒÂ©
+            signal: Le signal genere
+            strategy_name: Nom de la strategie
+            symbol: Symbole concerne
         """
         # Enrichir le signal
         signal['strategy'] = strategy_name
@@ -256,18 +256,18 @@ class StrategyManager:
         signal['timestamp'] = datetime.now()
         signal['allocation'] = self.strategy_allocations[strategy_name]
         
-        # Ajouter ÃƒÂ  la queue
+        # Ajouter  la queue
         self.pending_signals.put(signal)
         
         # Logger
-        logger.info(f"Ã°Å¸â€œÂ¡ Signal reÃƒÂ§u de {strategy_name}: {signal['side']} {symbol} "
+        logger.info(f"" Signal reu de {strategy_name}: {signal['side']} {symbol} "
                    f"(confidence: {signal.get('confidence', 0):.2%})")
     
     def _signal_processing_loop(self):
         """Boucle de traitement des signaux"""
         while self.is_running:
             try:
-                # RÃƒÂ©cupÃƒÂ©rer le prochain signal
+                # Recuperer le prochain signal
                 if not self.pending_signals.empty():
                     signal = self.pending_signals.get(timeout=0.1)
                     self._process_signal(signal)
@@ -283,7 +283,7 @@ class StrategyManager:
         Traite un signal de trading
         
         Args:
-            signal: Le signal ÃƒÂ  traiter
+            signal: Le signal  traiter
         """
         try:
             strategy_name = signal['strategy']
@@ -292,9 +292,9 @@ class StrategyManager:
             # Log
             logger.info(f"Traitement signal {strategy_name}: {signal['type']} {symbol}")
             
-            # VÃƒÂ©rifier le risk level
+            # Verifier le risk level
             if self.risk_monitor.current_risk_level in [RiskLevel.CRITICAL, RiskLevel.EMERGENCY]:
-                logger.warning("Risk level trop ÃƒÂ©levÃƒÂ©, signal ignorÃƒÂ©")
+                logger.warning("Risk level trop eleve, signal ignore")
                 return
             
             if signal['type'] == 'ENTRY':
@@ -306,19 +306,19 @@ class StrategyManager:
             logger.error(f"Erreur traitement signal: {e}")
     
     def _process_entry_signal(self, signal: Dict):
-        """Traite un signal d'entrÃƒÂ©e"""
+        """Traite un signal d'entree"""
         symbol = signal['symbol']
         strategy = signal['strategy']
         
-        # VÃƒÂ©rifier qu'on n'a pas dÃƒÂ©jÃƒÂ  une position
+        # Verifier qu'on n'a pas dej une position
         if self._has_position(symbol, strategy):
-            logger.warning(f"Position dÃƒÂ©jÃƒÂ  ouverte pour {symbol} avec {strategy}")
+            logger.warning(f"Position dej ouverte pour {symbol} avec {strategy}")
             return
         
-        # RÃƒÂ©cupÃƒÂ©rer le prix actuel
+        # Recuperer le prix actuel
         ticker = self.exchange.get_symbol_ticker(symbol)
         if not ticker:
-            logger.error(f"Impossible de rÃƒÂ©cupÃƒÂ©rer le prix pour {symbol}")
+            logger.error(f"Impossible de recuperer le prix pour {symbol}")
             return
         
         current_price = ticker['price']
@@ -337,40 +337,40 @@ class StrategyManager:
             logger.warning(f"Position size trop petite ou nulle")
             return
         
-        # Appliquer l'allocation de la stratÃƒÂ©gie
+        # Appliquer l'allocation de la strategie
         allocated_size = position_size['position_size_usdc'] * self.strategy_allocations[strategy]
         
-        # VÃƒÂ©rifier avec le risk monitor
+        # Verifier avec le risk monitor
         approved, adjusted_size, reason = self.risk_monitor.approve_new_trade(
             signal, 
             allocated_size
         )
         
         if not approved:
-            logger.warning(f"Trade rejetÃƒÂ© par risk monitor: {reason}")
+            logger.warning(f"Trade rejete par risk monitor: {reason}")
             return
         
-        # Calculer la quantitÃƒÂ©
+        # Calculer la quantite
         quantity = self.exchange.calculate_quantity_from_usdc(symbol, adjusted_size)
         
         if quantity <= 0:
-            logger.error("QuantitÃƒÂ© calculÃƒÂ©e <= 0")
+            logger.error("Quantite calculee <= 0")
             return
         
         # Soumettre l'ordre
-        logger.info(f"Ã°Å¸â€œË† EXECUTION: {signal['side']} {quantity:.6f} {symbol} "
+        logger.info(f"" EXECUTION: {signal['side']} {quantity:.6f} {symbol} "
                    f"@ {current_price:.4f} (${adjusted_size:.2f})")
         
-        # DÃƒÂ©terminer le type d'ordre
+        # Determiner le type d'ordre
         if signal.get('confidence', 0) > 0.8:
             order_type = "MARKET"  # Haute confiance = market order
             price = None
         else:
             order_type = "LIMIT"   # Confiance moyenne = limit order
             if signal['side'] == 'BUY':
-                price = current_price * 0.999  # LÃƒÂ©gÃƒÂ¨rement en dessous
+                price = current_price * 0.999  # Legerement en dessous
             else:
-                price = current_price * 1.001  # LÃƒÂ©gÃƒÂ¨rement au dessus
+                price = current_price * 1.001  # Legerement au dessus
         
         # Soumettre l'ordre principal
         order = self.order_manager.submit_order(
@@ -410,7 +410,7 @@ class StrategyManager:
                 strategy=strategy
             )
             
-            # Mettre ÃƒÂ  jour les stats
+            # Mettre  jour les stats
             self.performance_by_strategy[strategy]['total_trades'] += 1
             self.performance_by_strategy[strategy]['last_signal'] = datetime.now()
     
@@ -419,14 +419,14 @@ class StrategyManager:
         symbol = signal['symbol']
         strategy = signal['strategy']
         
-        # VÃƒÂ©rifier qu'on a une position
+        # Verifier qu'on a une position
         position = self._get_position(symbol, strategy)
         if not position:
-            logger.warning(f"Pas de position ÃƒÂ  fermer pour {symbol} avec {strategy}")
+            logger.warning(f"Pas de position  fermer pour {symbol} avec {strategy}")
             return
         
         # Soumettre l'ordre de sortie
-        logger.info(f"Ã°Å¸â€œâ€° FERMETURE: {symbol} pour {strategy} (raison: {signal.get('reason', 'signal')})")
+        logger.info(f""" FERMETURE: {symbol} pour {strategy} (raison: {signal.get('reason', 'signal')})")
         
         order = self.order_manager.submit_order(
             symbol=symbol,
@@ -451,7 +451,7 @@ class StrategyManager:
                 
                 pnl_usdc = position['size_usdc'] * pnl_pct
                 
-                # Mettre ÃƒÂ  jour les stats
+                # Mettre  jour les stats
                 if pnl_pct > 0:
                     self.performance_by_strategy[strategy]['winning_trades'] += 1
                 
@@ -479,12 +479,12 @@ class StrategyManager:
             self._remove_position(symbol, strategy)
     
     def _has_position(self, symbol: str, strategy: str) -> bool:
-        """VÃƒÂ©rifie si une position existe"""
+        """Verifie si une position existe"""
         key = f"{symbol}_{strategy}"
         return key in self.positions
     
     def _get_position(self, symbol: str, strategy: str) -> Optional[Dict]:
-        """RÃƒÂ©cupÃƒÂ¨re une position"""
+        """Recupere une position"""
         key = f"{symbol}_{strategy}"
         return self.positions.get(key)
     
@@ -504,7 +504,7 @@ class StrategyManager:
             'signal': signal
         }
         
-        # Informer la stratÃƒÂ©gie
+        # Informer la strategie
         if hasattr(self.active_strategies[strategy], 'register_position'):
             self.active_strategies[strategy].register_position(
                 symbol=symbol,
@@ -513,17 +513,17 @@ class StrategyManager:
                 quantity=order.quantity
             )
         
-        logger.info(f"Position enregistrÃƒÂ©e: {key}")
+        logger.info(f"Position enregistree: {key}")
     
     def _remove_position(self, symbol: str, strategy: str):
         """Retire une position"""
         key = f"{symbol}_{strategy}"
         if key in self.positions:
             del self.positions[key]
-            logger.info(f"Position retirÃƒÂ©e: {key}")
+            logger.info(f"Position retiree: {key}")
     
     def _get_order_priority(self, signal: Dict) -> OrderPriority:
-        """DÃƒÂ©termine la prioritÃƒÂ© d'un ordre"""
+        """Determine la priorite d'un ordre"""
         confidence = signal.get('confidence', 0.5)
         
         if confidence > 0.9:
@@ -534,13 +534,13 @@ class StrategyManager:
             return OrderPriority.LOW
     
     def _get_market_conditions(self) -> Dict:
-        """RÃƒÂ©cupÃƒÂ¨re les conditions de marchÃƒÂ© actuelles"""
-        # Simplified - ÃƒÂ  amÃƒÂ©liorer avec vraies mÃƒÂ©triques
+        """Recupere les conditions de marche actuelles"""
+        # Simplified -  ameliorer avec vraies metriques
         conditions = {
-            'volatility': 0.02,  # Ãƒâ‚¬ calculer
-            'trend_strength': 0.5,  # Ãƒâ‚¬ calculer
-            'volume_ratio': 1.0,  # Ãƒâ‚¬ calculer
-            'market_regime': 'NEUTRAL'  # Ãƒâ‚¬ dÃƒÂ©terminer
+            'volatility': 0.02,  #  calculer
+            'trend_strength': 0.5,  #  calculer
+            'volume_ratio': 1.0,  #  calculer
+            'market_regime': 'NEUTRAL'  #  determiner
         }
         
         return conditions
@@ -549,7 +549,7 @@ class StrategyManager:
         """Boucle de suivi de performance"""
         while self.is_running:
             try:
-                # Calculer les mÃƒÂ©triques toutes les 60 secondes
+                # Calculer les metriques toutes les 60 secondes
                 time.sleep(60)
                 
                 for strategy_name in self.active_strategies:
@@ -562,7 +562,7 @@ class StrategyManager:
                 logger.error(f"Erreur tracking performance: {e}")
     
     def _update_strategy_performance(self, strategy_name: str):
-        """Met ÃƒÂ  jour les mÃƒÂ©triques de performance d'une stratÃƒÂ©gie"""
+        """Met  jour les metriques de performance d'une strategie"""
         perf = self.performance_by_strategy[strategy_name]
         
         # Calculer win rate
@@ -571,13 +571,13 @@ class StrategyManager:
         else:
             win_rate = 0
         
-        # Calculer Sharpe (simplifiÃƒÂ©)
-        # TODO: ImplÃƒÂ©menter calcul Sharpe complet
+        # Calculer Sharpe (simplifie)
+        # TODO: Implementer calcul Sharpe complet
         
         perf['win_rate'] = win_rate
     
     def _log_performance_summary(self):
-        """Log un rÃƒÂ©sumÃƒÂ© de performance"""
+        """Log un resume de performance"""
         total_pnl = sum(p['total_pnl'] for p in self.performance_by_strategy.values())
         total_trades = sum(p['total_trades'] for p in self.performance_by_strategy.values())
         
@@ -602,12 +602,12 @@ class StrategyManager:
     def enable_trading(self):
         """Active le trading"""
         self.trading_enabled = True
-        logger.info("Trading activÃƒÂ©")
+        logger.info("Trading active")
     
     def disable_trading(self):
-        """DÃƒÂ©sactive le trading (positions existantes continuent)"""
+        """Desactive le trading (positions existantes continuent)"""
         self.trading_enabled = False
-        logger.info("Trading dÃƒÂ©sactivÃƒÂ© (nouvelles positions interdites)")
+        logger.info("Trading desactive (nouvelles positions interdites)")
     
     def close_all_positions(self, reason: str = "manual"):
         """Ferme toutes les positions ouvertes"""
@@ -616,7 +616,7 @@ class StrategyManager:
         for position_key in list(self.positions.keys()):
             position = self.positions[position_key]
             
-            # CrÃƒÂ©er un signal de sortie
+            # Creer un signal de sortie
             exit_signal = {
                 'type': 'EXIT',
                 'side': 'SELL' if position['side'] == 'BUY' else 'BUY',
@@ -675,7 +675,7 @@ if __name__ == "__main__":
                     'min_profit_percent': 0.003
                 }
             },
-            # Ajouter d'autres stratÃƒÂ©gies quand implÃƒÂ©mentÃƒÂ©es
+            # Ajouter d'autres strategies quand implementees
         ]
     }
     
@@ -689,7 +689,9 @@ if __name__ == "__main__":
     
     class MockOrderManager:
         def submit_order(self, **kwargs):
-            print(f"Mock order: {kwargs}")
+    """
+    print(f"Mock order: {kwargs}")
+    """
             order = type('Order', (), {})()
             order.quantity = kwargs['quantity']
             order.price = kwargs.get('price', 100)
@@ -697,7 +699,9 @@ if __name__ == "__main__":
             return order
         
         def submit_oco_order(self, **kwargs):
-            print(f"Mock OCO: {kwargs}")
+    """
+    print(f"Mock OCO: {kwargs}")
+    """
     
     class MockPositionSizer:
         def calculate_position_size(self, **kwargs):
@@ -726,10 +730,10 @@ if __name__ == "__main__":
         risk_monitor=risk_monitor
     )
     
-    # DÃƒÂ©marrer
+    # Demarrer
     manager.start()
     
-    # Simuler des donnÃƒÂ©es de marchÃƒÂ©
+    # Simuler des donnees de marche
     import numpy as np
     size = 100
     close_prices = 100 + np.cumsum(np.random.randn(size) * 0.5)
@@ -754,9 +758,9 @@ if __name__ == "__main__":
         }
     }
     
-    # Envoyer les donnÃƒÂ©es
+    # Envoyer les donnees
     print("=" * 60)
-    print("TEST: Envoi de donnÃƒÂ©es de marchÃƒÂ©")
+    print("TEST: Envoi de donnees de marche")
     manager.process_market_data('BTCUSDC', market_data)
     
     # Attendre un peu
@@ -770,6 +774,6 @@ if __name__ == "__main__":
         if key != 'positions':
             print(f"  {key}: {value}")
     
-    # ArrÃƒÂªter
+    # Arreter
     manager.stop()
-    print("\nÃ¢Å“â€¦ Test terminÃƒÂ©")
+    print("\n""| Test termine")
