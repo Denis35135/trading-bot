@@ -1,6 +1,6 @@
 """
 Metrics Collector pour The Bot
-Collecte et stocke toutes les mÃƒÂ©triques de performance en temps rÃƒÂ©el
+Collecte et stocke toutes les metriques de performance en temps reel
 """
 
 import time
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class MetricType(Enum):
-    """Types de mÃƒÂ©triques collectÃƒÂ©es"""
+    """Types de metriques collectees"""
     CAPITAL = "capital"
     PNL = "pnl"
     POSITION = "position"
@@ -29,7 +29,7 @@ class MetricType(Enum):
 
 @dataclass
 class Metric:
-    """ReprÃƒÂ©sente une mÃƒÂ©trique collectÃƒÂ©e"""
+    """Represente une metrique collectee"""
     timestamp: datetime
     type: MetricType
     name: str
@@ -46,33 +46,33 @@ class Metric:
 
 class MetricsCollector:
     """
-    Collecteur de mÃƒÂ©triques central
+    Collecteur de metriques central
     
-    ResponsabilitÃƒÂ©s:
-    - Collecter toutes les mÃƒÂ©triques du bot
+    Responsabilites:
+    - Collecter toutes les metriques du bot
     - Stocker l'historique (buffer circulaire)
-    - Calculer des mÃƒÂ©triques dÃƒÂ©rivÃƒÂ©es
+    - Calculer des metriques derivees
     - Fournir des snapshots pour reporting
-    - DÃƒÂ©tecter les anomalies
+    - Detecter les anomalies
     """
     
     def __init__(self, config: Dict):
         """
-        Initialise le collecteur de mÃƒÂ©triques
+        Initialise le collecteur de metriques
         
         Args:
             config: Configuration du collecteur
         """
         self.config = config
         
-        # Buffers circulaires par type de mÃƒÂ©trique (optimisÃƒÂ© mÃƒÂ©moire)
+        # Buffers circulaires par type de metrique (optimise memoire)
         self.buffer_size = getattr(config, 'BUFFER_SIZE', 10000)
         self.metrics_buffer = {
             metric_type: deque(maxlen=self.buffer_size)
             for metric_type in MetricType
         }
         
-        # AgrÃƒÂ©gations rapides (derniÃƒÂ¨re minute/heure/jour)
+        # Agregations rapides (derniere minute/heure/jour)
         self.aggregations = {
             '1m': defaultdict(list),   # 1 minute
             '5m': defaultdict(list),   # 5 minutes
@@ -80,7 +80,7 @@ class MetricsCollector:
             '1d': defaultdict(list),   # 1 jour
         }
         
-        # Timestamps de derniÃƒÂ¨re agrÃƒÂ©gation
+        # Timestamps de derniere agregation
         self.last_aggregation = {
             '1m': datetime.now(),
             '5m': datetime.now(),
@@ -88,7 +88,7 @@ class MetricsCollector:
             '1d': datetime.now(),
         }
         
-        # Statistiques en temps rÃƒÂ©el
+        # Statistiques en temps reel
         self.stats = {
             'total_metrics_collected': 0,
             'metrics_per_second': 0,
@@ -103,21 +103,23 @@ class MetricsCollector:
             'drawdown_increase_percent': 0.02
         })
         
-        logger.info(f"Ã¢Å“â€¦ Metrics Collector initialisÃƒÂ© (buffer: {self.buffer_size})")
+        logger.info(f"""| Metrics Collector initialise (buffer: {self.buffer_size})")
     
     def record(self, 
-               metric_type: MetricType, 
+    """
+    metric_type: MetricType,
+    """
                name: str, 
                value: float,
                metadata: Optional[Dict] = None):
         """
-        Enregistre une mÃƒÂ©trique
+        Enregistre une metrique
         
         Args:
-            metric_type: Type de mÃƒÂ©trique
-            name: Nom de la mÃƒÂ©trique
+            metric_type: Type de metrique
+            name: Nom de la metrique
             value: Valeur
-            metadata: MÃƒÂ©tadonnÃƒÂ©es optionnelles
+            metadata: Metadonnees optionnelles
         """
         try:
             metric = Metric(
@@ -131,7 +133,7 @@ class MetricsCollector:
             # Ajouter au buffer
             self.metrics_buffer[metric_type].append(metric)
             
-            # Ajouter aux agrÃƒÂ©gations
+            # Ajouter aux agregations
             for interval in self.aggregations:
                 self.aggregations[interval][name].append(value)
             
@@ -139,11 +141,11 @@ class MetricsCollector:
             self.stats['total_metrics_collected'] += 1
             self.stats['last_collection_time'] = datetime.now()
             
-            # DÃƒÂ©tection d'anomalie
+            # Detection d'anomalie
             self._check_anomaly(metric)
             
         except Exception as e:
-            logger.error(f"Erreur enregistrement mÃƒÂ©trique {name}: {e}")
+            logger.error(f"Erreur enregistrement metrique {name}: {e}")
     
     def record_capital(self, capital: float, metadata: Optional[Dict] = None):
         """Enregistre le capital actuel"""
@@ -184,11 +186,11 @@ class MetricsCollector:
         self.record(MetricType.TRADE, 'trade_executed', quantity * price, meta)
     
     def record_risk_metric(self, name: str, value: float, metadata: Optional[Dict] = None):
-        """Enregistre une mÃƒÂ©trique de risque"""
+        """Enregistre une metrique de risque"""
         self.record(MetricType.RISK, name, value, metadata)
     
     def record_execution_metric(self, name: str, value: float, metadata: Optional[Dict] = None):
-        """Enregistre une mÃƒÂ©trique d'exÃƒÂ©cution"""
+        """Enregistre une metrique d'execution"""
         self.record(MetricType.EXECUTION, name, value, metadata)
     
     def record_strategy_metric(self, 
@@ -196,25 +198,25 @@ class MetricsCollector:
                                name: str, 
                                value: float,
                                metadata: Optional[Dict] = None):
-        """Enregistre une mÃƒÂ©trique de stratÃƒÂ©gie"""
+        """Enregistre une metrique de strategie"""
         meta = metadata or {}
         meta['strategy'] = strategy
         self.record(MetricType.STRATEGY, f'{strategy}_{name}', value, meta)
     
     def record_system_metric(self, name: str, value: float, metadata: Optional[Dict] = None):
-        """Enregistre une mÃƒÂ©trique systÃƒÂ¨me"""
+        """Enregistre une metrique systeme"""
         self.record(MetricType.SYSTEM, name, value, metadata)
     
     def get_latest(self, metric_type: MetricType, name: str) -> Optional[Metric]:
         """
-        RÃƒÂ©cupÃƒÂ¨re la derniÃƒÂ¨re mÃƒÂ©trique d'un type donnÃƒÂ©
+        Recupere la derniere metrique d'un type donne
         
         Args:
-            metric_type: Type de mÃƒÂ©trique
-            name: Nom de la mÃƒÂ©trique
+            metric_type: Type de metrique
+            name: Nom de la metrique
             
         Returns:
-            DerniÃƒÂ¨re mÃƒÂ©trique ou None
+            Derniere metrique ou None
         """
         buffer = self.metrics_buffer[metric_type]
         for metric in reversed(buffer):
@@ -228,16 +230,16 @@ class MetricsCollector:
                  start_time: datetime,
                  end_time: Optional[datetime] = None) -> List[Metric]:
         """
-        RÃƒÂ©cupÃƒÂ¨re les mÃƒÂ©triques dans une plage de temps
+        Recupere les metriques dans une plage de temps
         
         Args:
-            metric_type: Type de mÃƒÂ©trique
-            name: Nom de la mÃƒÂ©trique
-            start_time: DÃƒÂ©but de la plage
-            end_time: Fin de la plage (dÃƒÂ©faut: maintenant)
+            metric_type: Type de metrique
+            name: Nom de la metrique
+            start_time: Debut de la plage
+            end_time: Fin de la plage (defaut: maintenant)
             
         Returns:
-            Liste des mÃƒÂ©triques dans la plage
+            Liste des metriques dans la plage
         """
         end_time = end_time or datetime.now()
         buffer = self.metrics_buffer[metric_type]
@@ -252,12 +254,12 @@ class MetricsCollector:
                             name: str,
                             window_minutes: int = 60) -> Dict:
         """
-        Calcule des statistiques sur une mÃƒÂ©trique
+        Calcule des statistiques sur une metrique
         
         Args:
-            metric_type: Type de mÃƒÂ©trique
-            name: Nom de la mÃƒÂ©trique
-            window_minutes: FenÃƒÂªtre de temps en minutes
+            metric_type: Type de metrique
+            name: Nom de la metrique
+            window_minutes: Fenetre de temps en minutes
             
         Returns:
             Dict avec les statistiques
@@ -290,10 +292,10 @@ class MetricsCollector:
     
     def get_snapshot(self) -> Dict:
         """
-        Retourne un snapshot complet des mÃƒÂ©triques actuelles
+        Retourne un snapshot complet des metriques actuelles
         
         Returns:
-            Dict avec toutes les mÃƒÂ©triques importantes
+            Dict avec toutes les metriques importantes
         """
         snapshot = {
             'timestamp': datetime.now().isoformat(),
@@ -301,7 +303,7 @@ class MetricsCollector:
             'metrics': {}
         }
         
-        # DerniÃƒÂ¨res valeurs par type
+        # Dernieres valeurs par type
         for metric_type in MetricType:
             buffer = self.metrics_buffer[metric_type]
             if buffer:
@@ -313,7 +315,7 @@ class MetricsCollector:
                                     if m.timestamp > datetime.now() - timedelta(hours=1)])
                 }
         
-        # AgrÃƒÂ©gations rÃƒÂ©centes
+        # Agregations recentes
         snapshot['aggregations'] = {}
         for interval, data in self.aggregations.items():
             snapshot['aggregations'][interval] = {
@@ -329,10 +331,10 @@ class MetricsCollector:
     
     def get_performance_summary(self) -> Dict:
         """
-        Retourne un rÃƒÂ©sumÃƒÂ© des performances
+        Retourne un resume des performances
         
         Returns:
-            Dict avec les mÃƒÂ©triques de performance clÃƒÂ©s
+            Dict avec les metriques de performance cles
         """
         # Capital
         capital_stats = self.calculate_statistics(MetricType.CAPITAL, 'total_capital', 1440)  # 24h
@@ -381,20 +383,20 @@ class MetricsCollector:
     
     def _check_anomaly(self, metric: Metric):
         """
-        VÃƒÂ©rifie si une mÃƒÂ©trique est anormale
+        Verifie si une metrique est anormale
         
         Args:
-            metric: MÃƒÂ©trique ÃƒÂ  vÃƒÂ©rifier
+            metric: Metrique  verifier
         """
         try:
-            # VÃƒÂ©rifier selon le type de mÃƒÂ©trique
+            # Verifier selon le type de metrique
             if metric.type == MetricType.EXECUTION:
                 if metric.name == 'order_latency_ms' and metric.value > self.anomaly_thresholds['latency_ms']:
-                    logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â Anomalie dÃƒÂ©tectÃƒÂ©e: latence ÃƒÂ©levÃƒÂ©e {metric.value:.0f}ms")
+                    logger.warning(f" Anomalie detectee: latence elevee {metric.value:.0f}ms")
                     self.stats['anomalies_detected'] += 1
             
             elif metric.type == MetricType.PNL:
-                # VÃƒÂ©rifier les variations brusques
+                # Verifier les variations brusques
                 recent = self.get_range(
                     metric.type,
                     metric.name,
@@ -405,7 +407,7 @@ class MetricsCollector:
                     if prev_value != 0:
                         change_pct = abs((metric.value - prev_value) / prev_value)
                         if change_pct > self.anomaly_thresholds['pnl_spike_percent']:
-                            logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â Anomalie dÃƒÂ©tectÃƒÂ©e: spike P&L {change_pct:.2%}")
+                            logger.warning(f" Anomalie detectee: spike P&L {change_pct:.2%}")
                             self.stats['anomalies_detected'] += 1
             
             elif metric.type == MetricType.RISK:
@@ -419,18 +421,18 @@ class MetricsCollector:
                         prev_value = recent[-2].value
                         change = metric.value - prev_value
                         if change > self.anomaly_thresholds['drawdown_increase_percent']:
-                            logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â Anomalie dÃƒÂ©tectÃƒÂ©e: augmentation drawdown {change:.2%}")
+                            logger.warning(f" Anomalie detectee: augmentation drawdown {change:.2%}")
                             self.stats['anomalies_detected'] += 1
         
         except Exception as e:
-            logger.error(f"Erreur vÃƒÂ©rification anomalie: {e}")
+            logger.error(f"Erreur verification anomalie: {e}")
     
     def cleanup_old_data(self, days: int = 7):
         """
-        Nettoie les donnÃƒÂ©es anciennes
+        Nettoie les donnees anciennes
         
         Args:
-            days: Nombre de jours ÃƒÂ  conserver
+            days: Nombre de jours  conserver
         """
         cutoff_time = datetime.now() - timedelta(days=days)
         cleaned = 0
@@ -439,8 +441,8 @@ class MetricsCollector:
             buffer = self.metrics_buffer[metric_type]
             original_size = len(buffer)
             
-            # Filtrer les mÃƒÂ©triques anciennes
-            # Note: deque ne supporte pas de filtrage direct, on recrÃƒÂ©e
+            # Filtrer les metriques anciennes
+            # Note: deque ne supporte pas de filtrage direct, on recree
             new_buffer = deque(
                 (m for m in buffer if m.timestamp > cutoff_time),
                 maxlen=self.buffer_size
@@ -450,20 +452,20 @@ class MetricsCollector:
             cleaned += original_size - len(new_buffer)
         
         if cleaned > 0:
-            logger.info(f"Ã°Å¸Â§Â¹ Nettoyage: {cleaned} mÃƒÂ©triques anciennes supprimÃƒÂ©es")
+            logger.info(f" Nettoyage: {cleaned} metriques anciennes supprimees")
     
     def export_to_dict(self, 
                       start_time: Optional[datetime] = None,
                       end_time: Optional[datetime] = None) -> Dict:
         """
-        Exporte les mÃƒÂ©triques en dictionnaire
+        Exporte les metriques en dictionnaire
         
         Args:
-            start_time: DÃƒÂ©but de la pÃƒÂ©riode (dÃƒÂ©faut: tout)
-            end_time: Fin de la pÃƒÂ©riode (dÃƒÂ©faut: maintenant)
+            start_time: Debut de la periode (defaut: tout)
+            end_time: Fin de la periode (defaut: maintenant)
             
         Returns:
-            Dict avec toutes les mÃƒÂ©triques
+            Dict avec toutes les metriques
         """
         end_time = end_time or datetime.now()
         start_time = start_time or datetime.now() - timedelta(days=1)
@@ -512,7 +514,7 @@ if __name__ == "__main__":
     
     print("\n=== Test Metrics Collector ===\n")
     
-    # Enregistrer quelques mÃƒÂ©triques
+    # Enregistrer quelques metriques
     collector.record_capital(1000.0)
     time.sleep(0.1)
     collector.record_pnl(50.0, 'daily')
@@ -532,14 +534,14 @@ if __name__ == "__main__":
     print(f"P&L: ${summary['pnl']['total']:+,.2f}")
     print(f"Trades 1h: {summary['trading']['trades_1h']}")
     
-    print("\nÃ¢Å“â€¦ Tests terminÃƒÂ©s")
+    print("\n""| Tests termines")
 
     def get_current_metrics(self) -> Dict[str, Any]:
         """
-        Retourne les mÃ©triques actuelles
+        Retourne les metriques actuelles
         
         Returns:
-            Dict avec les mÃ©triques principales
+            Dict avec les metriques principales
         """
         try:
             return {
@@ -553,7 +555,7 @@ if __name__ == "__main__":
                 'metrics_per_second': self.stats.get('metrics_per_second', 0),
             }
         except Exception as e:
-            # Retour par dÃ©faut en cas d'erreur
+            # Retour par defaut en cas d'erreur
             return {
                 'capital': 0,
                 'total_pnl': 0,
