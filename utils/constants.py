@@ -1,6 +1,6 @@
 """
 Constants pour The Bot
-Toutes les constantes et valeurs fixes utilisÃƒÂ©es dans le systÃƒÂ¨me
+Toutes les constantes et valeurs fixes utilisees dans le systeme
 """
 
 from enum import Enum
@@ -19,11 +19,11 @@ MAX_POSITION_SIZE = 0.25  # 25% du capital max par trade
 MIN_POSITION_SIZE = 0.01  # 1% du capital min par trade
 
 # Limites de positions
-MAX_OPEN_POSITIONS = 20  # Maximum de positions simultanÃƒÂ©es
+MAX_OPEN_POSITIONS = 20  # Maximum de positions simultanees
 MAX_POSITIONS_PER_SYMBOL = 1  # 1 position max par symbole
 
 # Constantes pour position_sizing.py
-MAX_CORRELATION_ALLOWED = 0.70  # CorrÃƒÂ©lation max entre positions (70%)
+MAX_CORRELATION_ALLOWED = 0.70  # Correlation max entre positions (70%)
 MIN_POSITION_SIZE_PCT = 0.01    # Taille minimum en % du capital (1%)
 MAX_POSITION_SIZE_PCT = 0.25    # Taille maximum en % du capital (25%)
 
@@ -43,7 +43,7 @@ DEFAULT_TAKE_PROFIT_PERCENT = 0.04  # 4% take profit (ratio 1:2)
 MIN_RISK_REWARD_RATIO = 1.5  # Ratio risque/reward minimum
 
 # Trailing stops
-TRAILING_STOP_ACTIVATION = 0.015  # Active aprÃƒÂ¨s 1.5% de profit
+TRAILING_STOP_ACTIVATION = 0.015  # Active apres 1.5% de profit
 TRAILING_STOP_CALLBACK = 0.01  # Callback de 1%
 
 
@@ -57,7 +57,7 @@ ORDER_RETRY_ATTEMPTS = 3
 ORDER_RETRY_DELAY = 1  # 1 seconde entre retry
 
 # Slippage et fees
-SLIPPAGE_TOLERANCE = 0.002  # 0.2% de slippage tolÃƒÂ©rÃƒÂ©
+SLIPPAGE_TOLERANCE = 0.002  # 0.2% de slippage tolere
 BINANCE_MAKER_FEE = 0.001  # 0.1% maker fee
 BINANCE_TAKER_FEE = 0.001  # 0.1% taker fee
 
@@ -72,7 +72,7 @@ ORDER_TYPE_TAKE_PROFIT = "TAKE_PROFIT_LIMIT"
 # STRATEGIES
 # ============================================================================
 
-# Allocation des stratÃƒÂ©gies (doit sommer ÃƒÂ  1.0)
+# Allocation des strategies (doit sommer  1.0)
 STRATEGY_ALLOCATIONS = {
     'scalping': 0.40,
     'momentum': 0.25,
@@ -81,25 +81,25 @@ STRATEGY_ALLOCATIONS = {
     'ml': 0.05
 }
 
-# ParamÃƒÂ¨tres Scalping
+# Parametres Scalping
 SCALPING_MIN_SPREAD = 0.0005  # 0.05% spread minimum
 SCALPING_TARGET_PROFIT = 0.008  # 0.8% profit cible
 SCALPING_MAX_HOLD_TIME = 300  # 5 minutes max
 
-# ParamÃƒÂ¨tres Momentum
-MOMENTUM_LOOKBACK_PERIOD = 20  # PÃƒÂ©riode de lookback
+# Parametres Momentum
+MOMENTUM_LOOKBACK_PERIOD = 20  # Periode de lookback
 MOMENTUM_MIN_STRENGTH = 0.6  # Force minimum du momentum
 MOMENTUM_TREND_CONFIRMATION = 3  # 3 bougies de confirmation
 
-# ParamÃƒÂ¨tres Mean Reversion
-MEAN_REVERSION_BB_PERIOD = 20  # PÃƒÂ©riode Bollinger Bands
-MEAN_REVERSION_BB_STD = 2  # Ãƒâ€°carts-types BB
+# Parametres Mean Reversion
+MEAN_REVERSION_BB_PERIOD = 20  # Periode Bollinger Bands
+MEAN_REVERSION_BB_STD = 2  # "carts-types BB
 MEAN_REVERSION_RSI_OVERSOLD = 30  # RSI survendu
-MEAN_REVERSION_RSI_OVERBOUGHT = 70  # RSI surachetÃƒÂ©
+MEAN_REVERSION_RSI_OVERBOUGHT = 70  # RSI surachete
 
-# ParamÃƒÂ¨tres Pattern Recognition
+# Parametres Pattern Recognition
 PATTERN_MIN_CONFIDENCE = 0.65  # Confiance minimum pour un pattern
-PATTERN_LOOKBACK = 50  # Bougies ÃƒÂ  analyser
+PATTERN_LOOKBACK = 50  # Bougies  analyser
 
 
 # ============================================================================
@@ -108,36 +108,36 @@ PATTERN_LOOKBACK = 50  # Bougies ÃƒÂ  analyser
 
 # Seuils de confiance
 ML_CONFIDENCE_THRESHOLD = 0.65  # Confiance minimum pour trade
-ML_MIN_SAMPLES = 1000  # Minimum de samples pour entraÃƒÂ®nement
+ML_MIN_SAMPLES = 1000  # Minimum de samples pour entranement
 
 # Features
-FEATURE_COUNT = 30  # Nombre de features utilisÃƒÂ©es
-FEATURE_ENGINEERING_PERIODS = [5, 10, 20, 50, 100]  # PÃƒÂ©riodes pour features
+FEATURE_COUNT = 30  # Nombre de features utilisees
+FEATURE_ENGINEERING_PERIODS = [5, 10, 20, 50, 100]  # Periodes pour features
 
-# RÃƒÂ©entraÃƒÂ®nement
-RETRAIN_FREQUENCY = 86400  # 24h entre rÃƒÂ©entraÃƒÂ®nements
-MIN_TRADES_BEFORE_RETRAIN = 100  # Minimum de trades avant rÃƒÂ©entraÃƒÂ®nement
+# Reentranement
+RETRAIN_FREQUENCY = 86400  # 24h entre reentranements
+MIN_TRADES_BEFORE_RETRAIN = 100  # Minimum de trades avant reentranement
 
-# ModÃƒÂ¨les
+# Modeles
 ML_MODELS = ['xgboost', 'lightgbm', 'random_forest']
 ML_ENSEMBLE_VOTING = 'soft'  # Soft voting pour ensemble
 
 
 # ============================================================================
-# SYMBOLES ET MARCHÃƒâ€°S
+# SYMBOLES ET MARCH"S
 # ============================================================================
 
-# SÃƒÂ©lection des symboles
-SYMBOLS_TO_SCAN = 100  # Top 100 par volume ÃƒÂ  scanner
-SYMBOLS_TO_TRADE = 20  # Top 20 aprÃƒÂ¨s scoring ÃƒÂ  trader
+# Selection des symboles
+SYMBOLS_TO_SCAN = 100  # Top 100 par volume  scanner
+SYMBOLS_TO_TRADE = 20  # Top 20 apres scoring  trader
 MIN_VOLUME_24H = 10_000_000  # 10M$ de volume 24h minimum
 
-# Filtres de qualitÃƒÂ©
+# Filtres de qualite
 MAX_SPREAD_PERCENT = 0.002  # 0.2% spread maximum
-MIN_VOLATILITY = 0.01  # 1% volatilitÃƒÂ© minimum
-MAX_VOLATILITY = 0.10  # 10% volatilitÃƒÂ© maximum
+MIN_VOLATILITY = 0.01  # 1% volatilite minimum
+MAX_VOLATILITY = 0.10  # 10% volatilite maximum
 
-# Quote assets acceptÃƒÂ©s
+# Quote assets acceptes
 ACCEPTED_QUOTE_ASSETS = ['USDT', 'USDC', 'BUSD']
 PREFERRED_QUOTE_ASSET = 'USDC'
 
@@ -169,7 +169,7 @@ MTF_TIMEFRAMES = ['5m', '15m', '1h']  # Timeframes pour analyse multi-TF
 # INDICATEURS TECHNIQUES
 # ============================================================================
 
-# PÃƒÂ©riodes par dÃƒÂ©faut
+# Periodes par defaut
 RSI_PERIOD = 14
 EMA_FAST = 9
 EMA_SLOW = 21
@@ -210,9 +210,9 @@ THREAD_POOL_SIZE = 4
 TICK_BUFFER_SIZE = 5000  # Taille du buffer de ticks
 KLINE_BUFFER_SIZE = 1000  # Taille du buffer de klines
 
-# MÃƒÂ©moire
+# Memoire
 MAX_MEMORY_MB = 2000  # 2GB maximum
-MEMORY_CHECK_INTERVAL = 60  # VÃƒÂ©rifier toutes les 60 secondes
+MEMORY_CHECK_INTERVAL = 60  # Verifier toutes les 60 secondes
 
 # Cache
 CACHE_TTL_MARKET_DATA = 10  # 10 secondes pour market data
@@ -250,7 +250,7 @@ LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 LOG_FILE_MAX_SIZE = 10 * 1024 * 1024  # 10MB
 LOG_FILE_BACKUP_COUNT = 5
 
-# Sauvegarde des donnÃƒÂ©es
+# Sauvegarde des donnees
 SAVE_INTERVAL = 300  # 5 minutes
 BACKUP_INTERVAL = 3600  # 1 heure
 
@@ -260,15 +260,15 @@ MAX_MISSED_HEARTBEATS = 3
 
 # Performance tracking
 PERFORMANCE_WINDOW = 1000  # Derniers 1000 trades
-STATS_UPDATE_INTERVAL = 60  # Mise ÃƒÂ  jour stats chaque minute
+STATS_UPDATE_INTERVAL = 60  # Mise  jour stats chaque minute
 
 
 # ============================================================================
-# RÃƒâ€°GIMES DE MARCHÃƒâ€°
+# R"GIMES DE MARCH"
 # ============================================================================
 
 class MarketRegime(Enum):
-    """Types de rÃƒÂ©gimes de marchÃƒÂ©"""
+    """Types de regimes de marche"""
     TRENDING_UP = "trending_up"
     TRENDING_DOWN = "trending_down"
     RANGING = "ranging"
@@ -277,7 +277,7 @@ class MarketRegime(Enum):
     UNKNOWN = "unknown"
 
 
-# Seuils pour dÃƒÂ©tection de rÃƒÂ©gime
+# Seuils pour detection de regime
 TRENDING_ADX_THRESHOLD = 25
 RANGING_ADX_THRESHOLD = 20
 VOLATILITY_THRESHOLD_HIGH = 0.05  # 5%
@@ -307,15 +307,15 @@ class SignalStrength(Enum):
 
 # Seuils de signaux
 MIN_SIGNAL_STRENGTH = 0.6  # Force minimum pour agir
-SIGNAL_EXPIRY_SECONDS = 60  # Signal expire aprÃƒÂ¨s 60s
+SIGNAL_EXPIRY_SECONDS = 60  # Signal expire apres 60s
 
 
 # ============================================================================
-# Ãƒâ€°TATS DU SYSTÃƒË†ME
+# "TATS DU SYSTME
 # ============================================================================
 
 class BotStatus(Enum):
-    """Ãƒâ€°tats possibles du bot"""
+    """"tats possibles du bot"""
     INITIALIZING = "initializing"
     RUNNING = "running"
     PAUSED = "paused"
@@ -325,7 +325,7 @@ class BotStatus(Enum):
 
 
 class OrderStatus(Enum):
-    """Ãƒâ€°tats des ordres"""
+    """"tats des ordres"""
     NEW = "NEW"
     PARTIALLY_FILLED = "PARTIALLY_FILLED"
     FILLED = "FILLED"
@@ -338,7 +338,7 @@ class OrderStatus(Enum):
 # CHEMINS ET FICHIERS
 # ============================================================================
 
-# RÃƒÂ©pertoires
+# Repertoires
 DATA_DIR = "data"
 LOGS_DIR = "data/logs"
 MODELS_DIR = "data/models"
@@ -367,7 +367,7 @@ NOTIFY_ON_PROFIT_PERCENT = 0.10  # Notifier si profit > 10%
 # BACKTESTING
 # ============================================================================
 
-# ParamÃƒÂ¨tres de backtest
+# Parametres de backtest
 BACKTEST_START_DATE = "2024-01-01"
 BACKTEST_INITIAL_CAPITAL = 1000
 BACKTEST_COMMISSION = 0.001  # 0.1%
@@ -379,30 +379,30 @@ BACKTEST_COMMISSION = 0.001  # 0.1%
 
 # Simulation
 PAPER_TRADING_ENABLED = True
-PAPER_TRADING_SLIPPAGE = 0.001  # 0.1% slippage simulÃƒÂ©
+PAPER_TRADING_SLIPPAGE = 0.001  # 0.1% slippage simule
 
 
 # ============================================================================
-# SÃƒâ€°CURITÃƒâ€°
+# S"CURIT"
 # ============================================================================
 
-# Limites de sÃƒÂ©curitÃƒÂ©
+# Limites de securite
 MAX_DAILY_TRADES = 500  # Maximum de trades par jour
-MAX_LOSS_STREAK = 10  # Pause aprÃƒÂ¨s 10 pertes consÃƒÂ©cutives
-CIRCUIT_BREAKER_LOSS = 0.15  # ArrÃƒÂªt d'urgence si perte > 15%
+MAX_LOSS_STREAK = 10  # Pause apres 10 pertes consecutives
+CIRCUIT_BREAKER_LOSS = 0.15  # Arret d'urgence si perte > 15%
 
 # Cooldowns
 TRADE_COOLDOWN_SECONDS = 1  # 1 seconde entre trades
-SYMBOL_COOLDOWN_SECONDS = 10  # 10 secondes avant re-trade mÃƒÂªme symbole
+SYMBOL_COOLDOWN_SECONDS = 10  # 10 secondes avant re-trade meme symbole
 
 
 # ============================================================================
-# DÃƒâ€°VELOPPEMENT
+# D"VELOPPEMENT
 # ============================================================================
 
 # Modes
 DEBUG_MODE = False
-DRY_RUN_MODE = True  # Mode simulation par dÃƒÂ©faut
+DRY_RUN_MODE = True  # Mode simulation par defaut
 VERBOSE_LOGGING = False
 
 # Tests
