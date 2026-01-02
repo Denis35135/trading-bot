@@ -12,12 +12,12 @@ class TestBinanceClient:
     """Tests pour BinanceClient"""
     
     def test_connection(self, mock_exchange):
-        """Test de connexion ÃƒÂ  l'exchange"""
+        """Test de connexion  l'exchange"""
         assert mock_exchange is not None
         assert hasattr(mock_exchange, 'get_symbol_ticker')
     
     def test_get_symbol_ticker(self, mock_exchange):
-        """Test rÃƒÂ©cupÃƒÂ©ration ticker"""
+        """Test recuperation ticker"""
         ticker = mock_exchange.get_symbol_ticker('BTCUSDT')
         
         assert ticker is not None
@@ -26,7 +26,7 @@ class TestBinanceClient:
         assert ticker['price'] > 0
     
     def test_get_orderbook(self, mock_exchange, sample_orderbook):
-        """Test rÃƒÂ©cupÃƒÂ©ration orderbook"""
+        """Test recuperation orderbook"""
         mock_exchange.get_orderbook.return_value = sample_orderbook
         
         orderbook = mock_exchange.get_orderbook('BTCUSDT')
@@ -38,7 +38,7 @@ class TestBinanceClient:
         assert len(orderbook['asks']) > 0
     
     def test_get_klines(self, mock_exchange, sample_ohlcv_data):
-        """Test rÃƒÂ©cupÃƒÂ©ration klines"""
+        """Test recuperation klines"""
         mock_exchange.get_klines.return_value = sample_ohlcv_data
         
         df = mock_exchange.get_klines('BTCUSDT', '5m', limit=100)
@@ -49,7 +49,7 @@ class TestBinanceClient:
         assert all(col in df.columns for col in ['open', 'high', 'low', 'close', 'volume'])
     
     def test_create_order(self, mock_exchange):
-        """Test crÃƒÂ©ation d'ordre"""
+        """Test creation d'ordre"""
         mock_exchange.create_order.return_value = {
             'orderId': '123456',
             'status': 'FILLED',
@@ -71,7 +71,7 @@ class TestBinanceClient:
         assert order['executedQty'] == 0.1
     
     def test_get_account_balance(self, mock_exchange):
-        """Test rÃƒÂ©cupÃƒÂ©ration solde"""
+        """Test recuperation solde"""
         mock_exchange.get_account_balance.return_value = 1000.0
         
         balance = mock_exchange.get_account_balance('USDT')
@@ -92,7 +92,7 @@ class TestBinanceClient:
         assert result['status'] == 'CANCELED'
     
     def test_get_open_orders(self, mock_exchange):
-        """Test rÃƒÂ©cupÃƒÂ©ration ordres ouverts"""
+        """Test recuperation ordres ouverts"""
         mock_exchange.get_open_orders.return_value = [
             {'orderId': '123', 'symbol': 'BTCUSDT'},
             {'orderId': '456', 'symbol': 'ETHUSDT'}
@@ -122,7 +122,7 @@ class TestBinanceClient:
 
 
 class TestExchangeValidation:
-    """Tests de validation des donnÃƒÂ©es exchange"""
+    """Tests de validation des donnees exchange"""
     
     def test_ticker_validation(self, sample_ticker):
         """Test validation ticker"""
@@ -132,16 +132,16 @@ class TestExchangeValidation:
     
     def test_orderbook_validation(self, sample_orderbook):
         """Test validation orderbook"""
-        # VÃƒÂ©rifier structure
+        # Verifier structure
         assert 'bids' in sample_orderbook
         assert 'asks' in sample_orderbook
         
-        # VÃƒÂ©rifier prix
+        # Verifier prix
         best_bid = sample_orderbook['bids'][0][0]
         best_ask = sample_orderbook['asks'][0][0]
         assert best_bid < best_ask
         
-        # VÃƒÂ©rifier ordres triÃƒÂ©s
+        # Verifier ordres tries
         bid_prices = [bid[0] for bid in sample_orderbook['bids']]
         assert bid_prices == sorted(bid_prices, reverse=True)
         
@@ -152,17 +152,17 @@ class TestExchangeValidation:
         """Test validation klines"""
         df = sample_ohlcv_data
         
-        # VÃƒÂ©rifier colonnes
+        # Verifier colonnes
         assert all(col in df.columns for col in ['open', 'high', 'low', 'close', 'volume'])
         
-        # VÃƒÂ©rifier relations OHLC
+        # Verifier relations OHLC
         assert (df['high'] >= df['low']).all()
         assert (df['high'] >= df['open']).all()
         assert (df['high'] >= df['close']).all()
         assert (df['low'] <= df['open']).all()
         assert (df['low'] <= df['close']).all()
         
-        # VÃƒÂ©rifier volume positif
+        # Verifier volume positif
         assert (df['volume'] > 0).all()
 
 
@@ -196,7 +196,7 @@ class TestExchangeErrors:
             )
     
     def test_rate_limit_exceeded(self, mock_exchange):
-        """Test dÃƒÂ©passement rate limit"""
+        """Test depassement rate limit"""
         mock_exchange.get_symbol_ticker.side_effect = Exception("Rate limit exceeded")
         
         with pytest.raises(Exception):
@@ -225,7 +225,7 @@ class TestExchangeHelpers:
         assert rounded == 50000.12
     
     def test_quantity_rounding(self):
-        """Test arrondi de quantitÃƒÂ©"""
+        """Test arrondi de quantite"""
         from utils.helpers import round_step_size
         
         qty = 0.123456
