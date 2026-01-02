@@ -1,6 +1,6 @@
 """
 Model Selector pour The Bot
-SÃƒÂ©lection automatique du meilleur modÃƒÂ¨le
+Selection automatique du meilleur modele
 """
 
 import numpy as np
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ModelCandidate:
-    """ReprÃƒÂ©sente un modÃƒÂ¨le candidat"""
+    """Represente un modele candidat"""
     name: str
     ensemble: MLEnsemble
     config: Dict
@@ -26,40 +26,42 @@ class ModelCandidate:
 
 class ModelSelector:
     """
-    SÃƒÂ©lectionneur de modÃƒÂ¨le automatique
+    Selectionneur de modele automatique
     
-    ResponsabilitÃƒÂ©s:
-    - Tester plusieurs configurations de modÃƒÂ¨les
+    Responsabilites:
+    - Tester plusieurs configurations de modeles
     - Comparer les performances
-    - SÃƒÂ©lectionner le meilleur modÃƒÂ¨le selon une mÃƒÂ©trique
-    - GÃƒÂ©nÃƒÂ©rer des rapports de comparaison
+    - Selectionner le meilleur modele selon une metrique
+    - Generer des rapports de comparaison
     """
     
     def __init__(self, selection_metric: str = 'accuracy'):
         """
-        Initialise le sÃƒÂ©lecteur
+        Initialise le selecteur
         
         Args:
-            selection_metric: MÃƒÂ©trique pour sÃƒÂ©lectionner le meilleur
+            selection_metric: Metrique pour selectionner le meilleur
                             ('accuracy', 'f1_score', 'precision', 'recall')
         """
         self.selection_metric = selection_metric
         self.evaluator = ModelEvaluator()
         self.candidates = []
         
-        logger.info(f"Ã¢Å“â€¦ Model Selector initialisÃƒÂ© (mÃƒÂ©trique: {selection_metric})")
+        logger.info(f"""| Model Selector initialise (metrique: {selection_metric})")
     
     def add_candidate(self, 
-                     name: str, 
+    """
+    name: str,
+    """
                      ensemble: MLEnsemble, 
                      config: Dict):
         """
-        Ajoute un modÃƒÂ¨le candidat ÃƒÂ  la compÃƒÂ©tition
+        Ajoute un modele candidat  la competition
         
         Args:
             name: Nom du candidat
-            ensemble: Ensemble de modÃƒÂ¨les
-            config: Configuration utilisÃƒÂ©e
+            ensemble: Ensemble de modeles
+            config: Configuration utilisee
         """
         candidate = ModelCandidate(
             name=name,
@@ -67,33 +69,35 @@ class ModelSelector:
             config=config
         )
         self.candidates.append(candidate)
-        logger.info(f"Ã¢Å“â€¦ Candidat ajoutÃƒÂ©: {name}")
+        logger.info(f"""| Candidat ajoute: {name}")
     
     def evaluate_candidates(self, 
-                           X_test: np.ndarray, 
+    """
+    X_test: np.ndarray,
+    """
                            y_test: np.ndarray) -> List[ModelCandidate]:
         """
-        Ãƒâ€°value tous les candidats
+        "value tous les candidats
         
         Args:
             X_test: Features de test
             y_test: Labels de test
             
         Returns:
-            Liste des candidats triÃƒÂ©s par score (meilleur en premier)
+            Liste des candidats tries par score (meilleur en premier)
         """
-        logger.info(f"Ã°Å¸â€Â Ãƒâ€°valuation de {len(self.candidates)} candidats...")
+        logger.info(f"" "valuation de {len(self.candidates)} candidats...")
         
         for candidate in self.candidates:
             try:
-                # Ãƒâ€°valuer le modÃƒÂ¨le
+                # "valuer le modele
                 metrics = self.evaluator.evaluate_detailed(
                     candidate.ensemble, 
                     X_test, 
                     y_test
                 )
                 
-                # Extraire le score selon la mÃƒÂ©trique choisie
+                # Extraire le score selon la metrique choisie
                 score = metrics.get(self.selection_metric, 0.0)
                 
                 candidate.metrics = metrics
@@ -102,23 +106,25 @@ class ModelSelector:
                 logger.info(f"  {candidate.name}: {self.selection_metric}={score:.2%}")
                 
             except Exception as e:
-                logger.error(f"Ã¢ÂÅ’ Erreur ÃƒÂ©valuation {candidate.name}: {e}")
+                logger.error(f"' Erreur evaluation {candidate.name}: {e}")
                 candidate.score = 0.0
                 candidate.metrics = {}
         
-        # Trier par score dÃƒÂ©croissant
+        # Trier par score decroissant
         self.candidates.sort(key=lambda x: x.score, reverse=True)
         
-        logger.info(f"Ã¢Å“â€¦ Ãƒâ€°valuation terminÃƒÂ©e. Meilleur: {self.candidates[0].name} ({self.candidates[0].score:.2%})")
+        logger.info(f"""| "valuation terminee. Meilleur: {self.candidates[0].name} ({self.candidates[0].score:.2%})")
         
         return self.candidates
     
     def select_best(self, 
-                   X_test: np.ndarray, 
+    """
+    X_test: np.ndarray,
+    """
                    y_test: np.ndarray,
                    min_score: float = 0.6) -> Optional[ModelCandidate]:
         """
-        SÃƒÂ©lectionne le meilleur modÃƒÂ¨le
+        Selectionne le meilleur modele
         
         Args:
             X_test: Features de test
@@ -129,22 +135,22 @@ class ModelSelector:
             Meilleur candidat ou None si aucun ne passe le seuil
         """
         if not self.candidates:
-            logger.warning("Ã¢Å¡Â Ã¯Â¸Â  Aucun candidat ÃƒÂ  ÃƒÂ©valuer")
+            logger.warning("  Aucun candidat  evaluer")
             return None
         
-        # Ãƒâ€°valuer tous les candidats
+        # "valuer tous les candidats
         self.evaluate_candidates(X_test, y_test)
         
         # Prendre le meilleur
         best = self.candidates[0]
         
-        # VÃƒÂ©rifier le score minimum
+        # Verifier le score minimum
         if best.score < min_score:
-            logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â  Meilleur score {best.score:.2%} < minimum requis {min_score:.2%}")
-            logger.warning("Aucun modÃƒÂ¨le ne satisfait le critÃƒÂ¨re minimum")
+            logger.warning(f"  Meilleur score {best.score:.2%} < minimum requis {min_score:.2%}")
+            logger.warning("Aucun modele ne satisfait le critere minimum")
             return None
         
-        logger.info(f"Ã°Å¸Ââ€  Meilleur modÃƒÂ¨le sÃƒÂ©lectionnÃƒÂ©: {best.name} ({self.selection_metric}={best.score:.2%})")
+        logger.info(f"" Meilleur modele selectionne: {best.name} ({self.selection_metric}={best.score:.2%})")
         
         return best
     
@@ -155,11 +161,11 @@ class ModelSelector:
                    y_test: np.ndarray,
                    min_score: float = 0.6) -> Optional[MLEnsemble]:
         """
-        SÃƒÂ©lection automatique avec plusieurs configurations prÃƒÂ©dÃƒÂ©finies
+        Selection automatique avec plusieurs configurations predefinies
         
         Args:
-            X_train: Features d'entraÃƒÂ®nement
-            y_train: Labels d'entraÃƒÂ®nement
+            X_train: Features d'entranement
+            y_train: Labels d'entranement
             X_test: Features de test
             y_test: Labels de test
             min_score: Score minimum acceptable
@@ -167,9 +173,9 @@ class ModelSelector:
         Returns:
             Meilleur ensemble ou None
         """
-        logger.info("Ã°Å¸Â¤â€“ SÃƒÂ©lection automatique de modÃƒÂ¨le...")
+        logger.info(""" Selection automatique de modele...")
         
-        # Configurations ÃƒÂ  tester (du plus rapide au plus prÃƒÂ©cis)
+        # Configurations  tester (du plus rapide au plus precis)
         configs = [
             {
                 'name': 'fast',
@@ -204,7 +210,7 @@ class ModelSelector:
             try:
                 logger.info(f"  Test configuration: {name}")
                 
-                # CrÃƒÂ©er et entraÃƒÂ®ner l'ensemble
+                # Creer et entraner l'ensemble
                 ensemble = MLEnsemble(config)
                 ensemble.train(X_train, y_train, X_test, y_test)
                 
@@ -212,9 +218,9 @@ class ModelSelector:
                 self.add_candidate(f"config_{name}", ensemble, config)
                 
             except Exception as e:
-                logger.error(f"Ã¢ÂÅ’ Erreur config {name}: {e}")
+                logger.error(f"' Erreur config {name}: {e}")
         
-        # SÃƒÂ©lectionner le meilleur
+        # Selectionner le meilleur
         best = self.select_best(X_test, y_test, min_score=min_score)
         
         if best:
@@ -224,13 +230,13 @@ class ModelSelector:
     
     def get_comparison_report(self) -> str:
         """
-        GÃƒÂ©nÃƒÂ¨re un rapport de comparaison des modÃƒÂ¨les
+        Genere un rapport de comparaison des modeles
         
         Returns:
-            Rapport formatÃƒÂ© pour affichage console
+            Rapport formate pour affichage console
         """
         if not self.candidates:
-            return "Aucun candidat ÃƒÂ  comparer"
+            return "Aucun candidat  comparer"
         
         report = "\n" + "="*80 + "\n"
         report += "MODEL COMPARISON REPORT\n"
@@ -253,10 +259,10 @@ class ModelSelector:
         
         report += "\n"
         
-        # DÃƒÂ©tails du meilleur modÃƒÂ¨le
+        # Details du meilleur modele
         if self.candidates and self.candidates[0].score > 0:
             best = self.candidates[0]
-            report += "Ã°Å¸Ââ€  BEST MODEL DETAILS\n"
+            report += "" BEST MODEL DETAILS\n"
             report += "-"*80 + "\n"
             report += f"Name: {best.name}\n\n"
             
@@ -280,7 +286,7 @@ class ModelSelector:
     def clear_candidates(self):
         """Vide la liste des candidats"""
         self.candidates.clear()
-        logger.info("Ã°Å¸â€”â€˜Ã¯Â¸Â  Candidats effacÃƒÂ©s")
+        logger.info(""""  Candidats effaces")
     
     def get_all_scores(self) -> Dict[str, float]:
         """
@@ -301,7 +307,7 @@ if __name__ == "__main__":
     
     print("\n=== Test Model Selector ===\n")
     
-    # DonnÃƒÂ©es synthÃƒÂ©tiques
+    # Donnees synthetiques
     np.random.seed(42)
     n_samples = 1000
     n_features = 30
@@ -316,11 +322,11 @@ if __name__ == "__main__":
     
     print(f"Train: {len(X_train)}, Test: {len(X_test)}")
     
-    # CrÃƒÂ©er le sÃƒÂ©lecteur
+    # Creer le selecteur
     selector = ModelSelector(selection_metric='accuracy')
     
     # Test 1: Ajouter manuellement des candidats
-    print("\nÃ°Å¸â€œÅ  Test avec candidats manuels:")
+    print("\n" Test avec candidats manuels:")
     
     for i, n_est in enumerate([50, 100, 150]):
         config = {
@@ -334,30 +340,30 @@ if __name__ == "__main__":
         
         selector.add_candidate(f'model_{n_est}', ensemble, config)
     
-    # SÃƒÂ©lectionner le meilleur
+    # Selectionner le meilleur
     best = selector.select_best(X_test, y_test, min_score=0.5)
     
     if best:
-        print(f"\nÃ¢Å“â€¦ Meilleur modÃƒÂ¨le: {best.name}")
+        print(f"\n""| Meilleur modele: {best.name}")
         print(f"   Score: {best.score:.2%}")
     
     # Rapport de comparaison
     print(selector.get_comparison_report())
     
-    # Test 2: SÃƒÂ©lection automatique
-    print("\nÃ°Å¸Â¤â€“ Test sÃƒÂ©lection automatique:")
+    # Test 2: Selection automatique
+    print("\n"" Test selection automatique:")
     selector.clear_candidates()
     
     best_auto = selector.auto_select(X_train, y_train, X_test, y_test, min_score=0.5)
     
     if best_auto:
-        print("Ã¢Å“â€¦ SÃƒÂ©lection automatique rÃƒÂ©ussie")
+        print("""| Selection automatique reussie")
         print(selector.get_comparison_report())
     
     # Scores de tous les candidats
-    print("\nÃ°Å¸â€œÅ  Tous les scores:")
+    print("\n" Tous les scores:")
     scores = selector.get_all_scores()
     for name, score in scores.items():
         print(f"  {name}: {score:.2%}")
     
-    print("\nÃ¢Å“â€¦ Tests terminÃƒÂ©s")
+    print("\n""| Tests termines")
