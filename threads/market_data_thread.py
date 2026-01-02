@@ -1,6 +1,6 @@
 """
 Market Data Thread pour The Bot
-Thread de collecte et distribution des donnÃƒÂ©es de marchÃƒÂ©
+Thread de collecte et distribution des donnees de marche
 """
 
 import time
@@ -16,14 +16,14 @@ logger = logging.getLogger(__name__)
 
 class MarketDataThread:
     """
-    Thread de collecte des donnÃƒÂ©es de marchÃƒÂ©
+    Thread de collecte des donnees de marche
     
-    ResponsabilitÃƒÂ©s:
-    - Recevoir les donnÃƒÂ©es WebSocket
+    Responsabilites:
+    - Recevoir les donnees WebSocket
     - Maintenir des buffers de prix
     - Calculer les indicateurs techniques
-    - Distribuer les donnÃƒÂ©es aux stratÃƒÂ©gies
-    - GÃƒÂ©rer les reconnexions
+    - Distribuer les donnees aux strategies
+    - Gerer les reconnexions
     """
     
     def __init__(self, bot_instance, config: Dict):
@@ -44,7 +44,7 @@ class MarketDataThread:
         self.buffer_size = getattr(config, 'BUFFER_SIZE', 5000)
         self.symbols_to_watch = []
         
-        # Buffers de donnÃƒÂ©es
+        # Buffers de donnees
         self.price_buffers = {}  # {symbol: deque of prices}
         self.orderbook_cache = {}  # {symbol: latest orderbook}
         self.ticker_cache = {}  # {symbol: latest ticker}
@@ -62,12 +62,12 @@ class MarketDataThread:
             'reconnections': 0
         }
         
-        logger.info("Market Data Thread initialisÃƒÂ©")
+        logger.info("Market Data Thread initialise")
     
     def start(self):
-        """DÃƒÂ©marre le thread"""
+        """Demarre le thread"""
         if self.is_running:
-            logger.warning("Market Data Thread dÃƒÂ©jÃƒÂ  en cours")
+            logger.warning("Market Data Thread deja en cours")
             return
         
         self.is_running = True
@@ -78,10 +78,10 @@ class MarketDataThread:
         )
         self.thread.start()
         
-        logger.info("Ã¢Å“â€¦ Market Data Thread dÃƒÂ©marrÃƒÂ©")
+        logger.info("Market Data Thread demarre")
     
     def stop(self):
-        """ArrÃƒÂªte le thread"""
+        """Arrete le thread"""
         if not self.is_running:
             return
         
@@ -90,11 +90,11 @@ class MarketDataThread:
         if self.thread:
             self.thread.join(timeout=10)
         
-        logger.info("Market Data Thread arrÃƒÂªtÃƒÂ©")
+        logger.info("Market Data Thread arrete")
     
     def set_symbols(self, symbols: List[str]):
         """
-        DÃƒÂ©finit les symboles ÃƒÂ  surveiller
+        Definit les symboles a surveiller
         
         Args:
             symbols: Liste des symboles
@@ -102,33 +102,33 @@ class MarketDataThread:
         self.symbols_to_watch = symbols
         self.stats['symbols_active'] = len(symbols)
         
-        # Initialiser les buffers si nÃƒÂ©cessaire
+        # Initialiser les buffers si necessaire
         for symbol in symbols:
             if symbol not in self.price_buffers:
                 self.price_buffers[symbol] = deque(maxlen=self.buffer_size)
         
-        logger.info(f"Ã°Å¸â€œÅ  Surveillance de {len(symbols)} symboles: {symbols}")
+        logger.info(f"Surveillance de {len(symbols)} symboles: {symbols}")
     
     def register_callback(self, callback: Callable):
         """
-        Enregistre un callback pour recevoir les donnÃƒÂ©es
+        Enregistre un callback pour recevoir les donnees
         
         Args:
-            callback: Fonction appelÃƒÂ©e avec les donnÃƒÂ©es
+            callback: Fonction appelee avec les donnees
         """
         self.data_callbacks.append(callback)
-        logger.debug(f"Callback enregistrÃƒÂ©: {callback.__name__}")
+        logger.debug(f"Callback enregistre: {callback.__name__}")
     
     def _run(self):
         """Boucle principale du thread"""
-        logger.info("Ã°Å¸â€â€ž Market Data Thread running...")
+        logger.info("Market Data Thread running...")
         
         while self.is_running:
             try:
-                # Mettre ÃƒÂ  jour les symboles depuis le scanner
+                # Mettre a jour les symboles depuis le scanner
                 self._update_symbols_from_scanner()
                 
-                # Collecter les donnÃƒÂ©es pour chaque symbole
+                # Collecter les donnees pour chaque symbole
                 for symbol in self.symbols_to_watch:
                     if not self.is_running:
                         break
@@ -142,28 +142,28 @@ class MarketDataThread:
                 logger.error(f"Erreur dans market data thread: {e}", exc_info=True)
                 time.sleep(5)
         
-        logger.info("Market Data Thread terminÃƒÂ©")
+        logger.info("Market Data Thread termine")
     
     def _update_symbols_from_scanner(self):
-        """Met ÃƒÂ  jour la liste des symboles depuis le scanner"""
+        """Met a jour la liste des symboles depuis le scanner"""
         try:
             if hasattr(self.bot, 'market_scanner'):
                 top_symbols = self.bot.market_scanner.get_top_symbols()
                 if top_symbols and top_symbols != self.symbols_to_watch:
-                    logger.info(f"Ã°Å¸â€â€ž Mise ÃƒÂ  jour symboles: {top_symbols}")
+                    logger.info(f"Mise a jour symboles: {top_symbols}")
                     self.set_symbols(top_symbols)
         except Exception as e:
-            logger.error(f"Erreur mise ÃƒÂ  jour symboles: {e}")
+            logger.error(f"Erreur mise a jour symboles: {e}")
     
     def _collect_symbol_data(self, symbol: str):
         """
-        Collecte les donnÃƒÂ©es pour un symbole
+        Collecte les donnees pour un symbole
         
         Args:
-            symbol: Symbole ÃƒÂ  collecter
+            symbol: Symbole a collecter
         """
         try:
-            # 1. RÃƒÂ©cupÃƒÂ©rer le ticker
+            # 1. Recuperer le ticker
             ticker = self._get_ticker(symbol)
             if not ticker:
                 return
@@ -178,13 +178,13 @@ class MarketDataThread:
                 })
                 self.stats['ticks_received'] += 1
             
-            # 3. RÃƒÂ©cupÃƒÂ©rer l'orderbook (tous les 5 ticks)
+            # 3. Recuperer l'orderbook (tous les 5 ticks)
             if self.stats['ticks_received'] % 5 == 0:
                 orderbook = self._get_orderbook(symbol)
                 if orderbook:
                     self.orderbook_cache[symbol] = orderbook
             
-            # 4. RÃƒÂ©cupÃƒÂ©rer les klines (tous les 10 ticks)
+            # 4. Recuperer les klines (tous les 10 ticks)
             if self.stats['ticks_received'] % 10 == 0:
                 klines = self._get_klines(symbol)
                 if klines is not None and not klines.empty:
@@ -193,7 +193,7 @@ class MarketDataThread:
                     # Calculer les indicateurs
                     self._calculate_indicators(symbol, klines)
                     
-                    # Distribuer les donnÃƒÂ©es
+                    # Distribuer les donnees
                     self._distribute_market_data(symbol)
         
         except Exception as e:
@@ -201,7 +201,7 @@ class MarketDataThread:
     
     def _get_ticker(self, symbol: str) -> Optional[Dict]:
         """
-        RÃƒÂ©cupÃƒÂ¨re le ticker d'un symbole
+        Recupere le ticker d'un symbole
         
         Args:
             symbol: Symbole
@@ -221,12 +221,12 @@ class MarketDataThread:
             return None
             
         except Exception as e:
-            logger.debug(f"Erreur rÃƒÂ©cupÃƒÂ©ration ticker {symbol}: {e}")
+            logger.debug(f"Erreur recuperation ticker {symbol}: {e}")
             return None
     
     def _get_orderbook(self, symbol: str, limit: int = 20) -> Optional[Dict]:
         """
-        RÃƒÂ©cupÃƒÂ¨re l'orderbook d'un symbole
+        Recupere l'orderbook d'un symbole
         
         Args:
             symbol: Symbole
@@ -243,12 +243,12 @@ class MarketDataThread:
             return orderbook
             
         except Exception as e:
-            logger.debug(f"Erreur rÃƒÂ©cupÃƒÂ©ration orderbook {symbol}: {e}")
+            logger.debug(f"Erreur recuperation orderbook {symbol}: {e}")
             return None
     
     def _get_klines(self, symbol: str, interval: str = '5m', limit: int = 100) -> Optional[pd.DataFrame]:
         """
-        RÃƒÂ©cupÃƒÂ¨re les klines d'un symbole
+        Recupere les klines d'un symbole
         
         Args:
             symbol: Symbole
@@ -266,7 +266,7 @@ class MarketDataThread:
             return df
             
         except Exception as e:
-            logger.debug(f"Erreur rÃƒÂ©cupÃƒÂ©ration klines {symbol}: {e}")
+            logger.debug(f"Erreur recuperation klines {symbol}: {e}")
             return None
     
     def _calculate_indicators(self, symbol: str, df: pd.DataFrame):
@@ -283,7 +283,7 @@ class MarketDataThread:
             # Calculer tous les indicateurs
             df_with_indicators = TechnicalIndicators.calculate_all(df)
             
-            # Mettre ÃƒÂ  jour le cache
+            # Mettre a jour le cache
             self.klines_cache[symbol] = df_with_indicators
             
         except Exception as e:
@@ -291,13 +291,13 @@ class MarketDataThread:
     
     def _distribute_market_data(self, symbol: str):
         """
-        Distribue les donnÃƒÂ©es de marchÃƒÂ©
+        Distribue les donnees de marche
         
         Args:
             symbol: Symbole
         """
         try:
-            # PrÃƒÂ©parer le package de donnÃƒÂ©es
+            # Preparer le package de donnees
             market_data = {
                 'symbol': symbol,
                 'timestamp': datetime.now(),
@@ -322,7 +322,7 @@ class MarketDataThread:
             self.stats['last_update'] = datetime.now()
             
         except Exception as e:
-            logger.error(f"Erreur distribution donnÃƒÂ©es {symbol}: {e}")
+            logger.error(f"Erreur distribution donnees {symbol}: {e}")
     
     def get_latest_price(self, symbol: str) -> Optional[float]:
         """
@@ -353,7 +353,7 @@ class MarketDataThread:
             max_items: Nombre max d'items
             
         Returns:
-            Liste des prix rÃƒÂ©cents
+            Liste des prix recents
         """
         if symbol not in self.price_buffers:
             return []
@@ -384,13 +384,13 @@ class MarketDataThread:
         self.orderbook_cache.clear()
         self.ticker_cache.clear()
         self.klines_cache.clear()
-        logger.info("Ã°Å¸Â§Â¹ Buffers nettoyÃƒÂ©s")
+        logger.info("Buffers nettoyes")
 
 
 class MarketDataCollector:
     """
-    Collecteur de donnÃƒÂ©es de marchÃƒÂ© simplifiÃƒÂ©
-    Peut ÃƒÂªtre utilisÃƒÂ© indÃƒÂ©pendamment du thread
+    Collecteur de donnees de marche simplifie
+    Peut etre utilise independamment du thread
     """
     
     def __init__(self, exchange_client):
@@ -412,7 +412,7 @@ class MarketDataCollector:
             symbol: Symbole
             
         Returns:
-            Dict avec toutes les donnÃƒÂ©es
+            Dict avec toutes les donnees
         """
         try:
             snapshot = {
@@ -449,7 +449,7 @@ class MarketDataCollector:
                 df_with_indicators = TechnicalIndicators.calculate_all(df)
                 snapshot['df'] = df_with_indicators
                 
-                # MÃƒÂ©triques rapides
+                # Metriques rapides
                 snapshot['volatility'] = df['close'].pct_change().std()
                 snapshot['trend'] = 'up' if df['close'].iloc[-1] > df['close'].iloc[-20] else 'down'
             
@@ -465,11 +465,11 @@ class MarketDataCollector:
     
     def collect_multiple(self, symbols: List[str], parallel: bool = False) -> Dict[str, Dict]:
         """
-        Collecte les donnÃƒÂ©es pour plusieurs symboles
+        Collecte les donnees pour plusieurs symboles
         
         Args:
             symbols: Liste des symboles
-            parallel: Collecte parallÃƒÂ¨le (plus rapide)
+            parallel: Collecte parallele (plus rapide)
             
         Returns:
             Dict {symbol: snapshot}
@@ -477,7 +477,7 @@ class MarketDataCollector:
         results = {}
         
         if parallel:
-            # TODO: ImplÃƒÂ©menter collecte parallÃƒÂ¨le avec ThreadPoolExecutor
+            # TODO: Implementer collecte parallele avec ThreadPoolExecutor
             pass
         else:
             for symbol in symbols:
@@ -487,19 +487,19 @@ class MarketDataCollector:
     
     def get_cached(self, symbol: str, max_age: int = 10) -> Optional[Dict]:
         """
-        RÃƒÂ©cupÃƒÂ¨re les donnÃƒÂ©es en cache
+        Recupere les donnees en cache
         
         Args:
             symbol: Symbole
-            max_age: Ãƒâ€šge max du cache en secondes
+            max_age: Age max du cache en secondes
             
         Returns:
-            DonnÃƒÂ©es en cache ou None
+            Donnees en cache ou None
         """
         if symbol not in self.cache:
             return None
         
-        # VÃƒÂ©rifier l'ÃƒÂ¢ge
+        # Verifier l'age
         if symbol in self.last_update:
             age = time.time() - self.last_update[symbol]
             if age > max_age:
