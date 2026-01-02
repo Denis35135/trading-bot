@@ -1,6 +1,6 @@
 """
 Health Checker
-VÃƒÂ©rifie la santÃƒÂ© globale du systÃƒÂ¨me
+Verifie la sante globale du systeme
 """
 
 import psutil
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class HealthStatus(Enum):
-    """Statuts de santÃƒÂ©"""
+    """Statuts de sante"""
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -22,14 +22,14 @@ class HealthStatus(Enum):
 
 class HealthChecker:
     """
-    VÃƒÂ©rificateur de santÃƒÂ© du systÃƒÂ¨me
+    Verificateur de sante du systeme
     
-    VÃƒÂ©rifie:
-    - Ressources systÃƒÂ¨me (CPU, RAM, Disk)
+    Verifie:
+    - Ressources systeme (CPU, RAM, Disk)
     - Connexion API
-    - Ãƒâ€°tat des stratÃƒÂ©gies
+    - "tat des strategies
     - Performance globale
-    - Erreurs rÃƒÂ©centes
+    - Erreurs recentes
     """
     
     def __init__(self, config: Dict = None):
@@ -61,7 +61,7 @@ class HealthChecker:
         self.checks_count = 0
         self.issues_count = 0
         
-        logger.info("Ã°Å¸ÂÂ¥ Health Checker initialisÃƒÂ©")
+        logger.info(" Health Checker initialise")
     
     def check_health(
         self,
@@ -70,15 +70,15 @@ class HealthChecker:
         recent_errors: List = None
     ) -> Dict:
         """
-        Effectue un check de santÃƒÂ© complet
+        Effectue un check de sante complet
         
         Args:
             api_client: Client API (optionnel)
-            strategies: Liste des stratÃƒÂ©gies (optionnel)
-            recent_errors: Erreurs rÃƒÂ©centes (optionnel)
+            strategies: Liste des strategies (optionnel)
+            recent_errors: Erreurs recentes (optionnel)
             
         Returns:
-            Dict avec rÃƒÂ©sultats
+            Dict avec resultats
         """
         self.checks_count += 1
         
@@ -89,7 +89,7 @@ class HealthChecker:
             'issues': []
         }
         
-        # 1. Ressources systÃƒÂ¨me
+        # 1. Ressources systeme
         system_health = self._check_system_resources()
         results['checks']['system'] = system_health
         
@@ -106,7 +106,7 @@ class HealthChecker:
                 results['overall'] = max(results['overall'], api_health['status'], key=lambda x: x.value)
                 results['issues'].extend(api_health['issues'])
         
-        # 3. StratÃƒÂ©gies
+        # 3. Strategies
         if strategies:
             strategies_health = self._check_strategies(strategies)
             results['checks']['strategies'] = strategies_health
@@ -115,7 +115,7 @@ class HealthChecker:
                 results['overall'] = max(results['overall'], strategies_health['status'], key=lambda x: x.value)
                 results['issues'].extend(strategies_health['issues'])
         
-        # 4. Erreurs rÃƒÂ©centes
+        # 4. Erreurs recentes
         if recent_errors:
             errors_health = self._check_error_rate(recent_errors)
             results['checks']['errors'] = errors_health
@@ -124,7 +124,7 @@ class HealthChecker:
                 results['overall'] = max(results['overall'], errors_health['status'], key=lambda x: x.value)
                 results['issues'].extend(errors_health['issues'])
         
-        # Mettre ÃƒÂ  jour l'historique
+        # Mettre  jour l'historique
         self.health_history.append(results)
         if len(self.health_history) > 100:
             self.health_history.pop(0)
@@ -136,16 +136,16 @@ class HealthChecker:
         
         # Log
         if results['overall'] != HealthStatus.HEALTHY:
-            logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â Health check: {results['overall'].value}")
+            logger.warning(f" Health check: {results['overall'].value}")
             for issue in results['issues']:
                 logger.warning(f"   - {issue}")
         else:
-            logger.debug("Ã¢Å“â€¦ Health check: all systems healthy")
+            logger.debug("""| Health check: all systems healthy")
         
         return results
     
     def _check_system_resources(self) -> Dict:
-        """VÃƒÂ©rifie les ressources systÃƒÂ¨me"""
+        """Verifie les ressources systeme"""
         try:
             cpu_percent = psutil.cpu_percent(interval=1)
             memory = psutil.virtual_memory()
@@ -160,15 +160,15 @@ class HealthChecker:
                 issues.append(f"CPU critique: {cpu_percent:.1f}%")
             elif cpu_percent >= self.config['cpu_warning_threshold']:
                 status = HealthStatus.DEGRADED
-                issues.append(f"CPU ÃƒÂ©levÃƒÂ©: {cpu_percent:.1f}%")
+                issues.append(f"CPU eleve: {cpu_percent:.1f}%")
             
             # Memory
             if memory.percent >= self.config['memory_critical_threshold']:
                 status = max(status, HealthStatus.UNHEALTHY, key=lambda x: x.value)
-                issues.append(f"MÃƒÂ©moire critique: {memory.percent:.1f}%")
+                issues.append(f"Memoire critique: {memory.percent:.1f}%")
             elif memory.percent >= self.config['memory_warning_threshold']:
                 status = max(status, HealthStatus.DEGRADED, key=lambda x: x.value)
-                issues.append(f"MÃƒÂ©moire ÃƒÂ©levÃƒÂ©e: {memory.percent:.1f}%")
+                issues.append(f"Memoire elevee: {memory.percent:.1f}%")
             
             # Disk
             if disk.percent >= self.config['disk_critical_threshold']:
@@ -176,7 +176,7 @@ class HealthChecker:
                 issues.append(f"Disque critique: {disk.percent:.1f}%")
             elif disk.percent >= self.config['disk_warning_threshold']:
                 status = max(status, HealthStatus.DEGRADED, key=lambda x: x.value)
-                issues.append(f"Disque ÃƒÂ©levÃƒÂ©: {disk.percent:.1f}%")
+                issues.append(f"Disque eleve: {disk.percent:.1f}%")
             
             return {
                 'status': status,
@@ -187,28 +187,28 @@ class HealthChecker:
             }
             
         except Exception as e:
-            logger.error(f"Erreur check systÃƒÂ¨me: {e}")
+            logger.error(f"Erreur check systeme: {e}")
             return {
                 'status': HealthStatus.UNKNOWN,
-                'issues': [f"Erreur check systÃƒÂ¨me: {e}"]
+                'issues': [f"Erreur check systeme: {e}"]
             }
     
     def _check_api(self, api_client) -> Dict:
-        """VÃƒÂ©rifie la connexion API"""
+        """Verifie la connexion API"""
         try:
             # Test de ping API
             start_time = datetime.now()
             
-            # Essayer de rÃƒÂ©cupÃƒÂ©rer le server time (rapide)
+            # Essayer de recuperer le server time (rapide)
             if hasattr(api_client, 'get_server_time'):
                 api_client.get_server_time()
             elif hasattr(api_client, 'ping'):
                 api_client.ping()
             else:
-                # Pas de mÃƒÂ©thode de ping disponible
+                # Pas de methode de ping disponible
                 return {
                     'status': HealthStatus.UNKNOWN,
-                    'issues': ['Impossible de vÃƒÂ©rifier l\'API']
+                    'issues': ['Impossible de verifier l\'API']
                 }
             
             latency = (datetime.now() - start_time).total_seconds() * 1000  # ms
@@ -218,7 +218,7 @@ class HealthChecker:
             
             if latency > 1000:  # > 1 seconde
                 status = HealthStatus.DEGRADED
-                issues.append(f"Latence API ÃƒÂ©levÃƒÂ©e: {latency:.0f}ms")
+                issues.append(f"Latence API elevee: {latency:.0f}ms")
             
             return {
                 'status': status,
@@ -234,7 +234,7 @@ class HealthChecker:
             }
     
     def _check_strategies(self, strategies: List) -> Dict:
-        """VÃƒÂ©rifie l'ÃƒÂ©tat des stratÃƒÂ©gies"""
+        """Verifie l'etat des strategies"""
         try:
             total = len(strategies)
             active = sum(1 for s in strategies if hasattr(s, 'is_active') and s.is_active)
@@ -244,12 +244,12 @@ class HealthChecker:
             
             if active == 0:
                 status = HealthStatus.UNHEALTHY
-                issues.append("Aucune stratÃƒÂ©gie active")
+                issues.append("Aucune strategie active")
             elif active < total * 0.5:
                 status = HealthStatus.DEGRADED
-                issues.append(f"Peu de stratÃƒÂ©gies actives: {active}/{total}")
+                issues.append(f"Peu de strategies actives: {active}/{total}")
             
-            # VÃƒÂ©rifier les performances des stratÃƒÂ©gies
+            # Verifier les performances des strategies
             low_performers = []
             for strategy in strategies:
                 if hasattr(strategy, 'performance'):
@@ -261,7 +261,7 @@ class HealthChecker:
             
             if low_performers:
                 status = max(status, HealthStatus.DEGRADED, key=lambda x: x.value)
-                issues.append(f"StratÃƒÂ©gies sous-performantes: {', '.join(low_performers)}")
+                issues.append(f"Strategies sous-performantes: {', '.join(low_performers)}")
             
             return {
                 'status': status,
@@ -271,16 +271,16 @@ class HealthChecker:
             }
             
         except Exception as e:
-            logger.error(f"Erreur check stratÃƒÂ©gies: {e}")
+            logger.error(f"Erreur check strategies: {e}")
             return {
                 'status': HealthStatus.UNKNOWN,
-                'issues': [f"Erreur check stratÃƒÂ©gies: {e}"]
+                'issues': [f"Erreur check strategies: {e}"]
             }
     
     def _check_error_rate(self, recent_errors: List) -> Dict:
-        """VÃƒÂ©rifie le taux d'erreurs"""
+        """Verifie le taux d'erreurs"""
         try:
-            # Erreurs dans la derniÃƒÂ¨re heure
+            # Erreurs dans la derniere heure
             cutoff = datetime.now() - timedelta(hours=1)
             recent = [e for e in recent_errors if e.get('timestamp', datetime.min) > cutoff]
             
@@ -294,7 +294,7 @@ class HealthChecker:
                 issues.append(f"Taux d'erreurs critique: {error_count}/h")
             elif error_count > 20:
                 status = HealthStatus.DEGRADED
-                issues.append(f"Taux d'erreurs ÃƒÂ©levÃƒÂ©: {error_count}/h")
+                issues.append(f"Taux d'erreurs eleve: {error_count}/h")
             
             return {
                 'status': status,
@@ -310,13 +310,13 @@ class HealthChecker:
             }
     
     def get_health_summary(self) -> Dict:
-        """Retourne un rÃƒÂ©sumÃƒÂ© de santÃƒÂ©"""
+        """Retourne un resume de sante"""
         if not self.health_history:
             return {'status': 'no_data'}
         
         latest = self.health_history[-1]
         
-        # Compter les checks par statut (derniÃƒÂ¨res 24h)
+        # Compter les checks par statut (dernieres 24h)
         cutoff = datetime.now() - timedelta(hours=24)
         recent_checks = [h for h in self.health_history if h['timestamp'] > cutoff]
         
@@ -357,30 +357,30 @@ if __name__ == "__main__":
     print("Test Health Checker")
     print("=" * 50)
     
-    # Test 1: Check systÃƒÂ¨me de base
-    print("\n1. Check santÃƒÂ© du systÃƒÂ¨me:")
+    # Test 1: Check systeme de base
+    print("\n1. Check sante du systeme:")
     result = checker.check_health()
     
     print(f"   Status global: {result['overall'].value}")
-    print(f"   Checks effectuÃƒÂ©s: {len(result['checks'])}")
+    print(f"   Checks effectues: {len(result['checks'])}")
     
     if result['issues']:
         print("   Issues:")
         for issue in result['issues']:
             print(f"     - {issue}")
     else:
-        print("   Ã¢Å“â€¦ Aucun problÃƒÂ¨me dÃƒÂ©tectÃƒÂ©")
+        print("   ""| Aucun probleme detecte")
     
-    # Test 2: DÃƒÂ©tails systÃƒÂ¨me
+    # Test 2: Details systeme
     if 'system' in result['checks']:
         system = result['checks']['system']
-        print(f"\n2. Ressources systÃƒÂ¨me:")
+        print(f"\n2. Ressources systeme:")
         print(f"   CPU: {system.get('cpu_percent', 0):.1f}%")
         print(f"   Memory: {system.get('memory_percent', 0):.1f}%")
         print(f"   Disk: {system.get('disk_percent', 0):.1f}%")
     
-    # Test 3: RÃƒÂ©sumÃƒÂ©
-    print("\n3. RÃƒÂ©sumÃƒÂ© de santÃƒÂ©:")
+    # Test 3: Resume
+    print("\n3. Resume de sante:")
     summary = checker.get_health_summary()
     for key, value in summary.items():
         print(f"   {key}: {value}")
