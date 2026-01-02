@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script de backtesting
-Teste les stratÃ©gies sur donnÃ©es historiques
+Teste les strategies sur donnees historiques
 """
 
 import sys
@@ -33,13 +33,13 @@ def setup_logging(verbose: bool = False):
 
 def parse_arguments():
     """Parse les arguments de ligne de commande"""
-    parser = argparse.ArgumentParser(description='Backtest des stratÃ©gies de trading')
+    parser = argparse.ArgumentParser(description='Backtest des strategies de trading')
     
     parser.add_argument(
         '--start',
         type=str,
         default='2023-01-01',
-        help='Date de dÃ©but (YYYY-MM-DD)'
+        help='Date de debut (YYYY-MM-DD)'
     )
     
     parser.add_argument(
@@ -62,7 +62,7 @@ def parse_arguments():
         nargs='+',
         default=['all'],
         choices=['all', 'scalping', 'momentum', 'mean_reversion', 'pattern', 'ml'],
-        help='StratÃ©gies Ã  tester'
+        help='Strategies  tester'
     )
     
     parser.add_argument(
@@ -70,21 +70,21 @@ def parse_arguments():
         type=str,
         nargs='+',
         default=['BTCUSDT', 'ETHUSDT'],
-        help='Symboles Ã  tester'
+        help='Symboles  tester'
     )
     
     parser.add_argument(
         '--commission',
         type=float,
         default=0.0007,
-        help='Commission Binance (0.07% par dÃ©faut)'
+        help='Commission Binance (0.07% par defaut)'
     )
     
     parser.add_argument(
         '--output',
         type=str,
         default='data/backtest',
-        help='Dossier de sortie pour les rÃ©sultats'
+        help='Dossier de sortie pour les resultats'
     )
     
     parser.add_argument(
@@ -99,13 +99,13 @@ def parse_arguments():
 
 def initialize_strategies(strategy_names: list) -> dict:
     """
-    Initialise les stratÃ©gies demandÃ©es
+    Initialise les strategies demandees
     
     Args:
-        strategy_names: Liste des noms de stratÃ©gies
+        strategy_names: Liste des noms de strategies
         
     Returns:
-        Dict des stratÃ©gies initialisÃ©es
+        Dict des strategies initialisees
     """
     all_strategies = {
         'scalping': ScalpingStrategy,
@@ -122,9 +122,9 @@ def initialize_strategies(strategy_names: list) -> dict:
     for name in strategy_names:
         if name in all_strategies:
             strategies[name] = all_strategies[name]()
-            logger.info(f"âœ… StratÃ©gie '{name}' initialisÃ©e")
+            logger.info(f"... Strategie '{name}' initialisee")
         else:
-            logger.warning(f"âš ï¸ StratÃ©gie '{name}' inconnue, ignorÃ©e")
+            logger.warning(f" Strategie '{name}' inconnue, ignoree")
     
     return strategies
 
@@ -134,26 +134,26 @@ def run_backtest(args):
     Lance le backtest
     
     Args:
-        args: Arguments parsÃ©s
+        args: Arguments parses
     """
     print("="*80)
-    print("ðŸ”¬ BACKTESTING - THE BOT")
+    print("" BACKTESTING - THE BOT")
     print("="*80)
-    print(f"ðŸ“… PÃ©riode: {args.start} â†’ {args.end}")
-    print(f"ðŸ’° Capital initial: ${args.capital:,.2f}")
-    print(f"ðŸ“Š Symboles: {', '.join(args.symbols)}")
-    print(f"ðŸŽ¯ StratÃ©gies: {', '.join(args.strategies)}")
-    print(f"ðŸ’¸ Commission: {args.commission:.2%}")
+    print(f""... Periode: {args.start} ' {args.end}")
+    print(f"' Capital initial: ${args.capital:,.2f}")
+    print(f"" Symboles: {', '.join(args.symbols)}")
+    print(f" Strategies: {', '.join(args.strategies)}")
+    print(f"' Commission: {args.commission:.2%}")
     print("="*80)
     print()
     
     try:
-        # Initialiser les stratÃ©gies
-        logger.info("Initialisation des stratÃ©gies...")
+        # Initialiser les strategies
+        logger.info("Initialisation des strategies...")
         strategies = initialize_strategies(args.strategies)
         
         if not strategies:
-            logger.error("âŒ Aucune stratÃ©gie valide spÃ©cifiÃ©e")
+            logger.error(" Aucune strategie valide specifiee")
             return False
         
         # Initialiser le backtester
@@ -163,20 +163,20 @@ def run_backtest(args):
             commission=args.commission
         )
         
-        # Charger les donnÃ©es historiques
-        logger.info("Chargement des donnÃ©es historiques...")
+        # Charger les donnees historiques
+        logger.info("Chargement des donnees historiques...")
         for symbol in args.symbols:
-            logger.info(f"  ðŸ“¥ Chargement {symbol}...")
+            logger.info(f"  " Chargement {symbol}...")
             backtester.load_data(
                 symbol=symbol,
                 start_date=args.start,
                 end_date=args.end
             )
         
-        # Lancer le backtest pour chaque stratÃ©gie
+        # Lancer le backtest pour chaque strategie
         results = {}
         for name, strategy in strategies.items():
-            logger.info(f"\nðŸš€ Backtest de la stratÃ©gie '{name}'...")
+            logger.info(f"\n Backtest de la strategie '{name}'...")
             
             result = backtester.run(
                 strategy=strategy,
@@ -185,8 +185,8 @@ def run_backtest(args):
             
             results[name] = result
             
-            # Afficher les rÃ©sultats
-            print(f"\nðŸ“Š RÃ‰SULTATS - {name.upper()}")
+            # Afficher les resultats
+            print(f"\n" RESULTATS - {name.upper()}")
             print("-"*60)
             print(f"  Capital Final    : ${result['final_capital']:,.2f}")
             print(f"  P&L Total        : ${result['total_pnl']:+,.2f} ({result['total_pnl_pct']:+.2%})")
@@ -199,8 +199,8 @@ def run_backtest(args):
             print(f"  Avg Loss         : {result['avg_loss']:.2%}")
             print("-"*60)
         
-        # Sauvegarder les rÃ©sultats
-        logger.info(f"\nðŸ’¾ Sauvegarde des rÃ©sultats dans {args.output}...")
+        # Sauvegarder les resultats
+        logger.info(f"\n' Sauvegarde des resultats dans {args.output}...")
         output_dir = Path(args.output)
         output_dir.mkdir(parents=True, exist_ok=True)
         
@@ -208,27 +208,27 @@ def run_backtest(args):
         for name, result in results.items():
             output_file = output_dir / f"backtest_{name}_{timestamp}.json"
             backtester.save_results(result, output_file)
-            logger.info(f"  âœ… {output_file}")
+            logger.info(f"  ... {output_file}")
         
-        # GÃ©nÃ©rer le rapport comparatif
-        logger.info("\nðŸ“ˆ GÃ©nÃ©ration du rapport comparatif...")
+        # Generer le rapport comparatif
+        logger.info("\n" Generation du rapport comparatif...")
         report_file = output_dir / f"backtest_comparison_{timestamp}.html"
         backtester.generate_comparison_report(results, report_file)
-        logger.info(f"  âœ… {report_file}")
+        logger.info(f"  ... {report_file}")
         
         print("\n" + "="*80)
-        print("âœ… BACKTEST TERMINÃ‰ AVEC SUCCÃˆS")
+        print("... BACKTEST TERMINE AVEC SUCCS")
         print("="*80)
         
         return True
         
     except Exception as e:
-        logger.error(f"âŒ Erreur lors du backtest: {e}", exc_info=True)
+        logger.error(f" Erreur lors du backtest: {e}", exc_info=True)
         return False
 
 
 def main():
-    """Point d'entrÃ©e principal"""
+    """Point d'entree principal"""
     args = parse_arguments()
     setup_logging(args.verbose)
     
