@@ -1,6 +1,6 @@
 """
 Memory Manager pour The Bot
-Gestion optimisÃƒÂ©e de la mÃƒÂ©moire pour ÃƒÂ©viter les memory leaks
+Gestion optimisee de la memoire pour eviter les memory leaks
 """
 
 import gc
@@ -17,13 +17,13 @@ logger = logging.getLogger(__name__)
 
 class MemoryManager:
     """
-    Gestionnaire de mÃƒÂ©moire pour ÃƒÂ©viter les memory leaks
+    Gestionnaire de memoire pour eviter les memory leaks
     
-    ResponsabilitÃƒÂ©s:
-    - Monitor l'utilisation mÃƒÂ©moire
-    - DÃƒÂ©clencher le garbage collection
+    Responsabilites:
+    - Monitor l'utilisation memoire
+    - Declencher le garbage collection
     - Nettoyer les anciens buffers
-    - Alerter en cas de fuite mÃƒÂ©moire
+    - Alerter en cas de fuite memoire
     - Optimiser l'utilisation RAM
     """
     
@@ -35,18 +35,18 @@ class MemoryManager:
             config: Configuration
         """
         self.config = config
-        self.max_memory_mb = getattr(config, 'MAX_MEMORY_MB', 2000)  # 2GB par dÃƒÂ©faut
+        self.max_memory_mb = getattr(config, 'MAX_MEMORY_MB', 2000)  # 2GB par defaut
         self.warning_threshold = getattr(config, 'WARNING_THRESHOLD', 0.8)  # 80%
         self.critical_threshold = getattr(config, 'CRITICAL_THRESHOLD', 0.95)  # 95%
         self.cleanup_interval = getattr(config, 'CLEANUP_INTERVAL', 300)  # 5 min
         
-        # Ãƒâ€°tat
+        # "tat
         self.is_running = False
         self.monitor_thread = None
         self.last_cleanup = time.time()
         self.cleanup_count = 0
         
-        # Buffers gÃƒÂ©rÃƒÂ©s
+        # Buffers geres
         self.managed_buffers = {}
         self.buffer_limits = {}
         
@@ -68,12 +68,12 @@ class MemoryManager:
         # Process actuel
         self.process = psutil.Process()
         
-        logger.info(f"Memory Manager initialisÃƒÂ© (max: {self.max_memory_mb}MB)")
+        logger.info(f"Memory Manager initialise (max: {self.max_memory_mb}MB)")
     
     def start(self):
-        """DÃƒÂ©marre le monitoring mÃƒÂ©moire"""
+        """Demarre le monitoring memoire"""
         if self.is_running:
-            logger.warning("Memory Manager dÃƒÂ©jÃƒÂ  en cours")
+            logger.warning("Memory Manager dej en cours")
             return
         
         self.is_running = True
@@ -86,10 +86,10 @@ class MemoryManager:
         )
         self.monitor_thread.start()
         
-        logger.info("Ã¢Å“â€¦ Memory Manager dÃƒÂ©marrÃƒÂ©")
+        logger.info("""| Memory Manager demarre")
     
     def stop(self):
-        """ArrÃƒÂªte le monitoring"""
+        """Arrete le monitoring"""
         if not self.is_running:
             return
         
@@ -98,38 +98,38 @@ class MemoryManager:
         if self.monitor_thread:
             self.monitor_thread.join(timeout=5)
         
-        logger.info("Memory Manager arrÃƒÂªtÃƒÂ©")
+        logger.info("Memory Manager arrete")
     
     def _monitor_loop(self):
         """Boucle principale de monitoring"""
-        logger.info("Thread Memory Monitor dÃƒÂ©marrÃƒÂ©")
+        logger.info("Thread Memory Monitor demarre")
         
         while self.is_running:
             try:
-                # VÃƒÂ©rifier la mÃƒÂ©moire
+                # Verifier la memoire
                 memory_info = self.get_memory_info()
                 memory_mb = memory_info['rss_mb']
                 usage_pct = memory_mb / self.max_memory_mb
                 
-                # Enregistrer l'ÃƒÂ©chantillon
+                # Enregistrer l'echantillon
                 self.stats['memory_samples'].append({
                     'timestamp': time.time(),
                     'memory_mb': memory_mb,
                     'usage_pct': usage_pct
                 })
                 
-                # Garder max 1000 ÃƒÂ©chantillons
+                # Garder max 1000 echantillons
                 if len(self.stats['memory_samples']) > 1000:
                     self.stats['memory_samples'] = self.stats['memory_samples'][-1000:]
                 
-                # Mettre ÃƒÂ  jour peak
+                # Mettre  jour peak
                 if memory_mb > self.stats['peak_memory_mb']:
                     self.stats['peak_memory_mb'] = memory_mb
                 
-                # VÃƒÂ©rifier les seuils
+                # Verifier les seuils
                 if usage_pct >= self.critical_threshold:
                     logger.critical(
-                        f"Ã°Å¸â€Â´ CRITIQUE: MÃƒÂ©moire ÃƒÂ  {usage_pct:.1%} ({memory_mb:.0f}MB/{self.max_memory_mb}MB)"
+                        f"" CRITIQUE: Memoire  {usage_pct:.1%} ({memory_mb:.0f}MB/{self.max_memory_mb}MB)"
                     )
                     self.stats['memory_warnings'] += 1
                     self._trigger_critical_cleanup()
@@ -137,13 +137,13 @@ class MemoryManager:
                     
                 elif usage_pct >= self.warning_threshold:
                     logger.warning(
-                        f"Ã¢Å¡Â Ã¯Â¸Â ATTENTION: MÃƒÂ©moire ÃƒÂ  {usage_pct:.1%} ({memory_mb:.0f}MB/{self.max_memory_mb}MB)"
+                        f" ATTENTION: Memoire  {usage_pct:.1%} ({memory_mb:.0f}MB/{self.max_memory_mb}MB)"
                     )
                     self.stats['memory_warnings'] += 1
                     self._trigger_cleanup()
                     self._trigger_callbacks(self.on_warning_callbacks)
                 
-                # Cleanup pÃƒÂ©riodique
+                # Cleanup periodique
                 if time.time() - self.last_cleanup > self.cleanup_interval:
                     self._scheduled_cleanup()
                 
@@ -154,15 +154,15 @@ class MemoryManager:
                 logger.error(f"Erreur monitor loop: {e}")
                 time.sleep(30)
         
-        logger.info("Thread Memory Monitor arrÃƒÂªtÃƒÂ©")
+        logger.info("Thread Memory Monitor arrete")
     
     def _trigger_cleanup(self):
-        """DÃƒÂ©clenche un nettoyage standard"""
-        logger.info("Ã°Å¸Â§Â¹ Nettoyage mÃƒÂ©moire standard...")
+        """Declenche un nettoyage standard"""
+        logger.info(" Nettoyage memoire standard...")
         
         start_mem = self.get_memory_info()['rss_mb']
         
-        # Nettoyer les buffers gÃƒÂ©rÃƒÂ©s
+        # Nettoyer les buffers geres
         self._cleanup_managed_buffers()
         
         # Garbage collection
@@ -177,16 +177,16 @@ class MemoryManager:
         self.stats['cleanup_triggered'] += 1
         
         logger.info(
-            f"Ã¢Å“â€¦ Nettoyage terminÃƒÂ©: {freed_mb:.1f}MB libÃƒÂ©rÃƒÂ©s, "
-            f"{collected} objets collectÃƒÂ©s, mÃƒÂ©moire: {end_mem:.0f}MB"
+            f"""| Nettoyage termine: {freed_mb:.1f}MB liberes, "
+            f"{collected} objets collectes, memoire: {end_mem:.0f}MB"
         )
         
         # Callbacks
         self._trigger_callbacks(self.on_cleanup_callbacks)
     
     def _trigger_critical_cleanup(self):
-        """DÃƒÂ©clenche un nettoyage agressif en cas de critique"""
-        logger.critical("Ã°Å¸Å¡Â¨ Nettoyage CRITIQUE en cours...")
+        """Declenche un nettoyage agressif en cas de critique"""
+        logger.critical(" Nettoyage CRITIQUE en cours...")
         
         start_mem = self.get_memory_info()['rss_mb']
         
@@ -201,30 +201,30 @@ class MemoryManager:
                         buffer.popleft()
                 else:
                     buffer[:] = buffer[-keep:]
-                logger.info(f"Buffer '{buffer_name}' rÃƒÂ©duit ÃƒÂ  {keep} items")
+                logger.info(f"Buffer '{buffer_name}' reduit  {keep} items")
         
         # Plusieurs passes de GC
         for i in range(3):
             collected = gc.collect(generation=2)
-            logger.info(f"GC pass {i+1}: {collected} objets collectÃƒÂ©s")
+            logger.info(f"GC pass {i+1}: {collected} objets collectes")
         
         end_mem = self.get_memory_info()['rss_mb']
         freed_mb = start_mem - end_mem
         
-        logger.critical(f"Ã¢Å“â€¦ Nettoyage critique terminÃƒÂ©: {freed_mb:.1f}MB libÃƒÂ©rÃƒÂ©s")
+        logger.critical(f"""| Nettoyage critique termine: {freed_mb:.1f}MB liberes")
         
-        # Si toujours critique, log dÃƒÂ©taillÃƒÂ©
+        # Si toujours critique, log detaille
         if end_mem / self.max_memory_mb > self.critical_threshold:
             self._log_memory_details()
     
     def _scheduled_cleanup(self):
-        """Nettoyage pÃƒÂ©riodique planifiÃƒÂ©"""
-        logger.debug("Ã°Å¸Â§Â¹ Nettoyage pÃƒÂ©riodique...")
+        """Nettoyage periodique planifie"""
+        logger.debug(" Nettoyage periodique...")
         
         # Nettoyer les buffers selon leurs limites
         self._cleanup_managed_buffers()
         
-        # GC lÃƒÂ©ger
+        # GC leger
         gc.collect(generation=0)
         
         self.last_cleanup = time.time()
@@ -240,37 +240,37 @@ class MemoryManager:
             if isinstance(buffer, list):
                 if len(buffer) > limit:
                     buffer[:] = buffer[-limit:]
-                    logger.debug(f"Buffer '{buffer_name}' nettoyÃƒÂ©: {len(buffer)}/{limit}")
+                    logger.debug(f"Buffer '{buffer_name}' nettoye: {len(buffer)}/{limit}")
                     
             elif isinstance(buffer, deque):
                 while len(buffer) > limit:
                     buffer.popleft()
-                logger.debug(f"Buffer '{buffer_name}' nettoyÃƒÂ©: {len(buffer)}/{limit}")
+                logger.debug(f"Buffer '{buffer_name}' nettoye: {len(buffer)}/{limit}")
                 
             elif isinstance(buffer, dict):
                 if len(buffer) > limit:
-                    # Garder les plus rÃƒÂ©cents
+                    # Garder les plus recents
                     items = sorted(buffer.items(), key=lambda x: x[0], reverse=True)
                     buffer.clear()
                     buffer.update(dict(items[:limit]))
-                    logger.debug(f"Dict '{buffer_name}' nettoyÃƒÂ©: {len(buffer)}/{limit}")
+                    logger.debug(f"Dict '{buffer_name}' nettoye: {len(buffer)}/{limit}")
     
     def register_buffer(self, name: str, buffer: Any, limit: int):
         """
-        Enregistre un buffer ÃƒÂ  gÃƒÂ©rer
+        Enregistre un buffer  gerer
         
         Args:
             name: Nom du buffer
-            buffer: RÃƒÂ©fÃƒÂ©rence au buffer
+            buffer: Reference au buffer
             limit: Taille maximum
         """
         self.managed_buffers[name] = buffer
         self.buffer_limits[name] = limit
-        logger.info(f"Buffer '{name}' enregistrÃƒÂ© (limit: {limit})")
+        logger.info(f"Buffer '{name}' enregistre (limit: {limit})")
     
     def unregister_buffer(self, name: str):
         """
-        DÃƒÂ©senregistre un buffer
+        Desenregistre un buffer
         
         Args:
             name: Nom du buffer
@@ -278,7 +278,7 @@ class MemoryManager:
         if name in self.managed_buffers:
             del self.managed_buffers[name]
             del self.buffer_limits[name]
-            logger.info(f"Buffer '{name}' dÃƒÂ©senregistrÃƒÂ©")
+            logger.info(f"Buffer '{name}' desenregistre")
     
     def register_callback(self, event: str, callback: Callable):
         """
@@ -286,7 +286,7 @@ class MemoryManager:
         
         Args:
             event: 'warning', 'critical' ou 'cleanup'
-            callback: Fonction ÃƒÂ  appeler
+            callback: Fonction  appeler
         """
         if event == 'warning':
             self.on_warning_callbacks.append(callback)
@@ -298,7 +298,7 @@ class MemoryManager:
             logger.warning(f"Event inconnu: {event}")
     
     def _trigger_callbacks(self, callbacks: List[Callable]):
-        """DÃƒÂ©clenche une liste de callbacks"""
+        """Declenche une liste de callbacks"""
         for callback in callbacks:
             try:
                 callback()
@@ -307,10 +307,10 @@ class MemoryManager:
     
     def get_memory_info(self) -> Dict[str, float]:
         """
-        Retourne les infos mÃƒÂ©moire
+        Retourne les infos memoire
         
         Returns:
-            Dict avec infos mÃƒÂ©moire
+            Dict avec infos memoire
         """
         try:
             mem_info = self.process.memory_info()
@@ -338,7 +338,7 @@ class MemoryManager:
         """
         current_mem = self.get_memory_info()['rss_mb']
         
-        # Moyenne mÃƒÂ©moire sur derniÃƒÂ¨res 100 samples
+        # Moyenne memoire sur dernieres 100 samples
         recent_samples = self.stats['memory_samples'][-100:]
         if recent_samples:
             avg_mem = sum(s['memory_mb'] for s in recent_samples) / len(recent_samples)
@@ -359,31 +359,31 @@ class MemoryManager:
         }
     
     def force_cleanup(self):
-        """Force un nettoyage immÃƒÂ©diat"""
-        logger.info("Ã°Å¸Â§Â¹ Nettoyage forcÃƒÂ©...")
+        """Force un nettoyage immediat"""
+        logger.info(" Nettoyage force...")
         self._trigger_cleanup()
     
     def force_gc(self):
         """Force un garbage collection complet"""
-        logger.info("Ã°Å¸â€”â€˜Ã¯Â¸Â Garbage collection forcÃƒÂ©...")
+        logger.info("""" Garbage collection force...")
         
         collected = 0
         for generation in range(3):
             collected += gc.collect(generation)
         
         self.stats['gc_collections'] += 1
-        logger.info(f"Ã¢Å“â€¦ GC terminÃƒÂ©: {collected} objets collectÃƒÂ©s")
+        logger.info(f"""| GC termine: {collected} objets collectes")
         
         return collected
     
     def _log_memory_details(self):
-        """Log des dÃƒÂ©tails sur l'utilisation mÃƒÂ©moire"""
+        """Log des details sur l'utilisation memoire"""
         import sys
         
         mem_info = self.get_memory_info()
         
         logger.critical("\n" + "=" * 60)
-        logger.critical("DÃƒâ€°TAILS MÃƒâ€°MOIRE")
+        logger.critical("D"TAILS M"MOIRE")
         logger.critical("=" * 60)
         logger.critical(f"RSS: {mem_info['rss_mb']:.1f}MB")
         logger.critical(f"VMS: {mem_info['vms_mb']:.1f}MB")
@@ -391,8 +391,8 @@ class MemoryManager:
         logger.critical(f"System available: {mem_info['available_mb']:.1f}MB")
         logger.critical(f"System used: {mem_info['system_used_mb']:.1f}MB ({mem_info['system_percent']:.1f}%)")
         
-        # Buffers gÃƒÂ©rÃƒÂ©s
-        logger.critical("\nBuffers gÃƒÂ©rÃƒÂ©s:")
+        # Buffers geres
+        logger.critical("\nBuffers geres:")
         for name, buffer in self.managed_buffers.items():
             if isinstance(buffer, (list, deque)):
                 size = len(buffer)
@@ -412,7 +412,7 @@ class MemoryManager:
     
     def get_buffer_info(self) -> Dict[str, Dict]:
         """
-        Retourne les infos sur les buffers gÃƒÂ©rÃƒÂ©s
+        Retourne les infos sur les buffers geres
         
         Returns:
             Dict avec infos buffers
@@ -441,11 +441,11 @@ class MemoryManager:
     
     def optimize_memory(self):
         """
-        Optimise l'utilisation mÃƒÂ©moire
+        Optimise l'utilisation memoire
         
-        Tips d'optimisation appliquÃƒÂ©s automatiquement
+        Tips d'optimisation appliques automatiquement
         """
-        logger.info("Ã°Å¸â€Â§ Optimisation mÃƒÂ©moire...")
+        logger.info("" Optimisation memoire...")
         
         # Activer le GC automatique
         gc.enable()
@@ -456,4 +456,4 @@ class MemoryManager:
         # Force un nettoyage complet
         self.force_gc()
         
-        logger.info("Ã¢Å“â€¦ Optimisation terminÃƒÂ©e")
+        logger.info("""| Optimisation terminee")
