@@ -1,6 +1,6 @@
 """
 Performance Tracker pour The Bot
-Calcule et suit les mÃƒÂ©triques de performance avancÃƒÂ©es
+Calcule et suit les metriques de performance avancees
 """
 
 import time
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class PerformanceSnapshot:
-    """Snapshot de performance ÃƒÂ  un instant T"""
+    """Snapshot de performance a un instant T"""
     timestamp: datetime
     capital: float
     total_pnl: float
@@ -44,14 +44,14 @@ class PerformanceSnapshot:
 
 class PerformanceTracker:
     """
-    Tracker de performance avancÃƒÂ©
+    Tracker de performance avance
     
-    ResponsabilitÃƒÂ©s:
-    - Calculer les mÃƒÂ©triques de performance (Sharpe, Sortino, etc.)
+    Responsabilites:
+    - Calculer les metriques de performance (Sharpe, Sortino, etc.)
     - Suivre le win rate, profit factor
     - Analyser les distributions de profits/pertes
-    - DÃƒÂ©tecter les patterns de performance
-    - GÃƒÂ©nÃƒÂ©rer des rapports dÃƒÂ©taillÃƒÂ©s
+    - Detecter les patterns de performance
+    - Generer des rapports detailles
     """
     
     def __init__(self, config: Dict):
@@ -64,14 +64,14 @@ class PerformanceTracker:
         self.config = config
         self.initial_capital = getattr(config, 'INITIAL_CAPITAL', 1000)
         
-        # Ãƒâ€°tat actuel
+        # Etat actuel
         self.current_capital = self.initial_capital
         self.peak_capital = self.initial_capital
         self.daily_starting_capital = self.initial_capital
         
         # Historique des trades
         self.trades_history = []
-        self.closed_trades = []  # Tous les trades fermÃƒÂ©s
+        self.closed_trades = []  # Tous les trades fermes
         self.winning_trades = []
         self.losing_trades = []
         
@@ -82,11 +82,11 @@ class PerformanceTracker:
         # Historique drawdown
         self.drawdown_history = deque(maxlen=10000)
         
-        # Performance par pÃƒÂ©riode
+        # Performance par periode
         self.hourly_performance = defaultdict(list)
         self.daily_performance = defaultdict(list)
         
-        # Performance par stratÃƒÂ©gie
+        # Performance par strategie
         self.strategy_performance = defaultdict(lambda: {
             'trades': 0,
             'wins': 0,
@@ -103,7 +103,7 @@ class PerformanceTracker:
             'total_pnl': 0.0
         })
         
-        # Statistiques temps rÃƒÂ©el
+        # Statistiques temps reel
         self.stats = {
             'total_trades': 0,
             'winning_trades': 0,
@@ -127,7 +127,7 @@ class PerformanceTracker:
         self.last_update = datetime.now()
         self.last_daily_reset = datetime.now()
         
-        logger.info(f"Ã¢Å“â€¦ Performance Tracker initialisÃƒÂ© (capital: ${self.initial_capital:,.2f})")
+        logger.info(f"[OK] Performance Tracker initialise (capital: ${self.initial_capital:,.2f})")
     
     def record_trade(self,
                     symbol: str,
@@ -141,19 +141,19 @@ class PerformanceTracker:
                     exit_time: datetime,
                     metadata: Optional[Dict] = None):
         """
-        Enregistre un trade fermÃƒÂ©
+        Enregistre un trade ferme
         
         Args:
-            symbol: Symbole tradÃƒÂ©
-            strategy: StratÃƒÂ©gie utilisÃƒÂ©e
+            symbol: Symbole trade
+            strategy: Strategie utilisee
             side: BUY ou SELL
-            entry_price: Prix d'entrÃƒÂ©e
+            entry_price: Prix d'entree
             exit_price: Prix de sortie
-            quantity: QuantitÃƒÂ©
-            profit: Profit rÃƒÂ©alisÃƒÂ©
-            entry_time: Timestamp d'entrÃƒÂ©e
+            quantity: Quantite
+            profit: Profit realise
+            entry_time: Timestamp d'entree
             exit_time: Timestamp de sortie
-            metadata: MÃƒÂ©tadonnÃƒÂ©es optionnelles
+            metadata: Metadonnees optionnelles
         """
         trade = {
             'timestamp': exit_time,
@@ -171,7 +171,7 @@ class PerformanceTracker:
             'metadata': metadata or {}
         }
         
-        # Ajouter ÃƒÂ  l'historique
+        # Ajouter a l'historique
         self.trades_history.append(trade)
         self.closed_trades.append(trade)
         
@@ -184,15 +184,15 @@ class PerformanceTracker:
             self.losing_trades.append(trade)
             self.strategy_performance[strategy]['losses'] += 1
         
-        # Mettre ÃƒÂ  jour les performances par stratÃƒÂ©gie
+        # Mettre a jour les performances par strategie
         self.strategy_performance[strategy]['trades'] += 1
         self.strategy_performance[strategy]['total_pnl'] += profit
         
-        # Mettre ÃƒÂ  jour les performances par symbole
+        # Mettre a jour les performances par symbole
         self.symbol_performance[symbol]['trades'] += 1
         self.symbol_performance[symbol]['total_pnl'] += profit
         
-        # Mettre ÃƒÂ  jour les stats
+        # Mettre a jour les stats
         self.stats['total_trades'] += 1
         if profit > 0:
             self.stats['winning_trades'] += 1
@@ -202,14 +202,14 @@ class PerformanceTracker:
         self.stats['total_pnl'] += profit
         self.stats['daily_pnl'] += profit
         
-        # Recalculer les mÃƒÂ©triques
+        # Recalculer les metriques
         self._update_statistics()
         
-        logger.debug(f"Trade enregistrÃƒÂ©: {symbol} {side} P&L: ${profit:+.2f}")
+        logger.debug(f"Trade enregistre: {symbol} {side} P&L: ${profit:+.2f}")
     
     def update_capital(self, new_capital: float):
         """
-        Met ÃƒÂ  jour le capital
+        Met a jour le capital
         
         Args:
             new_capital: Nouveau capital
@@ -223,7 +223,7 @@ class PerformanceTracker:
         
         self.current_capital = new_capital
         
-        # Mettre ÃƒÂ  jour le pic
+        # Mettre a jour le pic
         if new_capital > self.peak_capital:
             self.peak_capital = new_capital
         
@@ -245,7 +245,7 @@ class PerformanceTracker:
             capital=self.current_capital,
             total_pnl=self.stats['total_pnl'],
             daily_pnl=self.stats['daily_pnl'],
-            positions_count=0,  # Ãƒâ‚¬ remplir depuis l'extÃƒÂ©rieur
+            positions_count=0,  # a remplir depuis l'exterieur
             trades_count=self.stats['total_trades'],
             win_rate=self.stats['win_rate'],
             profit_factor=self.stats['profit_factor'],
@@ -261,12 +261,12 @@ class PerformanceTracker:
     
     def get_detailed_report(self) -> Dict:
         """
-        GÃƒÂ©nÃƒÂ¨re un rapport dÃƒÂ©taillÃƒÂ© de performance
+        Genere un rapport detaille de performance
         
         Returns:
-            Dict avec toutes les mÃƒÂ©triques
+            Dict avec toutes les metriques
         """
-        # DurÃƒÂ©e de trading
+        # Duree de trading
         trading_duration = datetime.now() - self.start_time
         
         report = {
@@ -318,10 +318,10 @@ class PerformanceTracker:
     
     def get_performance_metrics(self) -> Dict:
         """
-        Retourne les mÃƒÂ©triques de performance principales
+        Retourne les metriques de performance principales
         
         Returns:
-            Dict avec les mÃƒÂ©triques clÃƒÂ©s
+            Dict avec les metriques cles
         """
         return {
             'win_rate': self.stats['win_rate'],
@@ -338,7 +338,7 @@ class PerformanceTracker:
         }
     
     def _update_statistics(self):
-        """Met ÃƒÂ  jour toutes les statistiques"""
+        """Met a jour toutes les statistiques"""
         if not self.closed_trades:
             return
         
@@ -370,14 +370,14 @@ class PerformanceTracker:
         # Sortino ratio
         self.stats['sortino_ratio'] = self._calculate_sortino_ratio()
         
-        # Mise ÃƒÂ  jour performance par stratÃƒÂ©gie
+        # Mise a jour performance par strategie
         for strategy, perf in self.strategy_performance.items():
             if perf['trades'] > 0:
                 perf['win_rate'] = perf['wins'] / perf['trades']
                 perf['avg_pnl'] = perf['total_pnl'] / perf['trades']
     
     def _update_drawdown(self):
-        """Met ÃƒÂ  jour le drawdown"""
+        """Met a jour le drawdown"""
         if self.current_capital < self.peak_capital:
             current_dd = (self.peak_capital - self.current_capital) / self.peak_capital
         else:
@@ -402,7 +402,7 @@ class PerformanceTracker:
         Calcule le Sharpe Ratio
         
         Args:
-            risk_free_rate: Taux sans risque annualisÃƒÂ©
+            risk_free_rate: Taux sans risque annualise
             
         Returns:
             Sharpe Ratio
@@ -432,7 +432,7 @@ class PerformanceTracker:
         Calcule le Sortino Ratio (comme Sharpe mais avec downside deviation)
         
         Args:
-            risk_free_rate: Taux sans risque annualisÃƒÂ©
+            risk_free_rate: Taux sans risque annualise
             
         Returns:
             Sortino Ratio
@@ -447,7 +447,7 @@ class PerformanceTracker:
         
         avg_return = np.mean(returns)
         
-        # Downside deviation (seulement les returns nÃƒÂ©gatifs)
+        # Downside deviation (seulement les returns negatifs)
         negative_returns = [r for r in returns if r < 0]
         
         if not negative_returns:
@@ -481,10 +481,10 @@ class PerformanceTracker:
     
     def _get_strategy_breakdown(self) -> Dict:
         """
-        Retourne la performance par stratÃƒÂ©gie
+        Retourne la performance par strategie
         
         Returns:
-            Dict avec les stats par stratÃƒÂ©gie
+            Dict avec les stats par strategie
         """
         breakdown = {}
         
@@ -546,7 +546,7 @@ class PerformanceTracker:
         }
     
     def _calculate_skewness(self, data: List[float]) -> float:
-        """Calcule le skewness (asymÃƒÂ©trie)"""
+        """Calcule le skewness (asymetrie)"""
         if len(data) < 3:
             return 0.0
         
@@ -579,14 +579,14 @@ class PerformanceTracker:
         return kurt
     
     def _check_daily_reset(self):
-        """VÃƒÂ©rifie et effectue le reset journalier si nÃƒÂ©cessaire"""
+        """Verifie et effectue le reset journalier si necessaire"""
         now = datetime.now()
         
-        # Si on a changÃƒÂ© de jour (UTC)
+        # Si on a change de jour (UTC)
         if now.date() > self.last_daily_reset.date():
             logger.info(f"Reset journalier - P&L hier: ${self.stats['daily_pnl']:+.2f}")
             
-            # Sauvegarder la performance de la journÃƒÂ©e
+            # Sauvegarder la performance de la journee
             self.daily_performance[self.last_daily_reset.date()] = {
                 'pnl': self.stats['daily_pnl'],
                 'trades': self.stats['total_trades'],
@@ -606,8 +606,8 @@ class PerformanceTracker:
         Retourne l'historique des trades
         
         Args:
-            limit: Nombre max de trades ÃƒÂ  retourner
-            strategy: Filtrer par stratÃƒÂ©gie
+            limit: Nombre max de trades a retourner
+            strategy: Filtrer par strategie
             symbol: Filtrer par symbole
             
         Returns:
@@ -633,7 +633,7 @@ class PerformanceTracker:
         Retourne les meilleurs et pires trades
         
         Args:
-            n: Nombre de trades ÃƒÂ  retourner
+            n: Nombre de trades a retourner
             
         Returns:
             Dict avec best et worst trades
@@ -723,7 +723,7 @@ if __name__ == "__main__":
         exit_time=now
     )
     
-    # Mettre ÃƒÂ  jour le capital
+    # Mettre a jour le capital
     tracker.update_capital(1020.0)
     
     # Snapshot
@@ -734,15 +734,15 @@ if __name__ == "__main__":
     print(f"Profit Factor: {snapshot.profit_factor:.2f}")
     print(f"Sharpe Ratio: {snapshot.sharpe_ratio:.2f}")
     
-    # Rapport dÃƒÂ©taillÃƒÂ©
-    print("\n--- Rapport DÃƒÂ©taillÃƒÂ© ---")
+    # Rapport detaille
+    print("\n--- Rapport Detaille ---")
     report = tracker.get_detailed_report()
     print(f"Total Trades: {report['trades']['total']}")
     print(f"Return: {report['capital']['return_pct']:+.2f}%")
     
-    # Par stratÃƒÂ©gie
-    print("\n--- Performance par StratÃƒÂ©gie ---")
+    # Par strategie
+    print("\n--- Performance par Strategie ---")
     for strategy, perf in report['by_strategy'].items():
         print(f"{strategy}: {perf['trades']} trades, Win Rate: {perf['win_rate']:.1%}, P&L: ${perf['total_pnl']:+.2f}")
     
-    print("\nÃ¢Å“â€¦ Tests terminÃƒÂ©s")
+    print("\n[OK] Tests termines")
