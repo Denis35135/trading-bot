@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Script de sauvegarde automatique des donnÃƒÂ©es
-Backup des modÃƒÂ¨les ML, logs, et donnÃƒÂ©es de trading
+Script de sauvegarde automatique des donnees
+Backup des modeles ML, logs, et donnees de trading
 """
 
 import os
@@ -13,7 +13,7 @@ from pathlib import Path
 import tarfile
 import argparse
 
-# Ajouter le rÃƒÂ©pertoire parent au path
+# Ajouter le repertoire parent au path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 logging.basicConfig(
@@ -28,11 +28,11 @@ class BackupManager:
     Gestionnaire de sauvegardes automatiques
     
     Sauvegarde:
-    - ModÃƒÂ¨les ML entraÃƒÂ®nÃƒÂ©s
+    - Modeles ML entranes
     - Logs importants
     - Historique des trades
     - Configuration
-    - Base de donnÃƒÂ©es
+    - Base de donnees
     """
     
     def __init__(self, config: dict = None):
@@ -53,18 +53,18 @@ class BackupManager:
         self.backup_root = Path(self.config['backup_dir'])
         self.backup_root.mkdir(parents=True, exist_ok=True)
         
-        logger.info(f"Ã°Å¸â€œÂ¦ Backup Manager initialisÃƒÂ©")
+        logger.info(f""| Backup Manager initialise")
         logger.info(f"   Dossier backups: {self.backup_root}")
     
     def create_backup(self, backup_name: str = None) -> str:
         """
-        CrÃƒÂ©e une sauvegarde complÃƒÂ¨te
+        Cree une sauvegarde complete
         
         Args:
             backup_name: Nom du backup (auto si None)
             
         Returns:
-            Chemin du backup crÃƒÂ©ÃƒÂ©
+            Chemin du backup cree
         """
         try:
             # Nom du backup
@@ -75,29 +75,29 @@ class BackupManager:
             backup_path = self.backup_root / backup_name
             backup_path.mkdir(parents=True, exist_ok=True)
             
-            logger.info(f"Ã°Å¸â€â€ž CrÃƒÂ©ation du backup: {backup_name}")
+            logger.info(f""" Creation du backup: {backup_name}")
             
-            # 1. Sauvegarder les dossiers de donnÃƒÂ©es
+            # 1. Sauvegarder les dossiers de donnees
             for data_dir in self.config['data_dirs']:
                 self._backup_directory(data_dir, backup_path)
             
             # 2. Sauvegarder les fichiers de config
             self._backup_config_files(backup_path)
             
-            # 3. CrÃƒÂ©er un fichier info
+            # 3. Creer un fichier info
             self._create_backup_info(backup_path)
             
-            # 4. Compression si activÃƒÂ©e
+            # 4. Compression si activee
             if self.config['compression']:
                 compressed_path = self._compress_backup(backup_path)
-                logger.info(f"Ã¢Å“â€¦ Backup compressÃƒÂ©: {compressed_path}")
+                logger.info(f"""| Backup compresse: {compressed_path}")
                 return str(compressed_path)
             
-            logger.info(f"Ã¢Å“â€¦ Backup crÃƒÂ©ÃƒÂ©: {backup_path}")
+            logger.info(f"""| Backup cree: {backup_path}")
             return str(backup_path)
             
         except Exception as e:
-            logger.error(f"Ã¢ÂÅ’ Erreur crÃƒÂ©ation backup: {e}")
+            logger.error(f"' Erreur creation backup: {e}")
             return None
     
     def _backup_directory(self, source_dir: str, backup_path: Path):
@@ -111,7 +111,7 @@ class BackupManager:
         source = Path(source_dir)
         
         if not source.exists():
-            logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â Dossier non trouvÃƒÂ©: {source_dir}")
+            logger.warning(f" Dossier non trouve: {source_dir}")
             return
         
         dest = backup_path / source.name
@@ -120,13 +120,13 @@ class BackupManager:
             if source.is_dir():
                 shutil.copytree(source, dest, dirs_exist_ok=True)
                 file_count = sum(1 for _ in dest.rglob('*') if _.is_file())
-                logger.info(f"   Ã¢Å“â€œ {source_dir}: {file_count} fichiers sauvegardÃƒÂ©s")
+                logger.info(f"   "" {source_dir}: {file_count} fichiers sauvegardes")
             else:
                 shutil.copy2(source, dest)
-                logger.info(f"   Ã¢Å“â€œ {source_dir}: fichier sauvegardÃƒÂ©")
+                logger.info(f"   "" {source_dir}: fichier sauvegarde")
                 
         except Exception as e:
-            logger.error(f"   Ã¢Å“â€” Erreur backup {source_dir}: {e}")
+            logger.error(f"   """ Erreur backup {source_dir}: {e}")
     
     def _backup_config_files(self, backup_path: Path):
         """
@@ -145,13 +145,13 @@ class BackupManager:
                 try:
                     dest = config_dir / source.name
                     shutil.copy2(source, dest)
-                    logger.info(f"   Ã¢Å“â€œ Config: {config_file}")
+                    logger.info(f"   "" Config: {config_file}")
                 except Exception as e:
-                    logger.error(f"   Ã¢Å“â€” Erreur config {config_file}: {e}")
+                    logger.error(f"   """ Erreur config {config_file}: {e}")
     
     def _create_backup_info(self, backup_path: Path):
         """
-        CrÃƒÂ©e un fichier d'info sur le backup
+        Cree un fichier d'info sur le backup
         
         Args:
             backup_path: Chemin du backup
@@ -160,7 +160,7 @@ class BackupManager:
         
         try:
             with open(info_file, 'w') as f:
-                f.write(f"Backup crÃƒÂ©ÃƒÂ© le: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"Backup cree le: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
                 f.write(f"Nom du backup: {backup_path.name}\n")
                 f.write(f"\nContenu:\n")
                 
@@ -172,10 +172,10 @@ class BackupManager:
                         size_mb = item.stat().st_size / (1024 * 1024)
                         f.write(f"  - {item.name}  ({size_mb:.2f} MB)\n")
             
-            logger.info(f"   Ã¢Å“â€œ Info backup crÃƒÂ©ÃƒÂ©e")
+            logger.info(f"   "" Info backup creee")
             
         except Exception as e:
-            logger.error(f"   Ã¢Å“â€” Erreur crÃƒÂ©ation info: {e}")
+            logger.error(f"   """ Erreur creation info: {e}")
     
     def _compress_backup(self, backup_path: Path) -> Path:
         """
@@ -185,7 +185,7 @@ class BackupManager:
             backup_path: Chemin du backup
             
         Returns:
-            Chemin du fichier compressÃƒÂ©
+            Chemin du fichier compresse
         """
         try:
             archive_name = f"{backup_path.name}.tar.gz"
@@ -194,16 +194,16 @@ class BackupManager:
             with tarfile.open(archive_path, "w:gz") as tar:
                 tar.add(backup_path, arcname=backup_path.name)
             
-            # Supprimer le dossier non compressÃƒÂ©
+            # Supprimer le dossier non compresse
             shutil.rmtree(backup_path)
             
             size_mb = archive_path.stat().st_size / (1024 * 1024)
-            logger.info(f"   Ã¢Å“â€œ Archive crÃƒÂ©ÃƒÂ©e: {archive_name} ({size_mb:.2f} MB)")
+            logger.info(f"   "" Archive creee: {archive_name} ({size_mb:.2f} MB)")
             
             return archive_path
             
         except Exception as e:
-            logger.error(f"   Ã¢Å“â€” Erreur compression: {e}")
+            logger.error(f"   """ Erreur compression: {e}")
             return backup_path
     
     def list_backups(self) -> list:
@@ -226,17 +226,17 @@ class BackupManager:
                     'is_compressed': item.suffix == '.gz'
                 })
         
-        # Trier par date de crÃƒÂ©ation (plus rÃƒÂ©cent en premier)
+        # Trier par date de creation (plus recent en premier)
         backups.sort(key=lambda x: x['created'], reverse=True)
         
         return backups
     
     def cleanup_old_backups(self):
         """
-        Nettoie les vieux backups selon la politique de rÃƒÂ©tention
+        Nettoie les vieux backups selon la politique de retention
         """
         try:
-            logger.info(f"Ã°Å¸Â§Â¹ Nettoyage des backups (rÃƒÂ©tention: {self.config['retention_days']} jours)")
+            logger.info(f" Nettoyage des backups (retention: {self.config['retention_days']} jours)")
             
             cutoff_date = datetime.now().timestamp() - (self.config['retention_days'] * 86400)
             deleted_count = 0
@@ -249,53 +249,53 @@ class BackupManager:
                         else:
                             item.unlink()
                         
-                        logger.info(f"   Ã¢Å“â€œ SupprimÃƒÂ©: {item.name}")
+                        logger.info(f"   "" Supprime: {item.name}")
                         deleted_count += 1
                         
                     except Exception as e:
-                        logger.error(f"   Ã¢Å“â€” Erreur suppression {item.name}: {e}")
+                        logger.error(f"   """ Erreur suppression {item.name}: {e}")
             
             if deleted_count > 0:
-                logger.info(f"Ã¢Å“â€¦ {deleted_count} ancien(s) backup(s) supprimÃƒÂ©(s)")
+                logger.info(f"""| {deleted_count} ancien(s) backup(s) supprime(s)")
             else:
-                logger.info(f"Ã¢Å“â€¦ Aucun backup ÃƒÂ  supprimer")
+                logger.info(f"""| Aucun backup  supprimer")
                 
         except Exception as e:
-            logger.error(f"Ã¢ÂÅ’ Erreur cleanup: {e}")
+            logger.error(f"' Erreur cleanup: {e}")
     
     def restore_backup(self, backup_name: str, target_dir: str = '.'):
         """
         Restaure un backup
         
         Args:
-            backup_name: Nom du backup ÃƒÂ  restaurer
+            backup_name: Nom du backup  restaurer
             target_dir: Dossier de destination
         """
         try:
-            logger.info(f"Ã°Å¸â€â€ž Restauration du backup: {backup_name}")
+            logger.info(f""" Restauration du backup: {backup_name}")
             
             backup_path = self.backup_root / backup_name
             
             if not backup_path.exists():
-                logger.error(f"Ã¢ÂÅ’ Backup non trouvÃƒÂ©: {backup_name}")
+                logger.error(f"' Backup non trouve: {backup_name}")
                 return False
             
             target = Path(target_dir)
             target.mkdir(parents=True, exist_ok=True)
             
-            # Si compressÃƒÂ©, dÃƒÂ©compresser d'abord
+            # Si compresse, decompresser d'abord
             if backup_path.suffix == '.gz':
                 with tarfile.open(backup_path, "r:gz") as tar:
                     tar.extractall(target)
-                logger.info(f"   Ã¢Å“â€œ Archive dÃƒÂ©compressÃƒÂ©e")
+                logger.info(f"   "" Archive decompressee")
             else:
                 shutil.copytree(backup_path, target, dirs_exist_ok=True)
             
-            logger.info(f"Ã¢Å“â€¦ Backup restaurÃƒÂ© dans: {target}")
+            logger.info(f"""| Backup restaure dans: {target}")
             return True
             
         except Exception as e:
-            logger.error(f"Ã¢ÂÅ’ Erreur restauration: {e}")
+            logger.error(f"' Erreur restauration: {e}")
             return False
     
     def get_backup_stats(self) -> dict:
@@ -319,15 +319,15 @@ class BackupManager:
 
 
 def main():
-    """Point d'entrÃƒÂ©e du script"""
+    """Point d'entree du script"""
     parser = argparse.ArgumentParser(description='Gestion des backups')
     parser.add_argument('action', choices=['create', 'list', 'cleanup', 'restore', 'stats'],
-                       help='Action ÃƒÂ  effectuer')
+                       help='Action  effectuer')
     parser.add_argument('--name', help='Nom du backup (pour restore)')
     parser.add_argument('--retention', type=int, default=7,
-                       help='Nombre de jours de rÃƒÂ©tention (dÃƒÂ©faut: 7)')
+                       help='Nombre de jours de retention (defaut: 7)')
     parser.add_argument('--no-compress', action='store_true',
-                       help='DÃƒÂ©sactiver la compression')
+                       help='Desactiver la compression')
     
     args = parser.parse_args()
     
@@ -342,67 +342,67 @@ def main():
     
     manager = BackupManager(config)
     
-    # ExÃƒÂ©cuter l'action
+    # Executer l'action
     if args.action == 'create':
         print("\n" + "="*50)
-        print("Ã°Å¸â€â€ž CRÃƒâ€°ATION D'UN NOUVEAU BACKUP")
+        print(""" CR"ATION D'UN NOUVEAU BACKUP")
         print("="*50)
         backup_path = manager.create_backup()
         if backup_path:
-            print(f"\nÃ¢Å“â€¦ Backup crÃƒÂ©ÃƒÂ© avec succÃƒÂ¨s!")
-            print(f"Ã°Å¸â€œÂ Emplacement: {backup_path}")
+            print(f"\n""| Backup cree avec succes!")
+            print(f"" Emplacement: {backup_path}")
         else:
-            print("\nÃ¢ÂÅ’ Ãƒâ€°chec de la crÃƒÂ©ation du backup")
+            print("\n' "chec de la creation du backup")
     
     elif args.action == 'list':
         print("\n" + "="*50)
-        print("Ã°Å¸â€œâ€¹ LISTE DES BACKUPS DISPONIBLES")
+        print(""" LISTE DES BACKUPS DISPONIBLES")
         print("="*50)
         backups = manager.list_backups()
         
         if not backups:
-            print("\nÃ¢â€žÂ¹Ã¯Â¸Â  Aucun backup trouvÃƒÂ©")
+            print("\n"  Aucun backup trouve")
         else:
             print(f"\nTotal: {len(backups)} backup(s)\n")
             for i, backup in enumerate(backups, 1):
-                compressed = "Ã°Å¸â€œÂ¦" if backup['is_compressed'] else "Ã°Å¸â€œÂ"
+                compressed = ""|" if backup['is_compressed'] else """
                 print(f"{i}. {compressed} {backup['name']}")
                 print(f"   Taille: {backup['size_mb']:.2f} MB")
-                print(f"   CrÃƒÂ©ÃƒÂ© le: {backup['created'].strftime('%Y-%m-%d %H:%M:%S')}")
+                print(f"   Cree le: {backup['created'].strftime('%Y-%m-%d %H:%M:%S')}")
                 print()
     
     elif args.action == 'cleanup':
         print("\n" + "="*50)
-        print("Ã°Å¸Â§Â¹ NETTOYAGE DES VIEUX BACKUPS")
+        print(" NETTOYAGE DES VIEUX BACKUPS")
         print("="*50)
         manager.cleanup_old_backups()
     
     elif args.action == 'restore':
         if not args.name:
-            print("Ã¢ÂÅ’ Erreur: --name requis pour restore")
+            print("' Erreur: --name requis pour restore")
             sys.exit(1)
         
         print("\n" + "="*50)
-        print("Ã°Å¸â€â€ž RESTAURATION D'UN BACKUP")
+        print(""" RESTAURATION D'UN BACKUP")
         print("="*50)
         success = manager.restore_backup(args.name)
         if success:
-            print("\nÃ¢Å“â€¦ Backup restaurÃƒÂ© avec succÃƒÂ¨s!")
+            print("\n""| Backup restaure avec succes!")
         else:
-            print("\nÃ¢ÂÅ’ Ãƒâ€°chec de la restauration")
+            print("\n' "chec de la restauration")
     
     elif args.action == 'stats':
         print("\n" + "="*50)
-        print("Ã°Å¸â€œÅ  STATISTIQUES DES BACKUPS")
+        print("" STATISTIQUES DES BACKUPS")
         print("="*50)
         stats = manager.get_backup_stats()
         
         print(f"\nTotal backups: {stats['total_backups']}")
         print(f"Taille totale: {stats['total_size_mb']:.2f} MB")
-        print(f"Backups compressÃƒÂ©s: {stats['compressed_count']}")
+        print(f"Backups compresses: {stats['compressed_count']}")
         
         if stats['newest_backup']:
-            print(f"Plus rÃƒÂ©cent: {stats['newest_backup'].strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"Plus recent: {stats['newest_backup'].strftime('%Y-%m-%d %H:%M:%S')}")
         if stats['oldest_backup']:
             print(f"Plus ancien: {stats['oldest_backup'].strftime('%Y-%m-%d %H:%M:%S')}")
     
