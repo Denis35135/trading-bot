@@ -1,5 +1,5 @@
 # =============================================================================
-# test_integration.py - Tests d'intÃƒÂ©gration
+# test_integration.py - Tests d'integration
 # =============================================================================
 
 class TestEndToEndFlow:
@@ -14,12 +14,12 @@ class TestEndToEndFlow:
         # Mock symboles
         scanner.top_symbols = ['BTCUSDT', 'ETHUSDT']
         
-        # 2. RÃƒÂ©cupÃƒÂ©rer donnÃƒÂ©es de marchÃƒÂ©
+        # 2. Recuperer donnees de marche
         symbols = scanner.get_top_symbols()
         assert len(symbols) > 0
         
-        # 3. Analyser avec stratÃƒÂ©gie
-        # (simulÃƒÂ© car nÃƒÂ©cessite donnÃƒÂ©es rÃƒÂ©elles)
+        # 3. Analyser avec strategie
+        # (simule car necessite donnees reelles)
         
         # 4. Valider avec risk monitor
         from risk.risk_monitor import RiskMonitor
@@ -41,8 +41,8 @@ class TestEndToEndFlow:
         assert approved == True
     
     def test_data_pipeline(self, sample_ohlcv_data):
-        """Test pipeline de donnÃƒÂ©es"""
-        # 1. DonnÃƒÂ©es brutes
+        """Test pipeline de donnees"""
+        # 1. Donnees brutes
         assert not sample_ohlcv_data.empty
         
         # 2. Calcul indicateurs
@@ -57,7 +57,7 @@ class TestEndToEndFlow:
         assert not features.empty
     
     def test_signal_to_execution(self, mock_exchange):
-        """Test du signal ÃƒÂ  l'exÃƒÂ©cution"""
+        """Test du signal  l'execution"""
         signal = {
             'type': 'ENTRY',
             'side': 'BUY',
@@ -85,7 +85,7 @@ class TestEndToEndFlow:
         )
         assert size > 0
         
-        # 3. ExÃƒÂ©cuter (mock)
+        # 3. Executer (mock)
         mock_exchange.create_order.return_value = {
             'orderId': '123',
             'status': 'FILLED'
@@ -102,10 +102,10 @@ class TestEndToEndFlow:
 
 
 class TestComponentIntegration:
-    """Tests d'intÃƒÂ©gration des composants"""
+    """Tests d'integration des composants"""
     
     def test_strategy_manager_integration(self, mock_exchange, sample_config):
-        """Test intÃƒÂ©gration Strategy Manager"""
+        """Test integration Strategy Manager"""
         from strategies.strategy_manager import StrategyManager
         from risk.position_sizing import PositionSizer
         from risk.risk_monitor import RiskMonitor
@@ -120,7 +120,7 @@ class TestComponentIntegration:
             ]
         }
         
-        # CrÃƒÂ©er strategy manager (peut ÃƒÂ©chouer si dÃƒÂ©pendances manquantes)
+        # Creer strategy manager (peut echouer si dependances manquantes)
         try:
             manager = StrategyManager(
                 config=config,
@@ -131,7 +131,7 @@ class TestComponentIntegration:
             )
             assert manager is not None
         except ImportError:
-            pytest.skip("StratÃƒÂ©gies non disponibles")
+            pytest.skip("Strategies non disponibles")
     
     def test_thread_coordination(self):
         """Test coordination des threads"""
@@ -143,20 +143,20 @@ class TestComponentIntegration:
         bot.running = True
         bot.capital = 1000
         
-        # CrÃƒÂ©er threads
+        # Creer threads
         md_config = {'update_interval': 1, 'buffer_size': 100}
         md_thread = MarketDataThread(bot, md_config)
         exec_thread = ExecutionThread(bot)
         
-        # DÃƒÂ©marrer (briÃƒÂ¨vement)
+        # Demarrer (brievement)
         md_thread.start()
         exec_thread.start()
         
-        # VÃƒÂ©rifier qu'ils tournent
+        # Verifier qu'ils tournent
         assert md_thread.is_running
         assert exec_thread.is_running
         
-        # ArrÃƒÂªter
+        # Arreter
         md_thread.stop()
         exec_thread.stop()
         
@@ -165,7 +165,7 @@ class TestComponentIntegration:
 
 
 class TestPerformanceMetrics:
-    """Tests des mÃƒÂ©triques de performance"""
+    """Tests des metriques de performance"""
     
     def test_calculate_returns(self):
         """Test calcul des returns"""
@@ -205,7 +205,7 @@ class TestPerformanceMetrics:
 
 
 class TestErrorRecovery:
-    """Tests de rÃƒÂ©cupÃƒÂ©ration d'erreurs"""
+    """Tests de recuperation d'erreurs"""
     
     def test_connection_retry(self, mock_exchange):
         """Test retry en cas d'erreur de connexion"""
@@ -215,7 +215,9 @@ class TestErrorRecovery:
         
         @retry(max_attempts=3, delay=0.1)
         def failing_function():
-            call_count['count'] += 1
+    """
+    call_count['count'] += 1
+    """
             if call_count['count'] < 3:
                 raise ConnectionError("Failed")
             return "Success"
@@ -225,20 +227,20 @@ class TestErrorRecovery:
         assert call_count['count'] == 3
     
     def test_circuit_breaker_recovery(self):
-        """Test rÃƒÂ©cupÃƒÂ©ration aprÃƒÂ¨s circuit breaker"""
+        """Test recuperation apres circuit breaker"""
         from risk.risk_monitor import RiskMonitor
         
         config = {'initial_capital': 1000, 'max_drawdown': 0.08}
         monitor = RiskMonitor(config)
         
-        # DÃƒÂ©clencher circuit breaker
+        # Declencher circuit breaker
         monitor.update(920, {})  # -8%
         assert monitor.circuit_breaker_active
         
-        # RÃƒÂ©cupÃƒÂ©ration
+        # Recuperation
         monitor.update(1000, {})  # Retour au capital initial
-        # Circuit breaker devrait se dÃƒÂ©sactiver aprÃƒÂ¨s un certain temps
-        # (logique ÃƒÂ  implÃƒÂ©menter)
+        # Circuit breaker devrait se desactiver apres un certain temps
+        # (logique  implementer)
 
 
 if __name__ == '__main__':
