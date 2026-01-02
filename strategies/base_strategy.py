@@ -1,6 +1,6 @@
 """
 Base Strategy pour The Bot
-Classe abstraite dont toutes les stratÃƒÂ©gies hÃƒÂ©ritent
+Classe abstraite dont toutes les strategies heritent
 """
 
 from abc import ABC, abstractmethod
@@ -15,24 +15,24 @@ logger = logging.getLogger(__name__)
 
 class BaseStrategy(ABC):
     """
-    Classe de base pour toutes les stratÃƒÂ©gies de trading
+    Classe de base pour toutes les strategies de trading
     
-    Toute nouvelle stratÃƒÂ©gie doit hÃƒÂ©riter de cette classe
-    et implÃƒÂ©menter les mÃƒÂ©thodes abstraites
+    Toute nouvelle strategie doit heriter de cette classe
+    et implementer les methodes abstraites
     """
     
     def __init__(self, name: str, config: Dict = None):
         """
-        Initialise la stratÃƒÂ©gie de base
+        Initialise la strategie de base
         
         Args:
-            name: Nom de la stratÃƒÂ©gie
-            config: Configuration spÃƒÂ©cifique ÃƒÂ  la stratÃƒÂ©gie
+            name: Nom de la strategie
+            config: Configuration specifique  la strategie
         """
         self.name = name
         self.config = config or {}
         
-        # Configuration par dÃƒÂ©faut
+        # Configuration par defaut
         self.default_config = {
             'min_confidence': 0.65,
             'risk_reward_ratio': 1.5,
@@ -44,12 +44,12 @@ class BaseStrategy(ABC):
             'use_multi_timeframe': False
         }
         
-        # Merger avec config spÃƒÂ©cifique
+        # Merger avec config specifique
         for key, value in self.default_config.items():
             if key not in self.config:
                 self.config[key] = value
         
-        # Ãƒâ€°tat de la stratÃƒÂ©gie
+        # "tat de la strategie
         self.is_active = True
         self.positions = {}
         self.pending_signals = []
@@ -80,20 +80,20 @@ class BaseStrategy(ABC):
         self.signal_history = []
         self.trade_history = []
         
-        logger.info(f"StratÃƒÂ©gie '{name}' initialisÃƒÂ©e avec config: {self.config}")
+        logger.info(f"Strategie '{name}' initialisee avec config: {self.config}")
     
     @abstractmethod
     def analyze(self, data: Dict) -> Optional[Dict]:
         """
-        Analyse les donnÃƒÂ©es et gÃƒÂ©nÃƒÂ¨re un signal de trading
+        Analyse les donnees et genere un signal de trading
         
-        Cette mÃƒÂ©thode DOIT ÃƒÂªtre implÃƒÂ©mentÃƒÂ©e par chaque stratÃƒÂ©gie
+        Cette methode DOIT etre implementee par chaque strategie
         
         Args:
             data: Dict contenant:
                 - df: DataFrame avec OHLCV et indicateurs
                 - orderbook: Orderbook actuel (optionnel)
-                - trades: Trades rÃƒÂ©cents (optionnel)
+                - trades: Trades recents (optionnel)
                 - symbol: Le symbole
                 
         Returns:
@@ -115,13 +115,13 @@ class BaseStrategy(ABC):
     @abstractmethod
     def calculate_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        Calcule les indicateurs spÃƒÂ©cifiques ÃƒÂ  la stratÃƒÂ©gie
+        Calcule les indicateurs specifiques  la strategie
         
         Args:
             df: DataFrame avec OHLCV
             
         Returns:
-            DataFrame avec indicateurs ajoutÃƒÂ©s
+            DataFrame avec indicateurs ajoutes
         """
         pass
     
@@ -130,40 +130,40 @@ class BaseStrategy(ABC):
         Valide un signal avant de le retourner
         
         Args:
-            signal: Le signal ÃƒÂ  valider
+            signal: Le signal  valider
             
         Returns:
             True si valide, False sinon
         """
-        # VÃƒÂ©rifications de base
+        # Verifications de base
         required_fields = ['type', 'side', 'price', 'confidence']
         for field in required_fields:
             if field not in signal:
                 logger.warning(f"Signal invalide: champ '{field}' manquant")
                 return False
         
-        # VÃƒÂ©rifier la confidence minimum
+        # Verifier la confidence minimum
         if signal['confidence'] < self.config['min_confidence']:
-            logger.debug(f"Signal rejetÃƒÂ©: confidence {signal['confidence']:.2%} "
+            logger.debug(f"Signal rejete: confidence {signal['confidence']:.2%} "
                         f"< minimum {self.config['min_confidence']:.2%}")
             return False
         
-        # VÃƒÂ©rifier le type
+        # Verifier le type
         if signal['type'] not in ['ENTRY', 'EXIT']:
             logger.warning(f"Type de signal invalide: {signal['type']}")
             return False
         
-        # VÃƒÂ©rifier le side
+        # Verifier le side
         if signal['side'] not in ['BUY', 'SELL']:
             logger.warning(f"Side invalide: {signal['side']}")
             return False
         
-        # VÃƒÂ©rifier les prix
+        # Verifier les prix
         if signal['price'] <= 0:
             logger.warning(f"Prix invalide: {signal['price']}")
             return False
         
-        # VÃƒÂ©rifier le risk/reward si signal d'entrÃƒÂ©e
+        # Verifier le risk/reward si signal d'entree
         if signal['type'] == 'ENTRY' and 'take_profit' in signal and 'stop_loss' in signal:
             reward = abs(signal['take_profit'] - signal['price'])
             risk = abs(signal['price'] - signal['stop_loss'])
@@ -171,16 +171,16 @@ class BaseStrategy(ABC):
             if risk > 0:
                 rr_ratio = reward / risk
                 if rr_ratio < self.config['risk_reward_ratio']:
-                    logger.debug(f"Signal rejetÃƒÂ©: R/R ratio {rr_ratio:.2f} "
+                    logger.debug(f"Signal rejete: R/R ratio {rr_ratio:.2f} "
                                f"< minimum {self.config['risk_reward_ratio']:.2f}")
                     return False
         
-        # Anti-spam : ÃƒÂ©viter signaux trop frÃƒÂ©quents
+        # Anti-spam : eviter signaux trop frequents
         symbol = signal.get('symbol', 'UNKNOWN')
         if symbol in self.last_signal_time:
             time_since_last = (datetime.now() - self.last_signal_time[symbol]).seconds
             if time_since_last < 60:  # Minimum 1 minute entre signaux
-                logger.debug(f"Signal rejetÃƒÂ©: trop rÃƒÂ©cent ({time_since_last}s)")
+                logger.debug(f"Signal rejete: trop recent ({time_since_last}s)")
                 return False
         
         return True
@@ -193,8 +193,8 @@ class BaseStrategy(ABC):
         Args:
             symbol: Le symbole
             side: BUY ou SELL
-            entry_price: Prix d'entrÃƒÂ©e
-            quantity: QuantitÃƒÂ©
+            entry_price: Prix d'entree
+            quantity: Quantite
             signal: Signal original (optionnel)
         """
         position_key = f"{symbol}_{self.name}"
@@ -210,11 +210,11 @@ class BaseStrategy(ABC):
             'max_drawdown': 0
         }
         
-        logger.info(f"[{self.name}] Position enregistrÃƒÂ©e: {symbol} {side} @ {entry_price}")
+        logger.info(f"[{self.name}] Position enregistree: {symbol} {side} @ {entry_price}")
     
     def close_position(self, symbol: str, exit_price: float, reason: str = "signal"):
         """
-        Ferme une position et met ÃƒÂ  jour les statistiques
+        Ferme une position et met  jour les statistiques
         
         Args:
             symbol: Le symbole
@@ -224,7 +224,7 @@ class BaseStrategy(ABC):
         position_key = f"{symbol}_{self.name}"
         
         if position_key not in self.positions:
-            logger.warning(f"Position {position_key} non trouvÃƒÂ©e")
+            logger.warning(f"Position {position_key} non trouvee")
             return
         
         position = self.positions[position_key]
@@ -237,7 +237,7 @@ class BaseStrategy(ABC):
         
         profit_usdc = position['quantity'] * position['entry_price'] * profit_pct
         
-        # CrÃƒÂ©er l'entrÃƒÂ©e d'historique
+        # Creer l'entree d'historique
         trade = {
             'symbol': symbol,
             'side': position['side'],
@@ -255,21 +255,21 @@ class BaseStrategy(ABC):
         
         self.trade_history.append(trade)
         
-        # Mettre ÃƒÂ  jour les statistiques
+        # Mettre  jour les statistiques
         self._update_performance(trade)
         
         # Retirer la position
         del self.positions[position_key]
         
-        logger.info(f"[{self.name}] Position fermÃƒÂ©e: {symbol} @ {exit_price} "
+        logger.info(f"[{self.name}] Position fermee: {symbol} @ {exit_price} "
                    f"({profit_pct:+.2%} = ${profit_usdc:+.2f})")
     
     def _update_performance(self, trade: Dict):
-        """Met ÃƒÂ  jour les statistiques de performance"""
+        """Met  jour les statistiques de performance"""
         profit = trade['profit_usdc']
         profit_pct = trade['profit_pct']
         
-        # Stats gÃƒÂ©nÃƒÂ©rales
+        # Stats generales
         self.performance['total_profit'] += profit
         
         if profit > 0:
@@ -313,7 +313,7 @@ class BaseStrategy(ABC):
                     self.performance['average_loss'] * self.performance['losing_trades']
                 )
             
-            # Sharpe ratio (simplifiÃƒÂ©)
+            # Sharpe ratio (simplifie)
             returns = [t['profit_pct'] for t in self.trade_history[-30:]]  # 30 derniers trades
             if len(returns) > 1:
                 self.performance['sharpe_ratio'] = (
@@ -330,12 +330,12 @@ class BaseStrategy(ABC):
         return self.positions.copy()
     
     def has_position(self, symbol: str) -> bool:
-        """VÃƒÂ©rifie si une position existe pour un symbole"""
+        """Verifie si une position existe pour un symbole"""
         position_key = f"{symbol}_{self.name}"
         return position_key in self.positions
     
     def get_performance_summary(self) -> Dict:
-        """Retourne un rÃƒÂ©sumÃƒÂ© des performances"""
+        """Retourne un resume des performances"""
         total_trades = self.performance['winning_trades'] + self.performance['losing_trades']
         
         return {
@@ -354,7 +354,7 @@ class BaseStrategy(ABC):
         }
     
     def reset_performance(self):
-        """RÃƒÂ©initialise les statistiques de performance"""
+        """Reinitialise les statistiques de performance"""
         self.performance = {
             'total_signals': 0,
             'winning_trades': 0,
@@ -378,17 +378,17 @@ class BaseStrategy(ABC):
         self.signal_history = []
     
     def enable(self):
-        """Active la stratÃƒÂ©gie"""
+        """Active la strategie"""
         self.is_active = True
-        logger.info(f"StratÃƒÂ©gie '{self.name}' activÃƒÂ©e")
+        logger.info(f"Strategie '{self.name}' activee")
     
     def disable(self):
-        """DÃƒÂ©sactive la stratÃƒÂ©gie"""
+        """Desactive la strategie"""
         self.is_active = False
-        logger.info(f"StratÃƒÂ©gie '{self.name}' dÃƒÂ©sactivÃƒÂ©e")
+        logger.info(f"Strategie '{self.name}' desactivee")
     
     def is_enabled(self) -> bool:
-        """VÃƒÂ©rifie si la stratÃƒÂ©gie est active"""
+        """Verifie si la strategie est active"""
         return self.is_active
     
     def log_signal(self, signal: Dict):
@@ -407,7 +407,7 @@ class BaseStrategy(ABC):
         if len(self.signal_history) > 500:
             self.signal_history = self.signal_history[-500:]
         
-        logger.info(f"[{self.name}] Signal gÃƒÂ©nÃƒÂ©rÃƒÂ©: {signal['type']} {signal.get('symbol', 'N/A')} "
+        logger.info(f"[{self.name}] Signal genere: {signal['type']} {signal.get('symbol', 'N/A')} "
                    f"@ {signal.get('price', 0):.4f} (conf: {signal.get('confidence', 0):.2%})")
     
     def create_signal(self,
@@ -421,7 +421,7 @@ class BaseStrategy(ABC):
                      reasons: List = None,
                      metadata: Dict = None) -> Dict:
         """
-        Helper pour crÃƒÂ©er un signal formatÃƒÂ©
+        Helper pour creer un signal formate
         
         Args:
             signal_type: 'ENTRY' ou 'EXIT'
@@ -435,7 +435,7 @@ class BaseStrategy(ABC):
             metadata: Metadata additionnelle (optionnel)
             
         Returns:
-            Signal formatÃƒÂ©
+            Signal formate
         """
         signal = {
             'type': signal_type,
