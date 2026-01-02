@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script d'analyse de performance pour The Bot
-GÃƒÂ©nÃƒÂ¨re des statistiques dÃƒÂ©taillÃƒÂ©es et des graphiques
+Genere des statistiques detaillees et des graphiques
 """
 
 import sys
@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import argparse
 import json
 
-# Ajouter le rÃƒÂ©pertoire parent au path
+# Ajouter le repertoire parent au path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
@@ -19,8 +19,8 @@ try:
     import numpy as np
     from typing import Dict, List, Optional
 except ImportError as e:
-    print(f"Ã¢ÂÅ’ DÃƒÂ©pendance manquante: {e}")
-    print("Ã°Å¸â€™Â¡ Installez: pip install pandas numpy")
+    print(f"' Dependance manquante: {e}")
+    print("' Installez: pip install pandas numpy")
     sys.exit(1)
 
 
@@ -38,32 +38,32 @@ class PerformanceAnalyzer:
         self.metrics = {}
     
     def load_data(self):
-        """Charge les donnÃƒÂ©es de trading"""
-        print("Ã°Å¸â€œÅ  Chargement des donnÃƒÂ©es...\n")
+        """Charge les donnees de trading"""
+        print("" Chargement des donnees...\n")
         
         # Charger les trades
         if self.trades_file.exists():
             with open(self.trades_file, 'r') as f:
                 self.trades = json.load(f)
-            print(f"   Ã¢Å“â€¦ {len(self.trades)} trades chargÃƒÂ©s")
+            print(f"   ""| {len(self.trades)} trades charges")
         else:
-            print("   Ã¢Å¡Â Ã¯Â¸Â  Aucun fichier de trades trouvÃƒÂ©")
+            print("     Aucun fichier de trades trouve")
         
         # Charger les positions
         if self.positions_file.exists():
             with open(self.positions_file, 'r') as f:
                 self.positions = json.load(f)
-            print(f"   Ã¢Å“â€¦ {len(self.positions)} positions chargÃƒÂ©es")
+            print(f"   ""| {len(self.positions)} positions chargees")
         else:
-            print("   Ã¢Å¡Â Ã¯Â¸Â  Aucun fichier de positions trouvÃƒÂ©")
+            print("     Aucun fichier de positions trouve")
         
-        # Charger les mÃƒÂ©triques
+        # Charger les metriques
         if self.metrics_file.exists():
             with open(self.metrics_file, 'r') as f:
                 self.metrics = json.load(f)
-            print(f"   Ã¢Å“â€¦ MÃƒÂ©triques chargÃƒÂ©es")
+            print(f"   ""| Metriques chargees")
         else:
-            print("   Ã¢Å¡Â Ã¯Â¸Â  Aucun fichier de mÃƒÂ©triques trouvÃƒÂ©")
+            print("     Aucun fichier de metriques trouve")
         
         print()
     
@@ -115,14 +115,14 @@ class PerformanceAnalyzer:
         drawdown = (cumulative_returns - running_max) / running_max
         max_drawdown = drawdown.min()
         
-        # DurÃƒÂ©e moyenne
+        # Duree moyenne
         if 'entry_time' in df.columns and 'exit_time' in df.columns:
             df['duration'] = pd.to_datetime(df['exit_time']) - pd.to_datetime(df['entry_time'])
             avg_duration = df['duration'].mean()
         else:
             avg_duration = None
         
-        # Par stratÃƒÂ©gie
+        # Par strategie
         strategy_stats = {}
         if 'strategy' in df.columns:
             for strategy in df['strategy'].unique():
@@ -174,13 +174,13 @@ class PerformanceAnalyzer:
         }
     
     def print_summary(self, stats: Dict):
-        """Affiche le rÃƒÂ©sumÃƒÂ© des performances"""
+        """Affiche le resume des performances"""
         print("\n" + "="*70)
-        print("Ã°Å¸â€œÅ  RÃƒâ€°SUMÃƒâ€° DES PERFORMANCES")
+        print("" R"SUM" DES PERFORMANCES")
         print("="*70 + "\n")
         
         # Vue d'ensemble
-        print("Ã°Å¸â€œË† VUE D'ENSEMBLE")
+        print("" VUE D'ENSEMBLE")
         print("-" * 70)
         print(f"Total Trades:        {stats['total_trades']:,}")
         print(f"Gagnants:           {stats['winning_trades']:,} ({stats['win_rate']:.1%})")
@@ -189,7 +189,7 @@ class PerformanceAnalyzer:
         print()
         
         # P&L
-        print("Ã°Å¸â€™Â° PROFIT & LOSS")
+        print("' PROFIT & LOSS")
         print("-" * 70)
         profit_color = "+" if stats['total_profit'] > 0 else ""
         print(f"P&L Total:          {profit_color}${stats['total_profit']:,.2f}")
@@ -200,7 +200,7 @@ class PerformanceAnalyzer:
         
         # Meilleurs/Pires trades
         if stats['best_trade']:
-            print("Ã°Å¸Ââ€  MEILLEURS/PIRES TRADES")
+            print("" MEILLEURS/PIRES TRADES")
             print("-" * 70)
             best = stats['best_trade']
             print(f"Meilleur:           +${best['profit']:,.2f} ({best['symbol']}, {best['strategy']})")
@@ -210,17 +210,17 @@ class PerformanceAnalyzer:
             print()
         
         # Ratios
-        print("Ã°Å¸â€œÅ  RATIOS")
+        print("" RATIOS")
         print("-" * 70)
         print(f"Profit Factor:      {stats['profit_factor']:.2f}")
         print(f"Sharpe Ratio:       {stats['sharpe_ratio']:.2f}")
         print(f"Max Drawdown:       {stats['max_drawdown']:.2%}")
-        print(f"DurÃƒÂ©e Moy/Trade:    {stats['avg_duration']}")
+        print(f"Duree Moy/Trade:    {stats['avg_duration']}")
         print()
         
-        # Par stratÃƒÂ©gie
+        # Par strategie
         if stats['strategy_stats']:
-            print("Ã°Å¸Å½Â¯ PAR STRATÃƒâ€°GIE")
+            print(" PAR STRAT"GIE")
             print("-" * 70)
             for strategy, s_stats in stats['strategy_stats'].items():
                 print(f"\n{strategy.upper()}:")
@@ -231,7 +231,7 @@ class PerformanceAnalyzer:
         
         # Top symboles
         if stats['symbol_stats']:
-            print("\n\nÃ°Å¸â€™Å½ TOP 10 SYMBOLES")
+            print("\n\n' TOP 10 SYMBOLES")
             print("-" * 70)
             sorted_symbols = sorted(
                 stats['symbol_stats'].items(),
@@ -248,42 +248,42 @@ class PerformanceAnalyzer:
         print("\n" + "="*70 + "\n")
     
     def export_to_csv(self, output_file: str = "performance_report.csv"):
-        """Exporte les rÃƒÂ©sultats en CSV"""
+        """Exporte les resultats en CSV"""
         if not self.trades:
-            print("Ã¢ÂÅ’ Aucune donnÃƒÂ©e ÃƒÂ  exporter")
+            print("' Aucune donnee  exporter")
             return
         
         df = pd.DataFrame(self.trades)
         df.to_csv(output_file, index=False)
-        print(f"Ã¢Å“â€¦ Rapport exportÃƒÂ©: {output_file}")
+        print(f"""| Rapport exporte: {output_file}")
     
     def generate_plots(self):
-        """GÃƒÂ©nÃƒÂ¨re des graphiques (si matplotlib disponible)"""
+        """Genere des graphiques (si matplotlib disponible)"""
         try:
             import matplotlib.pyplot as plt
             import matplotlib.dates as mdates
         except ImportError:
-            print("Ã¢Å¡Â Ã¯Â¸Â  matplotlib non disponible pour les graphiques")
-            print("Ã°Å¸â€™Â¡ Installez: pip install matplotlib")
+            print("  matplotlib non disponible pour les graphiques")
+            print("' Installez: pip install matplotlib")
             return
         
         if not self.trades:
-            print("Ã¢ÂÅ’ Aucune donnÃƒÂ©e pour les graphiques")
+            print("' Aucune donnee pour les graphiques")
             return
         
         df = pd.DataFrame(self.trades)
         df['timestamp'] = pd.to_datetime(df['timestamp'])
         df['profit_usdc'] = df['profit_usdc'].astype(float)
         
-        # CrÃƒÂ©er les subplots
+        # Creer les subplots
         fig, axes = plt.subplots(2, 2, figsize=(15, 10))
         fig.suptitle('THE BOT - Analyse de Performance', fontsize=16, fontweight='bold')
         
-        # 1. Courbe de P&L cumulÃƒÂ©
+        # 1. Courbe de P&L cumule
         cumulative_pnl = df['profit_usdc'].cumsum()
         axes[0, 0].plot(df['timestamp'], cumulative_pnl, linewidth=2, color='#2E86AB')
         axes[0, 0].fill_between(df['timestamp'], cumulative_pnl, alpha=0.3, color='#2E86AB')
-        axes[0, 0].set_title('P&L CumulÃƒÂ©', fontweight='bold')
+        axes[0, 0].set_title('P&L Cumule', fontweight='bold')
         axes[0, 0].set_xlabel('Date')
         axes[0, 0].set_ylabel('P&L ($)')
         axes[0, 0].grid(True, alpha=0.3)
@@ -294,17 +294,17 @@ class PerformanceAnalyzer:
         axes[0, 1].axvline(0, color='red', linestyle='--', linewidth=2)
         axes[0, 1].set_title('Distribution des Profits', fontweight='bold')
         axes[0, 1].set_xlabel('Profit ($)')
-        axes[0, 1].set_ylabel('FrÃƒÂ©quence')
+        axes[0, 1].set_ylabel('Frequence')
         axes[0, 1].grid(True, alpha=0.3, axis='y')
         
-        # 3. Win Rate par stratÃƒÂ©gie
+        # 3. Win Rate par strategie
         if 'strategy' in df.columns:
             strategy_wr = df.groupby('strategy').apply(
                 lambda x: (x['profit_usdc'] > 0).sum() / len(x) * 100
             )
             axes[1, 0].bar(strategy_wr.index, strategy_wr.values, color='#F18F01', edgecolor='black')
-            axes[1, 0].set_title('Win Rate par StratÃƒÂ©gie', fontweight='bold')
-            axes[1, 0].set_xlabel('StratÃƒÂ©gie')
+            axes[1, 0].set_title('Win Rate par Strategie', fontweight='bold')
+            axes[1, 0].set_xlabel('Strategie')
             axes[1, 0].set_ylabel('Win Rate (%)')
             axes[1, 0].grid(True, alpha=0.3, axis='y')
             plt.setp(axes[1, 0].xaxis.get_majorticklabels(), rotation=45, ha='right')
@@ -323,7 +323,7 @@ class PerformanceAnalyzer:
         # Sauvegarder
         output_file = "performance_analysis.png"
         plt.savefig(output_file, dpi=300, bbox_inches='tight')
-        print(f"Ã¢Å“â€¦ Graphiques sauvegardÃƒÂ©s: {output_file}")
+        print(f"""| Graphiques sauvegardes: {output_file}")
         
         # Afficher
         plt.show()
@@ -332,46 +332,46 @@ class PerformanceAnalyzer:
 def main():
     """Fonction principale"""
     parser = argparse.ArgumentParser(description="Analyse de performance The Bot")
-    parser.add_argument('--data-dir', default='data', help='Dossier des donnÃƒÂ©es')
+    parser.add_argument('--data-dir', default='data', help='Dossier des donnees')
     parser.add_argument('--export-csv', action='store_true', help='Exporter en CSV')
-    parser.add_argument('--no-plots', action='store_true', help='Ne pas gÃƒÂ©nÃƒÂ©rer les graphiques')
+    parser.add_argument('--no-plots', action='store_true', help='Ne pas generer les graphiques')
     parser.add_argument('--output', default='performance_report', help='Nom du fichier de sortie')
     
     args = parser.parse_args()
     
-    # En-tÃƒÂªte
+    # En-tete
     print("\n" + "="*70)
-    print("Ã°Å¸â€œÅ  THE BOT - ANALYSE DE PERFORMANCE")
+    print("" THE BOT - ANALYSE DE PERFORMANCE")
     print("="*70 + "\n")
     
-    # CrÃƒÂ©er l'analyseur
+    # Creer l'analyseur
     analyzer = PerformanceAnalyzer(data_dir=args.data_dir)
     
-    # Charger les donnÃƒÂ©es
+    # Charger les donnees
     analyzer.load_data()
     
     if not analyzer.trades:
-        print("Ã¢ÂÅ’ Aucune donnÃƒÂ©e de trading trouvÃƒÂ©e")
-        print("Ã°Å¸â€™Â¡ Assurez-vous que le bot a effectuÃƒÂ© des trades")
+        print("' Aucune donnee de trading trouvee")
+        print("' Assurez-vous que le bot a effectue des trades")
         return
     
     # Calculer les statistiques
-    print("Ã°Å¸â€Â¢ Calcul des statistiques...\n")
+    print("" Calcul des statistiques...\n")
     stats = analyzer.calculate_statistics()
     
-    # Afficher le rÃƒÂ©sumÃƒÂ©
+    # Afficher le resume
     analyzer.print_summary(stats)
     
-    # Exporter CSV si demandÃƒÂ©
+    # Exporter CSV si demande
     if args.export_csv:
         analyzer.export_to_csv(f"{args.output}.csv")
     
-    # GÃƒÂ©nÃƒÂ©rer les graphiques
+    # Generer les graphiques
     if not args.no_plots:
-        print("\nÃ°Å¸â€œË† GÃƒÂ©nÃƒÂ©ration des graphiques...")
+        print("\n" Generation des graphiques...")
         analyzer.generate_plots()
     
-    print("\nÃ¢Å“â€¦ Analyse terminÃƒÂ©e!\n")
+    print("\n""| Analyse terminee!\n")
 
 
 if __name__ == "__main__":
