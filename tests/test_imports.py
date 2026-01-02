@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Test Imports - Script de validation pour The Bot
-VÃ©rifie que tous les modules peuvent Ãªtre importÃ©s sans erreur
+Verifie que tous les modules peuvent etre importes sans erreur
 """
 
 import sys
@@ -28,7 +28,7 @@ def test_module_import(module_name: str) -> tuple:
         # Tenter d'importer le module
         module = importlib.import_module(module_name)
         
-        # VÃ©rifier les attributs __all__ si prÃ©sents
+        # Verifier les attributs __all__ si presents
         if hasattr(module, '__all__'):
             exports = module.__all__
             return True, f"OK - {len(exports)} exports"
