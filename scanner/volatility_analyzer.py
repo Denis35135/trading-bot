@@ -1,6 +1,6 @@
 """
 Volatility Analyzer
-Analyse la volatilitÃƒÂ© des symboles pour optimiser le sizing et le timing
+Analyse la volatilite des symboles pour optimiser le sizing et le timing
 """
 
 import numpy as np
@@ -14,14 +14,14 @@ logger = logging.getLogger(__name__)
 
 class VolatilityAnalyzer:
     """
-    Analyseur de volatilitÃƒÂ© avancÃƒÂ©
+    Analyseur de volatilite avance
     
-    MÃƒÂ©thodes:
-    - VolatilitÃƒÂ© historique (HV)
-    - VolatilitÃƒÂ© intraday vs overnight
-    - RÃƒÂ©gimes de volatilitÃƒÂ© (high/medium/low)
+    Methodes:
+    - Volatilite historique (HV)
+    - Volatilite intraday vs overnight
+    - Regimes de volatilite (high/medium/low)
     - ATR et variations
-    - PrÃƒÂ©diction de volatilitÃƒÂ©
+    - Prediction de volatilite
     """
     
     def __init__(self, config: Dict = None):
@@ -32,9 +32,9 @@ class VolatilityAnalyzer:
             config: Configuration
         """
         default_config = {
-            'hv_period': 20,  # PÃƒÂ©riode pour volatilitÃƒÂ© historique
-            'atr_period': 14,  # PÃƒÂ©riode pour ATR
-            'regime_lookback': 100,  # PÃƒÂ©riode pour dÃƒÂ©tecter rÃƒÂ©gimes
+            'hv_period': 20,  # Periode pour volatilite historique
+            'atr_period': 14,  # Periode pour ATR
+            'regime_lookback': 100,  # Periode pour detecter regimes
             'high_vol_threshold': 0.03,  # 3% daily vol
             'low_vol_threshold': 0.01   # 1% daily vol
         }
@@ -51,27 +51,27 @@ else:
         self.config = default_config
         self.volatility_data = {}  # {symbol: metrics}
         
-        logger.info("Ã°Å¸â€œÅ  Volatility Analyzer initialisÃƒÂ©")
+        logger.info("" Volatility Analyzer initialise")
     
     def analyze_symbol(self, symbol: str, df: pd.DataFrame) -> Dict:
         """
-        Analyse complÃƒÂ¨te de la volatilitÃƒÂ© d'un symbole
+        Analyse complete de la volatilite d'un symbole
         
         Args:
             symbol: Le symbole
             df: DataFrame OHLCV
             
         Returns:
-            Dict avec mÃƒÂ©triques de volatilitÃƒÂ©
+            Dict avec metriques de volatilite
         """
         if len(df) < self.config['regime_lookback']:
-            logger.warning(f"Pas assez de donnÃƒÂ©es pour {symbol}: {len(df)} candles")
+            logger.warning(f"Pas assez de donnees pour {symbol}: {len(df)} candles")
             return {}
         
         try:
             metrics = {}
             
-            # 1. VolatilitÃƒÂ© historique (returns)
+            # 1. Volatilite historique (returns)
             returns = df['close'].pct_change().dropna()
             metrics['hv_current'] = returns.tail(self.config['hv_period']).std()
             metrics['hv_mean'] = returns.std()
@@ -81,27 +81,27 @@ else:
             metrics['atr'] = atr.iloc[-1] if len(atr) > 0 else 0
             metrics['atr_pct'] = (metrics['atr'] / df['close'].iloc[-1]) if df['close'].iloc[-1] > 0 else 0
             
-            # 3. RÃƒÂ©gime de volatilitÃƒÂ©
+            # 3. Regime de volatilite
             regime = self._detect_volatility_regime(returns)
             metrics['regime'] = regime
             metrics['regime_numeric'] = {'low': 0, 'medium': 1, 'high': 2}[regime]
             
-            # 4. VolatilitÃƒÂ© intraday
+            # 4. Volatilite intraday
             intraday_range = (df['high'] - df['low']) / df['close']
             metrics['avg_intraday_range'] = intraday_range.tail(20).mean()
             
-            # 5. Tendance de la volatilitÃƒÂ©
+            # 5. Tendance de la volatilite
             hv_short = returns.tail(10).std()
             hv_long = returns.tail(30).std()
             metrics['vol_trend'] = 'increasing' if hv_short > hv_long * 1.2 else 'decreasing' if hv_short < hv_long * 0.8 else 'stable'
             
-            # 6. Coefficient de variation (volatilitÃƒÂ© relative au prix)
+            # 6. Coefficient de variation (volatilite relative au prix)
             metrics['cv'] = metrics['hv_current'] / abs(returns.mean()) if returns.mean() != 0 else 0
             
-            # 7. Score de volatilitÃƒÂ© (0-100)
+            # 7. Score de volatilite (0-100)
             metrics['volatility_score'] = self._calculate_volatility_score(metrics)
             
-            # 8. Percentile de volatilitÃƒÂ© actuelle
+            # 8. Percentile de volatilite actuelle
             all_hvs = returns.rolling(self.config['hv_period']).std().dropna()
             if len(all_hvs) > 0:
                 metrics['vol_percentile'] = (all_hvs < metrics['hv_current']).sum() / len(all_hvs)
@@ -115,7 +115,7 @@ else:
             return metrics
             
         except Exception as e:
-            logger.error(f"Erreur analyse volatilitÃƒÂ© {symbol}: {e}")
+            logger.error(f"Erreur analyse volatilite {symbol}: {e}")
             return {}
     
     def _calculate_atr(self, df: pd.DataFrame) -> pd.Series:
@@ -146,15 +146,15 @@ else:
     
     def _detect_volatility_regime(self, returns: pd.Series) -> str:
         """
-        DÃƒÂ©tecte le rÃƒÂ©gime de volatilitÃƒÂ© actuel
+        Detecte le regime de volatilite actuel
         
         Args:
             returns: Series des returns
             
         Returns:
-            RÃƒÂ©gime (low/medium/high)
+            Regime (low/medium/high)
         """
-        # VolatilitÃƒÂ© rÃƒÂ©cente
+        # Volatilite recente
         recent_vol = returns.tail(20).std()
         
         if recent_vol > self.config['high_vol_threshold']:
@@ -166,17 +166,17 @@ else:
     
     def _calculate_volatility_score(self, metrics: Dict) -> float:
         """
-        Calcule un score de volatilitÃƒÂ© (0-100)
+        Calcule un score de volatilite (0-100)
         
         Args:
-            metrics: MÃƒÂ©triques calculÃƒÂ©es
+            metrics: Metriques calculees
             
         Returns:
             Score 0-100
         """
         score = 0.0
         
-        # Composante 1: Niveau de volatilitÃƒÂ© (0-40)
+        # Composante 1: Niveau de volatilite (0-40)
         hv = metrics.get('hv_current', 0)
         if 0.01 < hv < 0.03:  # Sweet spot
             score += 40
@@ -185,7 +185,7 @@ else:
         else:
             score += 10
         
-        # Composante 2: StabilitÃƒÂ© du rÃƒÂ©gime (0-30)
+        # Composante 2: Stabilite du regime (0-30)
         regime = metrics.get('regime', 'medium')
         if regime == 'medium':
             score += 30
@@ -194,7 +194,7 @@ else:
         else:
             score += 15
         
-        # Composante 3: Tendance de volatilitÃƒÂ© (0-30)
+        # Composante 3: Tendance de volatilite (0-30)
         trend = metrics.get('vol_trend', 'stable')
         if trend == 'stable':
             score += 30
@@ -207,7 +207,7 @@ else:
     
     def compare_volatilities(self, symbols: List[str]) -> pd.DataFrame:
         """
-        Compare les volatilitÃƒÂ©s de plusieurs symboles
+        Compare les volatilites de plusieurs symboles
         
         Args:
             symbols: Liste des symboles
@@ -237,13 +237,13 @@ else:
     
     def get_optimal_position_size_multiplier(self, symbol: str) -> float:
         """
-        SuggÃƒÂ¨re un multiplicateur de taille de position basÃƒÂ© sur la volatilitÃƒÂ©
+        Suggere un multiplicateur de taille de position base sur la volatilite
         
         Args:
             symbol: Le symbole
             
         Returns:
-            Multiplicateur (0.5 ÃƒÂ  1.5)
+            Multiplicateur (0.5  1.5)
         """
         if symbol not in self.volatility_data:
             return 1.0
@@ -252,13 +252,13 @@ else:
         regime = metrics.get('regime', 'medium')
         hv = metrics.get('hv_current', 0.02)
         
-        # RÃƒÂ©duire la taille en haute volatilitÃƒÂ©, augmenter en basse
+        # Reduire la taille en haute volatilite, augmenter en basse
         if regime == 'high':
             multiplier = 0.5
         elif regime == 'low':
             multiplier = 1.3
         else:
-            # Ajustement graduel dans le rÃƒÂ©gime medium
+            # Ajustement graduel dans le regime medium
             if hv > 0.025:
                 multiplier = 0.8
             elif hv < 0.015:
@@ -270,11 +270,11 @@ else:
     
     def get_optimal_stop_distance(self, symbol: str, default_pct: float = 0.02) -> float:
         """
-        Calcule la distance optimale de stop loss basÃƒÂ©e sur la volatilitÃƒÂ©
+        Calcule la distance optimale de stop loss basee sur la volatilite
         
         Args:
             symbol: Le symbole
-            default_pct: Distance par dÃƒÂ©faut (2%)
+            default_pct: Distance par defaut (2%)
             
         Returns:
             Distance de stop en %
@@ -292,14 +292,14 @@ else:
     
     def predict_volatility_change(self, symbol: str, df: pd.DataFrame) -> Dict:
         """
-        PrÃƒÂ©dit si la volatilitÃƒÂ© va augmenter ou diminuer (simple)
+        Predit si la volatilite va augmenter ou diminuer (simple)
         
         Args:
             symbol: Le symbole
             df: DataFrame avec prix
             
         Returns:
-            Dict avec prÃƒÂ©diction
+            Dict avec prediction
         """
         try:
             if len(df) < 50:
@@ -307,12 +307,12 @@ else:
             
             returns = df['close'].pct_change().dropna()
             
-            # VolatilitÃƒÂ© historique sur diffÃƒÂ©rentes fenÃƒÂªtres
+            # Volatilite historique sur differentes fenetres
             vol_10 = returns.tail(10).std()
             vol_20 = returns.tail(20).std()
             vol_50 = returns.tail(50).std()
             
-            # Tendance de la volatilitÃƒÂ©
+            # Tendance de la volatilite
             if vol_10 > vol_20 * 1.2 and vol_20 > vol_50 * 1.1:
                 prediction = 'increasing'
                 confidence = 0.7
@@ -332,12 +332,12 @@ else:
             }
             
         except Exception as e:
-            logger.error(f"Erreur prÃƒÂ©diction volatilitÃƒÂ©: {e}")
+            logger.error(f"Erreur prediction volatilite: {e}")
             return {'prediction': 'unknown', 'confidence': 0}
     
     def get_volatility_percentiles(self, symbol: str) -> Dict:
         """
-        Retourne les percentiles de volatilitÃƒÂ© historique
+        Retourne les percentiles de volatilite historique
         
         Args:
             symbol: Le symbole
@@ -358,7 +358,7 @@ else:
     
     def get_high_volatility_symbols(self, min_score: float = 60) -> List[str]:
         """
-        Retourne les symboles ÃƒÂ  haute volatilitÃƒÂ©
+        Retourne les symboles  haute volatilite
         
         Args:
             min_score: Score minimum
@@ -404,10 +404,10 @@ else:
 if __name__ == "__main__":
     """Test du Volatility Analyzer"""
     
-    # DonnÃƒÂ©es de test
+    # Donnees de test
     dates = pd.date_range(start='2024-01-01', periods=200, freq='5min')
     
-    # CrÃƒÂ©er des donnÃƒÂ©es avec diffÃƒÂ©rentes volatilitÃƒÂ©s
+    # Creer des donnees avec differentes volatilites
     test_data = {
         'HIGH_VOL': pd.DataFrame({
             'open': 100 + np.cumsum(np.random.randn(200) * 2),
@@ -441,7 +441,7 @@ if __name__ == "__main__":
         
         print(f"  HV: {metrics.get('hv_current', 0):.2%}")
         print(f"  ATR%: {metrics.get('atr_pct', 0):.2%}")
-        print(f"  RÃƒÂ©gime: {metrics.get('regime', 'unknown')}")
+        print(f"  Regime: {metrics.get('regime', 'unknown')}")
         print(f"  Score: {metrics.get('volatility_score', 0):.0f}")
         print(f"  Tendance: {metrics.get('vol_trend', 'unknown')}")
         
