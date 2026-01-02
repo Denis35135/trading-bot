@@ -12,7 +12,7 @@ class TestFeatureEngineering:
     """Tests du feature engineering"""
     
     def test_create_features(self, sample_ohlcv_data):
-        """Test crÃƒÂ©ation de features"""
+        """Test creation de features"""
         from ml.features import FeatureEngineer
         
         engineer = FeatureEngineer()
@@ -29,7 +29,7 @@ class TestFeatureEngineering:
         engineer = FeatureEngineer()
         features = engineer.create_features(sample_ohlcv_data)
         
-        # VÃƒÂ©rifier prÃƒÂ©sence de features importantes
+        # Verifier presence de features importantes
         expected_features = [
             'returns', 'volatility', 'rsi', 'macd',
             'volume_change', 'price_change'
@@ -46,20 +46,20 @@ class TestFeatureEngineering:
         features = engineer.create_features(sample_ohlcv_data)
         features_scaled = engineer.scale_features(features)
         
-        # VÃƒÂ©rifier normalisation
+        # Verifier normalisation
         assert features_scaled.mean().mean() < 1
         assert features_scaled.std().mean() < 2
 
 
 class TestMLModels:
-    """Tests des modÃƒÂ¨les ML"""
+    """Tests des modeles ML"""
     
     def test_model_training(self, sample_ohlcv_data):
-        """Test entraÃƒÂ®nement du modÃƒÂ¨le"""
+        """Test entranement du modele"""
         from ml.models import MLPredictor
         from ml.features import FeatureEngineer
         
-        # PrÃƒÂ©parer donnÃƒÂ©es
+        # Preparer donnees
         engineer = FeatureEngineer()
         X = engineer.create_features(sample_ohlcv_data)
         y = (sample_ohlcv_data['close'].pct_change().shift(-1) > 0).astype(int)
@@ -76,7 +76,7 @@ class TestMLModels:
             assert predictor.model is not None
     
     def test_model_prediction(self, sample_ohlcv_data):
-        """Test prÃƒÂ©dictions"""
+        """Test predictions"""
         from ml.models import MLPredictor
         from ml.features import FeatureEngineer
         
@@ -99,7 +99,7 @@ class TestMLModels:
             assert all(p in [0, 1] for p in predictions)
     
     def test_model_confidence(self, sample_ohlcv_data):
-        """Test confiance des prÃƒÂ©dictions"""
+        """Test confiance des predictions"""
         from ml.models import MLPredictor
         from ml.features import FeatureEngineer
         
@@ -121,7 +121,7 @@ class TestMLModels:
 
 
 class TestModelEvaluation:
-    """Tests d'ÃƒÂ©valuation des modÃƒÂ¨les"""
+    """Tests d'evaluation des modeles"""
     
     def test_accuracy_calculation(self):
         """Test calcul accuracy"""
@@ -132,7 +132,7 @@ class TestModelEvaluation:
         assert accuracy == 0.8
     
     def test_cross_validation(self, sample_ohlcv_data):
-        """Test validation croisÃƒÂ©e"""
+        """Test validation croisee"""
         from ml.models import MLPredictor
         from ml.features import FeatureEngineer
         from sklearn.model_selection import cross_val_score
