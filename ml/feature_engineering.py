@@ -1,7 +1,7 @@
 """
 Feature Engineering pour The Bot
 Calcule les 30 features les plus importantes pour le ML
-OptimisÃƒÂ© pour performance sur PC classique
+Optimise pour performance sur PC classique
 """
 
 import numpy as np
@@ -22,7 +22,7 @@ class FeatureConfig:
     use_market_structure: bool = True
     use_sentiment_features: bool = True
     
-    # PÃƒÂ©riodes pour les features
+    # Periodes pour les features
     rsi_period: int = 14
     macd_fast: int = 12
     macd_slow: int = 26
@@ -35,13 +35,13 @@ class FeatureConfig:
 
 class FeatureEngineer:
     """
-    Calculateur de features optimisÃƒÂ©
+    Calculateur de features optimise
     
-    30 features clÃƒÂ©s rÃƒÂ©parties en 5 catÃƒÂ©gories:
+    30 features cles reparties en 5 categories:
     - Prix (5 features)
     - Volume (5 features)
     - Indicateurs Techniques (10 features)
-    - Structure de MarchÃƒÂ© (5 features)
+    - Structure de Marche (5 features)
     - Sentiment & Momentum (5 features)
     """
     
@@ -56,7 +56,7 @@ class FeatureEngineer:
         self.feature_names = []
         self._initialize_feature_names()
         
-        logger.info(f"Ã¢Å“â€¦ Feature Engineer initialisÃƒÂ© ({len(self.feature_names)} features)")
+        logger.info(f"""| Feature Engineer initialise ({len(self.feature_names)} features)")
     
     def _initialize_feature_names(self):
         """Initialise la liste des noms de features"""
@@ -113,15 +113,17 @@ class FeatureEngineer:
             ])
     
     def calculate_features(self, df: pd.DataFrame, 
-                          orderbook: Optional[Dict] = None,
+    """
+    orderbook: Optional[Dict] = None,
+    """
                           additional_data: Optional[Dict] = None) -> np.ndarray:
         """
         Calcule toutes les features pour un DataFrame
         
         Args:
             df: DataFrame avec colonnes OHLCV
-            orderbook: Orderbook optionnel pour features avancÃƒÂ©es
-            additional_data: DonnÃƒÂ©es supplÃƒÂ©mentaires (funding rate, etc.)
+            orderbook: Orderbook optionnel pour features avancees
+            additional_data: Donnees supplementaires (funding rate, etc.)
             
         Returns:
             Array numpy avec les features (shape: [len(df), n_features])
@@ -141,7 +143,7 @@ class FeatureEngineer:
             if self.config.use_technical_features:
                 features.update(self._calculate_technical_features(df))
             
-            # 4. Structure de MarchÃƒÂ©
+            # 4. Structure de Marche
             if self.config.use_market_structure:
                 features.update(self._calculate_market_structure_features(df, orderbook))
             
@@ -159,7 +161,7 @@ class FeatureEngineer:
             
         except Exception as e:
             logger.error(f"Erreur calcul features: {e}")
-            # Retourner array de zÃƒÂ©ros en cas d'erreur
+            # Retourner array de zeros en cas d'erreur
             return np.zeros((len(df), len(self.feature_names)))
     
     def _calculate_price_features(self, df: pd.DataFrame) -> Dict:
@@ -227,7 +229,7 @@ class FeatureEngineer:
         large_trades = (volume > 2 * volume_ma).astype(float)
         features['large_trades_ratio'] = pd.Series(large_trades).rolling(20).mean().values
         
-        # 5. Volume profile score (volume concentrÃƒÂ©)
+        # 5. Volume profile score (volume concentre)
         vol_std = pd.Series(volume).rolling(20).std().values
         vol_mean = pd.Series(volume).rolling(20).mean().values
         features['volume_profile_score'] = np.where(vol_mean > 0, vol_std / vol_mean, 0)
@@ -246,11 +248,11 @@ class FeatureEngineer:
         # 1. RSI 14
         features['rsi_14'] = self._calculate_rsi(close, self.config.rsi_period)
         
-        # 2. RSI divergence (simplifiÃƒÂ©e)
+        # 2. RSI divergence (simplifiee)
         rsi = features['rsi_14']
         price_slope = self._calculate_slope(close, 14)
         rsi_slope = self._calculate_slope(rsi, 14)
-        features['rsi_divergence'] = price_slope * rsi_slope  # NÃƒÂ©gatif = divergence
+        features['rsi_divergence'] = price_slope * rsi_slope  # Negatif = divergence
         
         # 3. MACD signal
         macd, signal, _ = self._calculate_macd(close)
@@ -292,14 +294,14 @@ class FeatureEngineer:
     
     def _calculate_market_structure_features(self, df: pd.DataFrame, 
                                             orderbook: Optional[Dict] = None) -> Dict:
-        """Calcule les 5 features de structure de marchÃƒÂ©"""
+        """Calcule les 5 features de structure de marche"""
         features = {}
         
         close = df['close'].values
         high = df['high'].values
         low = df['low'].values
         
-        # 1-2. Distance aux supports/rÃƒÂ©sistances
+        # 1-2. Distance aux supports/resistances
         supports, resistances = self._find_support_resistance(high, low, close)
         
         if supports:
@@ -314,7 +316,7 @@ class FeatureEngineer:
         else:
             features['resistance_distance'] = np.full(len(close), 0.0)
         
-        # RÃƒÂ©pliquer pour toutes les lignes
+        # Repliquer pour toutes les lignes
         if isinstance(features['support_distance'], float):
             features['support_distance'] = np.full(len(close), features['support_distance'])
         if isinstance(features['resistance_distance'], float):
@@ -362,13 +364,13 @@ class FeatureEngineer:
         else:
             features['long_short_ratio'] = np.ones(len(close))
         
-        # 3. Momentum score (combinaison de plusieurs pÃƒÂ©riodes)
+        # 3. Momentum score (combinaison de plusieurs periodes)
         mom_5 = self._pct_change(close, 5)
         mom_10 = self._pct_change(close, 10)
         mom_20 = self._pct_change(close, 20)
         features['momentum_score'] = (mom_5 + mom_10 + mom_20) / 3
         
-        # 4. Trend strength (ADX simplifiÃƒÂ© ou dÃƒÂ©rivÃƒÂ©)
+        # 4. Trend strength (ADX simplifie ou derive)
         ema_12 = pd.Series(close).ewm(span=12).mean().values
         ema_26 = pd.Series(close).ewm(span=26).mean().values
         ema_50 = pd.Series(close).ewm(span=50).mean().values
@@ -377,7 +379,7 @@ class FeatureEngineer:
         trend_score += (ema_12 > ema_26).astype(float)
         trend_score += (ema_26 > ema_50).astype(float)
         trend_score += (close > ema_12).astype(float)
-        features['trend_strength'] = trend_score / 3  # NormalisÃƒÂ© 0-1
+        features['trend_strength'] = trend_score / 3  # Normalise 0-1
         
         # 5. Volatility regime
         returns = np.diff(close, prepend=close[0]) / close
@@ -468,7 +470,7 @@ class FeatureEngineer:
     
     def _calculate_adx(self, high: np.ndarray, low: np.ndarray,
                       close: np.ndarray, period: int) -> np.ndarray:
-        """Calcul de l'ADX (simplifiÃƒÂ©)"""
+        """Calcul de l'ADX (simplifie)"""
         tr = self._calculate_atr(high, low, close, 1)
         
         up_move = high - np.roll(high, 1)
@@ -518,7 +520,7 @@ class FeatureEngineer:
     
     def _find_support_resistance(self, high: np.ndarray, low: np.ndarray,
                                  close: np.ndarray, window: int = 20) -> tuple:
-        """Trouve les niveaux de support et rÃƒÂ©sistance"""
+        """Trouve les niveaux de support et resistance"""
         supports = []
         resistances = []
         
@@ -560,7 +562,7 @@ class FeatureEngineer:
 if __name__ == "__main__":
     """Test du feature engineer"""
     
-    # CrÃƒÂ©er des donnÃƒÂ©es de test
+    # Creer des donnees de test
     np.random.seed(42)
     n = 500
     
@@ -575,11 +577,11 @@ if __name__ == "__main__":
     
     print("\n=== Test Feature Engineering ===\n")
     
-    # CrÃƒÂ©er le feature engineer
+    # Creer le feature engineer
     engineer = FeatureEngineer()
     
     print(f"Nombre de features: {engineer.get_feature_count()}")
-    print(f"\nFeatures calculÃƒÂ©es:")
+    print(f"\nFeatures calculees:")
     for i, name in enumerate(engineer.get_feature_names(), 1):
         print(f"  {i:2d}. {name}")
     
@@ -589,7 +591,7 @@ if __name__ == "__main__":
     features = engineer.calculate_features(df)
     elapsed = time.time() - start
     
-    print(f"\nÃ°Å¸â€œÅ  RÃƒÂ©sultats:")
+    print(f"\n" Resultats:")
     print(f"  Shape: {features.shape}")
     print(f"  Temps: {elapsed:.3f}s ({features.shape[0] / elapsed:.0f} rows/sec)")
     print(f"  Min: {features.min():.4f}")
@@ -597,4 +599,4 @@ if __name__ == "__main__":
     print(f"  Mean: {features.mean():.4f}")
     print(f"  NaN: {np.isnan(features).sum()}")
     
-    print("\nÃ¢Å“â€¦ Test terminÃƒÂ©")
+    print("\n""| Test termine")
