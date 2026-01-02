@@ -1,6 +1,6 @@
 """
-Strategy Selector - SÃƒÂ©lectionne et coordonne les stratÃƒÂ©gies
-GÃƒÂ¨re l'allocation du capital entre stratÃƒÂ©gies
+Strategy Selector - Selectionne et coordonne les strategies
+Gere l'allocation du capital entre strategies
 """
 
 import logging
@@ -13,21 +13,21 @@ logger = logging.getLogger(__name__)
 
 class StrategySelector:
     """
-    SÃƒÂ©lecteur intelligent de stratÃƒÂ©gies
+    Selecteur intelligent de strategies
     
-    ResponsabilitÃƒÂ©s:
-    - GÃƒÂ©rer l'allocation du capital par stratÃƒÂ©gie
-    - Activer/dÃƒÂ©sactiver dynamiquement les stratÃƒÂ©gies
-    - Prioriser les signaux selon les conditions de marchÃƒÂ©
+    Responsabilites:
+    - Gerer l'allocation du capital par strategie
+    - Activer/desactiver dynamiquement les strategies
+    - Prioriser les signaux selon les conditions de marche
     - Suivre les performances relatives
     """
     
     def __init__(self, strategies: List, config: Dict = None):
         """
-        Initialise le sÃƒÂ©lecteur
+        Initialise le selecteur
         
         Args:
-            strategies: Liste des stratÃƒÂ©gies disponibles
+            strategies: Liste des strategies disponibles
             config: Configuration
         """
         self.strategies = {s.name: s for s in strategies}
@@ -41,9 +41,9 @@ class StrategySelector:
                 'ML_Strategy': 0.05
             },
             'min_win_rate': 0.55,  # Win rate minimum pour garder active
-            'performance_window': 100,  # Nombre de trades pour ÃƒÂ©valuation
+            'performance_window': 100,  # Nombre de trades pour evaluation
             'rebalance_frequency': 3600,  # 1h en secondes
-            'max_concurrent_strategies': 3  # Max stratÃƒÂ©gies simultanÃƒÂ©es par symbole
+            'max_concurrent_strategies': 3  # Max strategies simultanees par symbole
         }
         
         if config:
@@ -62,10 +62,10 @@ class StrategySelector:
         # Initialiser les allocations
         self._apply_allocations()
         
-        logger.info(f"Ã¢Å“â€¦ Strategy Selector initialisÃƒÂ© avec {len(self.strategies)} stratÃƒÂ©gies")
+        logger.info(f"""| Strategy Selector initialise avec {len(self.strategies)} strategies")
     
     def _apply_allocations(self):
-        """Applique les allocations de capital aux stratÃƒÂ©gies"""
+        """Applique les allocations de capital aux strategies"""
         for name, strategy in self.strategies.items():
             if name in self.config['allocations']:
                 strategy.config['allocation'] = self.config['allocations'][name]
@@ -73,11 +73,11 @@ class StrategySelector:
     
     def select_best_signal(self, signals: List[Dict], market_data: Dict) -> Optional[Dict]:
         """
-        SÃƒÂ©lectionne le meilleur signal parmi plusieurs
+        Selectionne le meilleur signal parmi plusieurs
         
         Args:
-            signals: Liste des signaux gÃƒÂ©nÃƒÂ©rÃƒÂ©s
-            market_data: DonnÃƒÂ©es de marchÃƒÂ© actuelles
+            signals: Liste des signaux generes
+            market_data: Donnees de marche actuelles
             
         Returns:
             Meilleur signal ou None
@@ -92,7 +92,7 @@ class StrategySelector:
             for signal in signals:
                 strategy_name = signal.get('metadata', {}).get('strategy')
                 
-                # VÃƒÂ©rifier que la stratÃƒÂ©gie est active
+                # Verifier que la strategie est active
                 if strategy_name and strategy_name in self.strategies:
                     if self.strategies[strategy_name].is_active:
                         valid_signals.append(signal)
@@ -106,7 +106,7 @@ class StrategySelector:
                 score = self._score_signal(signal, market_data)
                 scored_signals.append((score, signal))
             
-            # Trier par score dÃƒÂ©croissant
+            # Trier par score decroissant
             scored_signals.sort(key=lambda x: x[0], reverse=True)
             
             # Prendre le meilleur
@@ -118,7 +118,7 @@ class StrategySelector:
                 self.stats['signals_by_strategy'][strategy_name] = \
                     self.stats['signals_by_strategy'].get(strategy_name, 0) + 1
                 
-                logger.info(f"Ã¢Å“â€¦ Signal sÃƒÂ©lectionnÃƒÂ©: {strategy_name} (score: {best_score:.2f})")
+                logger.info(f"""| Signal selectionne: {strategy_name} (score: {best_score:.2f})")
                 return best_signal
             
             return None
@@ -129,11 +129,11 @@ class StrategySelector:
     
     def _score_signal(self, signal: Dict, market_data: Dict) -> float:
         """
-        Score un signal selon plusieurs critÃƒÂ¨res
+        Score un signal selon plusieurs criteres
         
         Args:
-            signal: Le signal ÃƒÂ  scorer
-            market_data: DonnÃƒÂ©es de marchÃƒÂ©
+            signal: Le signal  scorer
+            market_data: Donnees de marche
             
         Returns:
             Score du signal (0-100)
@@ -145,14 +145,14 @@ class StrategySelector:
             confidence = signal.get('confidence', 0)
             score += confidence * 40
             
-            # 2. Performance de la stratÃƒÂ©gie (0-30 points)
+            # 2. Performance de la strategie (0-30 points)
             strategy_name = signal.get('metadata', {}).get('strategy')
             if strategy_name and strategy_name in self.strategies:
                 strategy = self.strategies[strategy_name]
                 win_rate = strategy.performance.get('win_rate', 0)
                 score += win_rate * 30
             
-            # 3. QualitÃƒÂ© du Risk/Reward (0-20 points)
+            # 3. Qualite du Risk/Reward (0-20 points)
             stop_loss = signal.get('stop_loss', 0)
             take_profit = signal.get('take_profit', 0)
             entry_price = signal.get('price', 0)
@@ -188,7 +188,7 @@ class StrategySelector:
                     elif signal['side'] == 'SELL' and current_price < ma50:
                         score += 10
             
-            return min(score, 100)  # Cap ÃƒÂ  100
+            return min(score, 100)  # Cap  100
             
         except Exception as e:
             logger.error(f"Erreur scoring signal: {e}")
@@ -196,13 +196,13 @@ class StrategySelector:
     
     def analyze_all_strategies(self, data: Dict) -> List[Dict]:
         """
-        Analyse avec toutes les stratÃƒÂ©gies actives
+        Analyse avec toutes les strategies actives
         
         Args:
-            data: DonnÃƒÂ©es de marchÃƒÂ©
+            data: Donnees de marche
             
         Returns:
-            Liste de tous les signaux gÃƒÂ©nÃƒÂ©rÃƒÂ©s
+            Liste de tous les signaux generes
         """
         signals = []
         
@@ -221,7 +221,7 @@ class StrategySelector:
     
     def rebalance_strategies(self):
         """
-        RÃƒÂ©ÃƒÂ©quilibre les stratÃƒÂ©gies selon leurs performances
+        Reequilibre les strategies selon leurs performances
         """
         try:
             current_time = datetime.now()
@@ -230,9 +230,9 @@ class StrategySelector:
             if time_since_rebalance < self.config['rebalance_frequency']:
                 return
             
-            logger.info("Ã°Å¸â€â€ž RÃƒÂ©ÃƒÂ©quilibrage des stratÃƒÂ©gies...")
+            logger.info(""" Reequilibrage des strategies...")
             
-            # Ãƒâ€°valuer chaque stratÃƒÂ©gie
+            # "valuer chaque strategie
             performances = {}
             
             for name, strategy in self.strategies.items():
@@ -245,7 +245,7 @@ class StrategySelector:
                 
                 # Score composite
                 performance_score = 0
-                if total_trades >= 10:  # Minimum de trades pour ÃƒÂªtre significatif
+                if total_trades >= 10:  # Minimum de trades pour etre significatif
                     performance_score = (win_rate * 0.6) + (min(profit_factor / 3, 1) * 0.4)
                 
                 performances[name] = {
@@ -256,16 +256,16 @@ class StrategySelector:
                     'is_active': strategy.is_active
                 }
             
-            # DÃƒÂ©sactiver les stratÃƒÂ©gies sous-performantes
+            # Desactiver les strategies sous-performantes
             for name, perf in performances.items():
                 if perf['total_trades'] >= 20:  # Au moins 20 trades
                     if perf['win_rate'] < self.config['min_win_rate']:
                         if self.strategies[name].is_active:
-                            logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â DÃƒÂ©sactivation {name}: win rate {perf['win_rate']:.2%}")
+                            logger.warning(f" Desactivation {name}: win rate {perf['win_rate']:.2%}")
                             self.strategies[name].disable()
                     else:
                         if not self.strategies[name].is_active:
-                            logger.info(f"Ã¢Å“â€¦ RÃƒÂ©activation {name}: win rate {perf['win_rate']:.2%}")
+                            logger.info(f"""| Reactivation {name}: win rate {perf['win_rate']:.2%}")
                             self.strategies[name].enable()
             
             # Ajuster les allocations selon les performances
@@ -274,7 +274,7 @@ class StrategySelector:
             self.last_rebalance = current_time
             self.stats['active_strategies'] = sum(1 for s in self.strategies.values() if s.is_active)
             
-            logger.info(f"Ã¢Å“â€¦ RÃƒÂ©ÃƒÂ©quilibrage terminÃƒÂ© - {self.stats['active_strategies']} stratÃƒÂ©gies actives")
+            logger.info(f"""| Reequilibrage termine - {self.stats['active_strategies']} strategies actives")
             
         except Exception as e:
             logger.error(f"Erreur rebalance_strategies: {e}")
@@ -284,14 +284,14 @@ class StrategySelector:
         Ajuste dynamiquement les allocations selon performances
         
         Args:
-            performances: Dict des performances par stratÃƒÂ©gie
+            performances: Dict des performances par strategie
         """
         try:
-            # Calculer les scores normalisÃƒÂ©s
+            # Calculer les scores normalises
             total_score = sum(p['score'] for p in performances.values() if p['score'] > 0)
             
             if total_score == 0:
-                return  # Garder les allocations par dÃƒÂ©faut
+                return  # Garder les allocations par defaut
             
             # Nouvelles allocations proportionnelles aux scores
             new_allocations = {}
@@ -310,7 +310,7 @@ class StrategySelector:
                 if name in self.strategies:
                     self.strategies[name].config['allocation'] = smoothed_alloc
             
-            logger.info("Allocations ajustÃƒÂ©es:")
+            logger.info("Allocations ajustees:")
             for name, alloc in self.config['allocations'].items():
                 if alloc > 0:
                     logger.info(f"  {name}: {alloc:.1%}")
@@ -319,19 +319,19 @@ class StrategySelector:
             logger.error(f"Erreur adjust_allocations: {e}")
     
     def get_strategy(self, name: str):
-        """Retourne une stratÃƒÂ©gie par son nom"""
+        """Retourne une strategie par son nom"""
         return self.strategies.get(name)
     
     def get_all_strategies(self) -> List:
-        """Retourne toutes les stratÃƒÂ©gies"""
+        """Retourne toutes les strategies"""
         return list(self.strategies.values())
     
     def get_active_strategies(self) -> List:
-        """Retourne les stratÃƒÂ©gies actives"""
+        """Retourne les strategies actives"""
         return [s for s in self.strategies.values() if s.is_active]
     
     def get_strategy_stats(self) -> Dict:
-        """Retourne les stats de toutes les stratÃƒÂ©gies"""
+        """Retourne les stats de toutes les strategies"""
         stats = {
             'total_strategies': len(self.strategies),
             'active_strategies': len(self.get_active_strategies()),
@@ -348,7 +348,7 @@ class StrategySelector:
         return stats
     
     def get_selector_stats(self) -> Dict:
-        """Retourne les stats du sÃƒÂ©lecteur"""
+        """Retourne les stats du selecteur"""
         return {
             'total_signals': self.stats['total_signals'],
             'signals_by_strategy': self.stats['signals_by_strategy'].copy(),
@@ -357,27 +357,27 @@ class StrategySelector:
         }
     
     def force_rebalance(self):
-        """Force un rÃƒÂ©ÃƒÂ©quilibrage immÃƒÂ©diat"""
+        """Force un reequilibrage immediat"""
         self.last_rebalance = datetime.now() - timedelta(seconds=self.config['rebalance_frequency'] + 1)
         self.rebalance_strategies()
     
     def enable_all_strategies(self):
-        """Active toutes les stratÃƒÂ©gies"""
+        """Active toutes les strategies"""
         for strategy in self.strategies.values():
             strategy.enable()
-        logger.info("Ã¢Å“â€¦ Toutes les stratÃƒÂ©gies activÃƒÂ©es")
+        logger.info("""| Toutes les strategies activees")
     
     def disable_all_strategies(self):
-        """DÃƒÂ©sactive toutes les stratÃƒÂ©gies"""
+        """Desactive toutes les strategies"""
         for strategy in self.strategies.values():
             strategy.disable()
-        logger.info("Ã¢Å¡Â Ã¯Â¸Â Toutes les stratÃƒÂ©gies dÃƒÂ©sactivÃƒÂ©es")
+        logger.info(" Toutes les strategies desactivees")
     
     def reset_all_performances(self):
-        """RÃƒÂ©initialise les performances de toutes les stratÃƒÂ©gies"""
+        """Reinitialise les performances de toutes les strategies"""
         for strategy in self.strategies.values():
             strategy.reset_performance()
-        logger.info("Ã°Å¸â€â€ž Performances rÃƒÂ©initialisÃƒÂ©es")
+        logger.info(""" Performances reinitialisees")
 
 
 # =============================================================
@@ -391,7 +391,9 @@ if __name__ == "__main__":
     # Mock strategies pour test
     class MockStrategy:
         def __init__(self, name, allocation):
-            self.name = name
+    """
+    self.name = name
+    """
             self.is_active = True
             self.config = {'allocation': allocation}
             self.performance = {
@@ -403,7 +405,7 @@ if __name__ == "__main__":
             }
         
         def analyze(self, data):
-            # Simuler un signal alÃƒÂ©atoire
+            # Simuler un signal aleatoire
             if np.random.random() > 0.7:
                 return {
                     'type': 'ENTRY',
@@ -417,10 +419,14 @@ if __name__ == "__main__":
             return None
         
         def enable(self):
-            self.is_active = True
+    """
+    self.is_active = True
+    """
         
         def disable(self):
-            self.is_active = False
+    """
+    self.is_active = False
+    """
         
         def get_performance_summary(self):
             return self.performance
@@ -428,7 +434,7 @@ if __name__ == "__main__":
         def reset_performance(self):
             pass
     
-    # CrÃƒÂ©er des mock strategies
+    # Creer des mock strategies
     strategies = [
         MockStrategy('Scalping_Strategy', 0.40),
         MockStrategy('Momentum_Strategy', 0.25),
@@ -441,29 +447,29 @@ if __name__ == "__main__":
     
     print("Test Strategy Selector")
     print("=" * 50)
-    print(f"StratÃƒÂ©gies chargÃƒÂ©es: {len(selector.strategies)}")
-    print(f"StratÃƒÂ©gies actives: {selector.stats['active_strategies']}")
+    print(f"Strategies chargees: {len(selector.strategies)}")
+    print(f"Strategies actives: {selector.stats['active_strategies']}")
     
     # Test analyse
-    print("\nTest analyse avec toutes les stratÃƒÂ©gies:")
+    print("\nTest analyse avec toutes les strategies:")
     signals = selector.analyze_all_strategies({'df': None})
-    print(f"Signaux gÃƒÂ©nÃƒÂ©rÃƒÂ©s: {len(signals)}")
+    print(f"Signaux generes: {len(signals)}")
     
     if signals:
         best = selector.select_best_signal(signals, {'df': None})
         if best:
-            print(f"\nÃ¢Å“â€¦ Meilleur signal sÃƒÂ©lectionnÃƒÂ©:")
-            print(f"   StratÃƒÂ©gie: {best['metadata']['strategy']}")
+            print(f"\n""| Meilleur signal selectionne:")
+            print(f"   Strategie: {best['metadata']['strategy']}")
             print(f"   Confiance: {best['confidence']:.2%}")
             print(f"   Side: {best['side']}")
     
-    # Test rÃƒÂ©ÃƒÂ©quilibrage
-    print("\nTest rÃƒÂ©ÃƒÂ©quilibrage:")
+    # Test reequilibrage
+    print("\nTest reequilibrage:")
     selector.force_rebalance()
     
     # Stats finales
     print("\nStats finales:")
     stats = selector.get_selector_stats()
     print(f"Total signaux: {stats['total_signals']}")
-    print(f"Signaux par stratÃƒÂ©gie: {stats['signals_by_strategy']}")
-    print(f"StratÃƒÂ©gies actives: {stats['active_strategies']}")
+    print(f"Signaux par strategie: {stats['signals_by_strategy']}")
+    print(f"Strategies actives: {stats['active_strategies']}")
