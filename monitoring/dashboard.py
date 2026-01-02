@@ -1,6 +1,6 @@
 """
 Dashboard
-Dashboard en temps rÃƒÂ©el pour monitoring du bot
+Dashboard en temps reel pour monitoring du bot
 """
 
 import os
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class Dashboard:
     """
-    Dashboard en temps rÃƒÂ©el du bot
+    Dashboard en temps reel du bot
     
     Affiche:
     - Statut global
@@ -22,7 +22,7 @@ class Dashboard:
     - Positions ouvertes
     - Performance (win rate, drawdown)
     - Derniers trades
-    - SantÃƒÂ© du systÃƒÂ¨me
+    - Sante du systeme
     """
     
     def __init__(self):
@@ -30,16 +30,16 @@ class Dashboard:
         self.last_update = None
         self.update_interval = 5  # secondes
         
-        logger.info("Ã°Å¸â€œÅ  Dashboard initialisÃƒÂ©")
+        logger.info("" Dashboard initialise")
     
     def display(self, data: Dict):
         """
         Affiche le dashboard
         
         Args:
-            data: DonnÃƒÂ©es ÃƒÂ  afficher
+            data: Donnees  afficher
         """
-        # Effacer l'ÃƒÂ©cran (cross-platform)
+        # Effacer l'ecran (cross-platform)
         os.system('cls' if os.name == 'nt' else 'clear')
         
         # Header
@@ -60,7 +60,7 @@ class Dashboard:
         # Section 5: Derniers trades
         self._print_recent_trades(data.get('recent_trades', []))
         
-        # Section 6: SantÃƒÂ© systÃƒÂ¨me
+        # Section 6: Sante systeme
         self._print_health(data.get('health', {}))
         
         # Footer
@@ -69,11 +69,11 @@ class Dashboard:
         self.last_update = datetime.now()
     
     def _print_header(self):
-        """Affiche l'en-tÃƒÂªte"""
-        print("Ã¢â€¢â€" + "Ã¢â€¢Â" * 78 + "Ã¢â€¢â€”")
-        print("Ã¢â€¢â€˜" + " " * 25 + "Ã°Å¸Â¤â€“ THE BOT - DASHBOARD" + " " * 31 + "Ã¢â€¢â€˜")
-        print("Ã¢â€¢â€˜" + " " * 18 + f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}" + " " * 37 + "Ã¢â€¢â€˜")
-        print("Ã¢â€¢Â " + "Ã¢â€¢Â" * 78 + "Ã¢â€¢Â£")
+        """Affiche l'en-tete"""
+        print("""" + """ * 78 + """"")
+        print("""" + " " * 25 + """ THE BOT - DASHBOARD" + " " * 31 + """")
+        print("""" + " " * 18 + f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}" + " " * 37 + """")
+        print(""" + """ * 78 + """)
     
     def _print_status(self, status: Dict):
         """Affiche le statut"""
@@ -81,13 +81,13 @@ class Dashboard:
         mode = status.get('mode', 'unknown')
         uptime = status.get('uptime_hours', 0)
         
-        status_icon = "Ã°Å¸Å¸Â¢" if is_running else "Ã°Å¸â€Â´"
+        status_icon = "" if is_running else """
         status_text = "RUNNING" if is_running else "STOPPED"
         
-        print("Ã¢â€¢â€˜ STATUS")
-        print("Ã¢â€¢â€˜" + "-" * 78)
-        print(f"Ã¢â€¢â€˜ {status_icon} {status_text:<20} Mode: {mode:<15} Uptime: {uptime:.1f}h" + " " * 18 + "Ã¢â€¢â€˜")
-        print("Ã¢â€¢Â " + "Ã¢â€¢Â" * 78 + "Ã¢â€¢Â£")
+        print(""" STATUS")
+        print("""" + "-" * 78)
+        print(f""" {status_icon} {status_text:<20} Mode: {mode:<15} Uptime: {uptime:.1f}h" + " " * 18 + """")
+        print(""" + """ * 78 + """)
     
     def _print_capital(self, portfolio: Dict):
         """Affiche capital et P&L"""
@@ -100,13 +100,13 @@ class Dashboard:
         # Couleur pour P&L
         pnl_color = "+" if pnl >= 0 else ""
         
-        print("Ã¢â€¢â€˜ CAPITAL & P&L")
-        print("Ã¢â€¢â€˜" + "-" * 78)
-        print(f"Ã¢â€¢â€˜ Initial:     ${initial:>12,.2f}                                              Ã¢â€¢â€˜")
-        print(f"Ã¢â€¢â€˜ Current:     ${current:>12,.2f}                                              Ã¢â€¢â€˜")
-        print(f"Ã¢â€¢â€˜ P&L:         ${pnl:>{pnl_color}12,.2f} ({pnl_pct:>{pnl_color}.2%})                                   Ã¢â€¢â€˜")
-        print(f"Ã¢â€¢â€˜ Unrealized:  ${unrealized:>12,.2f}                                              Ã¢â€¢â€˜")
-        print("Ã¢â€¢Â " + "Ã¢â€¢Â" * 78 + "Ã¢â€¢Â£")
+        print(""" CAPITAL & P&L")
+        print("""" + "-" * 78)
+        print(f""" Initial:     ${initial:>12,.2f}                                              """)
+        print(f""" Current:     ${current:>12,.2f}                                              """)
+        print(f""" P&L:         ${pnl:>{pnl_color}12,.2f} ({pnl_pct:>{pnl_color}.2%})                                   """)
+        print(f""" Unrealized:  ${unrealized:>12,.2f}                                              """)
+        print(""" + """ * 78 + """)
     
     def _print_positions(self, positions: Dict):
         """Affiche les positions ouvertes"""
@@ -114,19 +114,19 @@ class Dashboard:
         max_positions = positions.get('max_positions', 20)
         exposure_pct = positions.get('exposure_pct', 0)
         
-        print("Ã¢â€¢â€˜ POSITIONS")
-        print("Ã¢â€¢â€˜" + "-" * 78)
-        print(f"Ã¢â€¢â€˜ Open:        {open_count}/{max_positions}                                                           Ã¢â€¢â€˜")
-        print(f"Ã¢â€¢â€˜ Exposure:    {exposure_pct:.1%}                                                      Ã¢â€¢â€˜")
+        print(""" POSITIONS")
+        print("""" + "-" * 78)
+        print(f""" Open:        {open_count}/{max_positions}                                                           """)
+        print(f""" Exposure:    {exposure_pct:.1%}                                                      """)
         
         # Lister les positions
         position_list = positions.get('list', [])
         if position_list:
-            print("Ã¢â€¢â€˜")
-            print("Ã¢â€¢â€˜ Symbol       Side    Size        Entry       Current     P&L                Ã¢â€¢â€˜")
-            print("Ã¢â€¢â€˜" + "-" * 78)
+            print("""")
+            print(""" Symbol       Side    Size        Entry       Current     P&L                """)
+            print("""" + "-" * 78)
             
-            for pos in position_list[:5]:  # Max 5 positions affichÃƒÂ©es
+            for pos in position_list[:5]:  # Max 5 positions affichees
                 symbol = pos.get('symbol', '')[:10]
                 side = pos.get('side', '')
                 size = pos.get('size', 0)
@@ -136,14 +136,14 @@ class Dashboard:
                 
                 pnl_symbol = "+" if pnl_pct >= 0 else ""
                 
-                print(f"Ã¢â€¢â€˜ {symbol:<12} {side:<7} {size:<11.4f} {entry:<11,.2f} {current:<11,.2f} {pnl_symbol}{pnl_pct:.2%}" + " " * 8 + "Ã¢â€¢â€˜")
+                print(f""" {symbol:<12} {side:<7} {size:<11.4f} {entry:<11,.2f} {current:<11,.2f} {pnl_symbol}{pnl_pct:.2%}" + " " * 8 + """")
             
             if len(position_list) > 5:
-                print(f"Ã¢â€¢â€˜ ... et {len(position_list) - 5} autres positions" + " " * 43 + "Ã¢â€¢â€˜")
+                print(f""" ... et {len(position_list) - 5} autres positions" + " " * 43 + """")
         else:
-            print("Ã¢â€¢â€˜ Aucune position ouverte                                                      Ã¢â€¢â€˜")
+            print(""" Aucune position ouverte                                                      """)
         
-        print("Ã¢â€¢Â " + "Ã¢â€¢Â" * 78 + "Ã¢â€¢Â£")
+        print(""" + """ * 78 + """)
     
     def _print_performance(self, performance: Dict):
         """Affiche les performances"""
@@ -153,23 +153,23 @@ class Dashboard:
         sharpe = performance.get('sharpe_ratio', 0)
         drawdown = performance.get('max_drawdown', 0)
         
-        print("Ã¢â€¢â€˜ PERFORMANCE")
-        print("Ã¢â€¢â€˜" + "-" * 78)
-        print(f"Ã¢â€¢â€˜ Total Trades:    {total_trades:<10}                                                Ã¢â€¢â€˜")
-        print(f"Ã¢â€¢â€˜ Win Rate:        {win_rate:<10.1%}                                                Ã¢â€¢â€˜")
-        print(f"Ã¢â€¢â€˜ Profit Factor:   {profit_factor:<10.2f}                                                Ã¢â€¢â€˜")
-        print(f"Ã¢â€¢â€˜ Sharpe Ratio:    {sharpe:<10.2f}                                                Ã¢â€¢â€˜")
-        print(f"Ã¢â€¢â€˜ Max Drawdown:    {drawdown:<10.2%}                                                Ã¢â€¢â€˜")
-        print("Ã¢â€¢Â " + "Ã¢â€¢Â" * 78 + "Ã¢â€¢Â£")
+        print(""" PERFORMANCE")
+        print("""" + "-" * 78)
+        print(f""" Total Trades:    {total_trades:<10}                                                """)
+        print(f""" Win Rate:        {win_rate:<10.1%}                                                """)
+        print(f""" Profit Factor:   {profit_factor:<10.2f}                                                """)
+        print(f""" Sharpe Ratio:    {sharpe:<10.2f}                                                """)
+        print(f""" Max Drawdown:    {drawdown:<10.2%}                                                """)
+        print(""" + """ * 78 + """)
     
     def _print_recent_trades(self, trades: List[Dict]):
         """Affiche les derniers trades"""
-        print("Ã¢â€¢â€˜ RECENT TRADES")
-        print("Ã¢â€¢â€˜" + "-" * 78)
+        print(""" RECENT TRADES")
+        print("""" + "-" * 78)
         
         if trades:
-            print("Ã¢â€¢â€˜ Time     Symbol       Side    P&L          %                                Ã¢â€¢â€˜")
-            print("Ã¢â€¢â€˜" + "-" * 78)
+            print(""" Time     Symbol       Side    P&L          %                                """)
+            print("""" + "-" * 78)
             
             for trade in trades[-5:]:  # 5 derniers trades
                 time = trade.get('close_time', datetime.now()).strftime('%H:%M')
@@ -180,49 +180,49 @@ class Dashboard:
                 
                 pnl_symbol = "+" if pnl >= 0 else ""
                 
-                print(f"Ã¢â€¢â€˜ {time}   {symbol:<12} {side:<7} ${pnl:>{pnl_symbol}9,.2f}   {pnl_symbol}{pnl_pct:.2%}" + " " * 26 + "Ã¢â€¢â€˜")
+                print(f""" {time}   {symbol:<12} {side:<7} ${pnl:>{pnl_symbol}9,.2f}   {pnl_symbol}{pnl_pct:.2%}" + " " * 26 + """")
         else:
-            print("Ã¢â€¢â€˜ Aucun trade rÃƒÂ©cent                                                           Ã¢â€¢â€˜")
+            print(""" Aucun trade recent                                                           """)
         
-        print("Ã¢â€¢Â " + "Ã¢â€¢Â" * 78 + "Ã¢â€¢Â£")
+        print(""" + """ * 78 + """)
     
     def _print_health(self, health: Dict):
-        """Affiche la santÃƒÂ© du systÃƒÂ¨me"""
+        """Affiche la sante du systeme"""
         overall = health.get('overall', 'unknown')
         api_status = health.get('api_status', 'unknown')
         memory_usage = health.get('memory_usage_pct', 0)
         cpu_usage = health.get('cpu_usage_pct', 0)
         
-        # IcÃƒÂ´ne selon statut
+        # Icne selon statut
         status_icons = {
-            'healthy': 'Ã°Å¸Å¸Â¢',
-            'degraded': 'Ã°Å¸Å¸Â¡',
-            'unhealthy': 'Ã°Å¸â€Â´',
-            'unknown': 'Ã¢Å¡Âª'
+            'healthy': '',
+            'degraded': '',
+            'unhealthy': '"',
+            'unknown': ''
         }
         
-        overall_icon = status_icons.get(overall, 'Ã¢Å¡Âª')
-        api_icon = status_icons.get(api_status, 'Ã¢Å¡Âª')
+        overall_icon = status_icons.get(overall, '')
+        api_icon = status_icons.get(api_status, '')
         
-        print("Ã¢â€¢â€˜ SYSTEM HEALTH")
-        print("Ã¢â€¢â€˜" + "-" * 78)
-        print(f"Ã¢â€¢â€˜ Overall:     {overall_icon} {overall.upper():<20}                                    Ã¢â€¢â€˜")
-        print(f"Ã¢â€¢â€˜ API:         {api_icon} {api_status.upper():<20}                                    Ã¢â€¢â€˜")
-        print(f"Ã¢â€¢â€˜ Memory:      {memory_usage:.1f}%                                                         Ã¢â€¢â€˜")
-        print(f"Ã¢â€¢â€˜ CPU:         {cpu_usage:.1f}%                                                         Ã¢â€¢â€˜")
-        print("Ã¢â€¢Â " + "Ã¢â€¢Â" * 78 + "Ã¢â€¢Â£")
+        print(""" SYSTEM HEALTH")
+        print("""" + "-" * 78)
+        print(f""" Overall:     {overall_icon} {overall.upper():<20}                                    """)
+        print(f""" API:         {api_icon} {api_status.upper():<20}                                    """)
+        print(f""" Memory:      {memory_usage:.1f}%                                                         """)
+        print(f""" CPU:         {cpu_usage:.1f}%                                                         """)
+        print(""" + """ * 78 + """)
     
     def _print_footer(self):
         """Affiche le pied de page"""
-        print("Ã¢â€¢â€˜" + " " * 20 + "Press Ctrl+C to stop" + " " * 38 + "Ã¢â€¢â€˜")
-        print("Ã¢â€¢Å¡" + "Ã¢â€¢Â" * 78 + "Ã¢â€¢Â")
+        print("""" + " " * 20 + "Press Ctrl+C to stop" + " " * 38 + """")
+        print(""" + """ * 78 + """)
     
     def display_simple_summary(self, data: Dict):
         """
-        Affiche un rÃƒÂ©sumÃƒÂ© simplifiÃƒÂ© (1 ligne)
+        Affiche un resume simplifie (1 ligne)
         
         Args:
-            data: DonnÃƒÂ©es
+            data: Donnees
         """
         portfolio = data.get('portfolio', {})
         performance = data.get('performance', {})
@@ -252,7 +252,7 @@ if __name__ == "__main__":
     
     dashboard = Dashboard()
     
-    # DonnÃƒÂ©es de test
+    # Donnees de test
     test_data = {
         'status': {
             'is_running': True,
@@ -296,7 +296,7 @@ if __name__ == "__main__":
         }
     }
     
-    print("Test Dashboard - Appuyez sur Ctrl+C pour arrÃƒÂªter\n")
+    print("Test Dashboard - Appuyez sur Ctrl+C pour arreter\n")
     time.sleep(2)
     
     try:
@@ -312,4 +312,4 @@ if __name__ == "__main__":
             time.sleep(5)
             
     except KeyboardInterrupt:
-        print("\n\nDashboard arrÃƒÂªtÃƒÂ©")
+        print("\n\nDashboard arrete")
