@@ -1,11 +1,11 @@
 """
 Models pour The Bot
-Alias vers MLEnsemble pour compatibilité
+Alias vers MLEnsemble pour compatibilite
 """
 
 from .ensemble import MLEnsemble
 
-# Alias pour compatibilité avec d'autres modules
+# Alias pour compatibilite avec d'autres modules
 Models = MLEnsemble
 
 __all__ = ['MLEnsemble', 'Models']
@@ -14,13 +14,13 @@ __all__ = ['MLEnsemble', 'Models']
 # Fonctions helper pour usage rapide
 def create_ensemble(config=None):
     """
-    Crée un MLEnsemble avec configuration optionnelle
+    Cree un MLEnsemble avec configuration optionnelle
     
     Args:
-        config: Dict de configuration ou None pour défaut
+        config: Dict de configuration ou None pour defaut
         
     Returns:
-        MLEnsemble configuré
+        MLEnsemble configure
     """
     return MLEnsemble(config)
 
@@ -30,10 +30,10 @@ def load_ensemble(filepath):
     Charge un ensemble depuis un fichier
     
     Args:
-        filepath: Chemin vers les modèles
+        filepath: Chemin vers les modeles
         
     Returns:
-        MLEnsemble chargé
+        MLEnsemble charge
     """
     ensemble = MLEnsemble()
     ensemble.load(filepath)
@@ -42,10 +42,10 @@ def load_ensemble(filepath):
 
 def get_default_config():
     """
-    Retourne la configuration par défaut
+    Retourne la configuration par defaut
     
     Returns:
-        Dict avec config par défaut
+        Dict avec config par defaut
     """
     return {
         'n_estimators': 100,
