@@ -1,6 +1,6 @@
 """
 Order Manager pour The Bot
-Gestion complÃƒÂ¨te de l'exÃƒÂ©cution des ordres avec retry, slippage control, et smart routing
+Gestion complete de l'execution des ordres avec retry, slippage control, et smart routing
 """
 
 import time
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class OrderType(Enum):
-    """Types d'ordres supportÃƒÂ©s"""
+    """Types d'ordres supportes"""
     MARKET = "MARKET"
     LIMIT = "LIMIT"
     LIMIT_MAKER = "LIMIT_MAKER"  # Post-only
@@ -37,7 +37,7 @@ class OrderStatus(Enum):
 
 
 class OrderPriority(Enum):
-    """PrioritÃƒÂ©s d'exÃƒÂ©cution"""
+    """Priorites d'execution"""
     CRITICAL = 1  # Stop loss, urgence
     HIGH = 2      # Signaux forts
     NORMAL = 3    # Ordres normaux
@@ -45,7 +45,7 @@ class OrderPriority(Enum):
 
 
 class Order:
-    """Classe reprÃƒÂ©sentant un ordre"""
+    """Classe representant un ordre"""
     
     def __init__(self,
                  symbol: str,
@@ -56,16 +56,16 @@ class Order:
                  stop_price: Optional[float] = None,
                  client_order_id: Optional[str] = None):
         """
-        CrÃƒÂ©e un ordre
+        Cree un ordre
         
         Args:
             symbol: Symbole (ex: BTCUSDC)
             side: BUY ou SELL
             order_type: Type d'ordre
-            quantity: QuantitÃƒÂ©
+            quantity: Quantite
             price: Prix limite (si applicable)
             stop_price: Prix stop (si applicable)
-            client_order_id: ID client personnalisÃƒÂ©
+            client_order_id: ID client personnalise
         """
         self.symbol = symbol
         self.side = side
@@ -75,7 +75,7 @@ class Order:
         self.stop_price = stop_price
         self.client_order_id = client_order_id or f"{symbol}_{int(time.time()*1000)}"
         
-        # Ãƒâ€°tat
+        # "tat
         self.status = OrderStatus.PENDING
         self.exchange_order_id = None
         self.filled_quantity = 0
@@ -97,10 +97,10 @@ class Order:
 
 class OrderManager:
     """
-    Gestionnaire d'ordres avec exÃƒÂ©cution robuste
+    Gestionnaire d'ordres avec execution robuste
     
     Features:
-    - File de prioritÃƒÂ© pour exÃƒÂ©cution
+    - File de priorite pour execution
     - Retry automatique avec backoff
     - Slippage control
     - Smart routing (market vs limit)
@@ -119,7 +119,7 @@ class OrderManager:
         self.exchange = exchange_client
         self.config = config
         
-        # Configuration exÃƒÂ©cution
+        # Configuration execution
         self.max_slippage = config.get('slippage_tolerance', 0.002)  # 0.2%
         self.order_timeout = config.get('order_timeout', 5000)  # 5 secondes
         self.retry_delay = config.get('retry_delay', 1000)  # 1 seconde
@@ -132,7 +132,7 @@ class OrderManager:
         self.active_orders = {}
         self.completed_orders = []
         
-        # Ãƒâ€°tat
+        # "tat
         self.is_running = False
         self.execution_thread = None
         self.monitoring_thread = None
@@ -154,17 +154,17 @@ class OrderManager:
             'on_error': []
         }
         
-        logger.info("Order Manager initialisÃƒÂ©")
+        logger.info("Order Manager initialise")
     
     def start(self):
-        """DÃƒÂ©marre l'order manager"""
+        """Demarre l'order manager"""
         if self.is_running:
-            logger.warning("Order Manager dÃƒÂ©jÃƒÂ  en cours d'exÃƒÂ©cution")
+            logger.warning("Order Manager dej en cours d'execution")
             return
         
         self.is_running = True
         
-        # Thread d'exÃƒÂ©cution
+        # Thread d'execution
         self.execution_thread = threading.Thread(
             target=self._execution_loop,
             daemon=True
@@ -178,10 +178,10 @@ class OrderManager:
         )
         self.monitoring_thread.start()
         
-        logger.info("Order Manager dÃƒÂ©marrÃƒÂ©")
+        logger.info("Order Manager demarre")
     
     def stop(self):
-        """ArrÃƒÂªte l'order manager"""
+        """Arrete l'order manager"""
         self.is_running = False
         
         # Attendre que les threads se terminent
@@ -193,7 +193,7 @@ class OrderManager:
         # Annuler les ordres pending
         self._cancel_all_pending_orders()
         
-        logger.info("Order Manager arrÃƒÂªtÃƒÂ©")
+        logger.info("Order Manager arrete")
     
     def submit_order(self,
                      symbol: str,
@@ -205,22 +205,22 @@ class OrderManager:
                      priority: OrderPriority = OrderPriority.NORMAL,
                      strategy: Optional[str] = None) -> Order:
         """
-        Soumet un ordre pour exÃƒÂ©cution
+        Soumet un ordre pour execution
         
         Args:
             symbol: Symbole
             side: BUY ou SELL
-            quantity: QuantitÃƒÂ©
+            quantity: Quantite
             order_type: Type d'ordre (MARKET, LIMIT, etc.)
             price: Prix limite
             stop_price: Prix stop
-            priority: PrioritÃƒÂ© d'exÃƒÂ©cution
-            strategy: Nom de la stratÃƒÂ©gie
+            priority: Priorite d'execution
+            strategy: Nom de la strategie
             
         Returns:
-            Objet Order crÃƒÂ©ÃƒÂ©
+            Objet Order cree
         """
-        # CrÃƒÂ©er l'ordre
+        # Creer l'ordre
         order = Order(
             symbol=symbol,
             side=side,
@@ -236,15 +236,15 @@ class OrderManager:
         # Validation
         if not self._validate_order(order):
             order.status = OrderStatus.REJECTED
-            order.error_message = "Validation ÃƒÂ©chouÃƒÂ©e"
-            logger.error(f"Ordre rejetÃƒÂ©: {order.client_order_id}")
+            order.error_message = "Validation echouee"
+            logger.error(f"Ordre rejete: {order.client_order_id}")
             return order
         
         # Smart routing
         if self.use_limit_orders and order.order_type == OrderType.MARKET:
             order = self._convert_to_limit_order(order)
         
-        # Ajouter ÃƒÂ  la queue
+        # Ajouter  la queue
         self.order_queue.put((order.priority.value, time.time(), order))
         self.pending_orders[order.client_order_id] = order
         
@@ -263,7 +263,7 @@ class OrderManager:
             order_id: ID de l'ordre (client ou exchange)
             
         Returns:
-            True si annulation rÃƒÂ©ussie
+            True si annulation reussie
         """
         try:
             # Trouver l'ordre
@@ -280,7 +280,7 @@ class OrderManager:
                         break
             
             if not order:
-                logger.error(f"Ordre {order_id} non trouvÃƒÂ©")
+                logger.error(f"Ordre {order_id} non trouve")
                 return False
             
             # Annuler sur l'exchange
@@ -294,7 +294,7 @@ class OrderManager:
                     order.status = OrderStatus.CANCELLED
                     self._move_to_completed(order)
                     self._trigger_callbacks('on_cancel', order)
-                    logger.info(f"Ordre {order_id} annulÃƒÂ©")
+                    logger.info(f"Ordre {order_id} annule")
                     return True
             else:
                 # Ordre pas encore soumis
@@ -321,15 +321,15 @@ class OrderManager:
         Args:
             symbol: Symbole
             side: BUY ou SELL
-            quantity: QuantitÃƒÂ©
+            quantity: Quantite
             take_profit_price: Prix take profit
             stop_loss_price: Prix stop loss
-            strategy: StratÃƒÂ©gie
+            strategy: Strategie
             
         Returns:
             Tuple (ordre TP, ordre SL)
         """
-        # CrÃƒÂ©er les deux ordres
+        # Creer les deux ordres
         tp_order = Order(
             symbol=symbol,
             side=side,
@@ -365,14 +365,14 @@ class OrderManager:
         return tp_order, sl_order
     
     def _execution_loop(self):
-        """Boucle principale d'exÃƒÂ©cution des ordres"""
+        """Boucle principale d'execution des ordres"""
         while self.is_running:
             try:
-                # RÃƒÂ©cupÃƒÂ©rer le prochain ordre
+                # Recuperer le prochain ordre
                 if not self.order_queue.empty():
                     priority, timestamp, order = self.order_queue.get(timeout=0.1)
                     
-                    # ExÃƒÂ©cuter l'ordre
+                    # Executer l'ordre
                     self._execute_order(order)
                 else:
                     time.sleep(0.1)
@@ -383,24 +383,24 @@ class OrderManager:
     
     def _execute_order(self, order: Order):
         """
-        ExÃƒÂ©cute un ordre
+        Execute un ordre
         
         Args:
-            order: L'ordre ÃƒÂ  exÃƒÂ©cuter
+            order: L'ordre  executer
         """
         try:
-            logger.info(f"ExÃƒÂ©cution ordre: {order.client_order_id}")
+            logger.info(f"Execution ordre: {order.client_order_id}")
             
-            # Mettre ÃƒÂ  jour le statut
+            # Mettre  jour le statut
             order.status = OrderStatus.SUBMITTED
             order.submitted_at = datetime.now()
             
-            # DÃƒÂ©placer vers ordres actifs
+            # Deplacer vers ordres actifs
             if order.client_order_id in self.pending_orders:
                 del self.pending_orders[order.client_order_id]
             self.active_orders[order.client_order_id] = order
             
-            # ExÃƒÂ©cuter selon le type
+            # Executer selon le type
             if order.order_type == OrderType.MARKET:
                 result = self._execute_market_order(order)
             elif order.order_type in [OrderType.LIMIT, OrderType.LIMIT_MAKER]:
@@ -410,22 +410,22 @@ class OrderManager:
             elif order.order_type == OrderType.TAKE_PROFIT:
                 result = self._execute_take_profit_order(order)
             else:
-                logger.error(f"Type d'ordre non supportÃƒÂ©: {order.order_type}")
+                logger.error(f"Type d'ordre non supporte: {order.order_type}")
                 result = None
             
-            # Traiter le rÃƒÂ©sultat
+            # Traiter le resultat
             if result:
                 self._process_execution_result(order, result)
             else:
                 self._handle_execution_failure(order)
                 
         except Exception as e:
-            logger.error(f"Erreur exÃƒÂ©cution ordre {order.client_order_id}: {e}")
+            logger.error(f"Erreur execution ordre {order.client_order_id}: {e}")
             order.error_message = str(e)
             self._handle_execution_failure(order)
     
     def _execute_market_order(self, order: Order) -> Optional[Dict]:
-        """ExÃƒÂ©cute un ordre au marchÃƒÂ©"""
+        """Execute un ordre au marche"""
         try:
             result = self.exchange.place_market_order(
                 symbol=order.symbol,
@@ -444,7 +444,7 @@ class OrderManager:
         return None
     
     def _execute_limit_order(self, order: Order) -> Optional[Dict]:
-        """ExÃƒÂ©cute un ordre limite"""
+        """Execute un ordre limite"""
         try:
             # Si pas de prix, utiliser le meilleur prix disponible
             if not order.price:
@@ -473,28 +473,28 @@ class OrderManager:
     
     def _execute_stop_loss_order(self, order: Order) -> Optional[Dict]:
         """
-        ExÃƒÂ©cute un ordre stop loss
+        Execute un ordre stop loss
         
         Pour Binance, on peut soit:
         1. Utiliser un ordre STOP_LOSS_LIMIT natif
-        2. Surveiller le prix et dÃƒÂ©clencher un market order
+        2. Surveiller le prix et declencher un market order
         
-        Pour l'instant, implÃƒÂ©mentation basique avec surveillance
+        Pour l'instant, implementation basique avec surveillance
         """
         try:
-            # Option 1: ImplÃƒÂ©menter plus tard avec surveillance
-            logger.warning(f"Stop loss orders en dÃƒÂ©veloppement pour {order.symbol}")
+            # Option 1: Implementer plus tard avec surveillance
+            logger.warning(f"Stop loss orders en developpement pour {order.symbol}")
             
             # Pour l'instant, stocker pour monitoring manuel
             order.status = OrderStatus.SUBMITTED
             order.monitoring_price = order.stop_price
             
-            # Ajouter ÃƒÂ  une liste de surveillance
+            # Ajouter  une liste de surveillance
             if not hasattr(self, 'stop_loss_orders'):
                 self.stop_loss_orders = []
             self.stop_loss_orders.append(order)
             
-            logger.info(f"Stop Loss configurÃƒÂ©: {order.symbol} @ {order.stop_price}")
+            logger.info(f"Stop Loss configure: {order.symbol} @ {order.stop_price}")
             
             return {
                 'order_id': order.client_order_id,
@@ -510,10 +510,10 @@ class OrderManager:
             return None
     
     def _execute_take_profit_order(self, order: Order) -> Optional[Dict]:
-        """ExÃƒÂ©cute un ordre take profit"""
+        """Execute un ordre take profit"""
         # Similaire au stop loss
         order.status = OrderStatus.SUBMITTED
-        logger.info(f"Take Profit configurÃƒÂ©: {order.symbol} @ {order.price}")
+        logger.info(f"Take Profit configure: {order.symbol} @ {order.price}")
         
         return {'order_id': order.client_order_id, 'status': 'MONITORING'}
     
@@ -521,19 +521,19 @@ class OrderManager:
         """Boucle de monitoring des ordres actifs"""
         while self.is_running:
             try:
-                # Copier la liste pour ÃƒÂ©viter modifications concurrentes
+                # Copier la liste pour eviter modifications concurrentes
                 active_orders = list(self.active_orders.values())
                 
                 for order in active_orders:
-                    # VÃƒÂ©rifier statut
+                    # Verifier statut
                     if order.exchange_order_id:
                         self._check_order_status(order)
                     
-                    # VÃƒÂ©rifier stop loss / take profit
+                    # Verifier stop loss / take profit
                     if order.order_type in [OrderType.STOP_LOSS, OrderType.TAKE_PROFIT]:
                         self._check_trigger_conditions(order)
                     
-                    # VÃƒÂ©rifier timeout
+                    # Verifier timeout
                     if order.status == OrderStatus.SUBMITTED:
                         self._check_order_timeout(order)
                 
@@ -544,7 +544,7 @@ class OrderManager:
                 time.sleep(1)
     
     def _check_order_status(self, order: Order):
-        """VÃƒÂ©rifie le statut d'un ordre sur l'exchange"""
+        """Verifie le statut d'un ordre sur l'exchange"""
         try:
             if not order.exchange_order_id:
                 return
@@ -555,7 +555,7 @@ class OrderManager:
             )
             
             if status:
-                # Mettre ÃƒÂ  jour l'ordre
+                # Mettre  jour l'ordre
                 if status['status'] == 'FILLED':
                     order.status = OrderStatus.FILLED
                     order.filled_quantity = status.get('filled_qty', order.quantity)
@@ -584,9 +584,9 @@ class OrderManager:
             logger.error(f"Erreur check status {order.client_order_id}: {e}")
     
     def _check_trigger_conditions(self, order: Order):
-        """VÃƒÂ©rifie les conditions de dÃƒÂ©clenchement pour SL/TP"""
+        """Verifie les conditions de declenchement pour SL/TP"""
         try:
-            # RÃƒÂ©cupÃƒÂ©rer le prix actuel
+            # Recuperer le prix actuel
             ticker = self.exchange.get_symbol_ticker(order.symbol)
             if not ticker:
                 return
@@ -596,27 +596,27 @@ class OrderManager:
             # Stop Loss
             if order.order_type == OrderType.STOP_LOSS:
                 if order.side == "SELL" and current_price <= order.stop_price:
-                    # DÃƒÂ©clencher vente
+                    # Declencher vente
                     self._trigger_stop_order(order, current_price)
                 elif order.side == "BUY" and current_price >= order.stop_price:
-                    # DÃƒÂ©clencher achat
+                    # Declencher achat
                     self._trigger_stop_order(order, current_price)
             
             # Take Profit
             elif order.order_type == OrderType.TAKE_PROFIT:
                 if order.side == "SELL" and current_price >= order.price:
-                    # DÃƒÂ©clencher vente
+                    # Declencher vente
                     self._trigger_stop_order(order, current_price)
                 elif order.side == "BUY" and current_price <= order.price:
-                    # DÃƒÂ©clencher achat
+                    # Declencher achat
                     self._trigger_stop_order(order, current_price)
                     
         except Exception as e:
             logger.error(f"Erreur check trigger {order.client_order_id}: {e}")
     
     def _trigger_stop_order(self, order: Order, trigger_price: float):
-        """DÃƒÂ©clenche un ordre stop"""
-        logger.info(f"DÃƒÂ©clenchement {order.order_type.value}: {order.symbol} @ {trigger_price}")
+        """Declenche un ordre stop"""
+        logger.info(f"Declenchement {order.order_type.value}: {order.symbol} @ {trigger_price}")
         
         # Convertir en market order
         market_order = Order(
@@ -628,7 +628,7 @@ class OrderManager:
         market_order.priority = OrderPriority.CRITICAL
         market_order.strategy = order.strategy
         
-        # ExÃƒÂ©cuter immÃƒÂ©diatement
+        # Executer immediatement
         result = self._execute_market_order(market_order)
         
         if result:
@@ -636,7 +636,7 @@ class OrderManager:
             order.filled_at = datetime.now()
             order.average_price = trigger_price
             
-            # Si OCO, annuler l'ordre liÃƒÂ©
+            # Si OCO, annuler l'ordre lie
             if hasattr(order, 'linked_order'):
                 self.cancel_order(order.linked_order)
             
@@ -644,7 +644,7 @@ class OrderManager:
             self._trigger_callbacks('on_fill', order)
     
     def _check_order_timeout(self, order: Order):
-        """VÃƒÂ©rifie si un ordre a timeout"""
+        """Verifie si un ordre a timeout"""
         if not order.submitted_at:
             return
         
@@ -662,19 +662,19 @@ class OrderManager:
                 self.cancel_order(order.client_order_id)
     
     def _validate_order(self, order: Order) -> bool:
-        """Valide un ordre avant exÃƒÂ©cution"""
-        # VÃƒÂ©rifier symbole
+        """Valide un ordre avant execution"""
+        # Verifier symbole
         if order.symbol not in self.exchange.symbols_info:
             logger.error(f"Symbole invalide: {order.symbol}")
             return False
         
-        # VÃƒÂ©rifier quantitÃƒÂ© minimum
+        # Verifier quantite minimum
         min_qty = self.exchange.symbols_info[order.symbol]['min_qty']
         if order.quantity < min_qty:
-            logger.error(f"QuantitÃƒÂ© {order.quantity} < minimum {min_qty}")
+            logger.error(f"Quantite {order.quantity} < minimum {min_qty}")
             return False
         
-        # VÃƒÂ©rifier notional minimum
+        # Verifier notional minimum
         if order.price:
             notional = order.quantity * order.price
             min_notional = self.exchange.symbols_info[order.symbol]['min_notional']
@@ -685,7 +685,7 @@ class OrderManager:
         return True
     
     def _convert_to_limit_order(self, order: Order) -> Order:
-        """Convertit un ordre market en limit pour ÃƒÂ©viter le slippage"""
+        """Convertit un ordre market en limit pour eviter le slippage"""
         try:
             ticker = self.exchange.get_symbol_ticker(order.symbol)
             
@@ -697,7 +697,7 @@ class OrderManager:
                 order.price = ticker['bid'] * (1 - self.max_slippage)
             
             order.order_type = OrderType.LIMIT
-            logger.info(f"Conversion MARKET Ã¢â€ â€™ LIMIT @ {order.price:.4f}")
+            logger.info(f"Conversion MARKET "' LIMIT @ {order.price:.4f}")
             
         except Exception as e:
             logger.error(f"Erreur conversion limit: {e}")
@@ -705,7 +705,7 @@ class OrderManager:
         return order
     
     def _process_execution_result(self, order: Order, result: Dict):
-        """Traite le rÃƒÂ©sultat d'une exÃƒÂ©cution"""
+        """Traite le resultat d'une execution"""
         if result.get('status') == 'FILLED':
             order.status = OrderStatus.FILLED
             order.filled_quantity = order.quantity
@@ -728,33 +728,33 @@ class OrderManager:
             self._move_to_completed(order)
             self._trigger_callbacks('on_fill', order)
             
-            logger.info(f"Ã¢Å“â€¦ Ordre exÃƒÂ©cutÃƒÂ©: {order.client_order_id}")
+            logger.info(f"""| Ordre execute: {order.client_order_id}")
         else:
             # Ordre soumis mais pas encore rempli
             logger.info(f"Ordre soumis: {order.client_order_id}")
     
     def _handle_execution_failure(self, order: Order):
-        """GÃƒÂ¨re l'ÃƒÂ©chec d'exÃƒÂ©cution d'un ordre"""
+        """Gere l'echec d'execution d'un ordre"""
         order.retries += 1
         
         if order.retries < self.max_retries:
-            # Retry aprÃƒÂ¨s dÃƒÂ©lai
-            logger.info(f"Retry {order.retries}/{self.max_retries} aprÃƒÂ¨s {self.retry_delay}ms")
+            # Retry apres delai
+            logger.info(f"Retry {order.retries}/{self.max_retries} apres {self.retry_delay}ms")
             time.sleep(self.retry_delay / 1000)
             
             # Remettre dans la queue
             self.order_queue.put((order.priority.value, time.time(), order))
         else:
-            # Ãƒâ€°chec dÃƒÂ©finitif
+            # "chec definitif
             order.status = OrderStatus.REJECTED
             self.stats['failed_orders'] += 1
             self._move_to_completed(order)
             self._trigger_callbacks('on_error', order)
             
-            logger.error(f"Ã¢ÂÅ’ Ordre ÃƒÂ©chouÃƒÂ© aprÃƒÂ¨s {self.max_retries} tentatives: {order.client_order_id}")
+            logger.error(f"' Ordre echoue apres {self.max_retries} tentatives: {order.client_order_id}")
     
     def _move_to_completed(self, order: Order):
-        """DÃƒÂ©place un ordre vers les ordres complÃƒÂ©tÃƒÂ©s"""
+        """Deplace un ordre vers les ordres completes"""
         if order.client_order_id in self.active_orders:
             del self.active_orders[order.client_order_id]
         
@@ -770,7 +770,7 @@ class OrderManager:
             self.cancel_order(order.client_order_id)
     
     def _trigger_callbacks(self, event: str, order: Order):
-        """DÃƒÂ©clenche les callbacks pour un ÃƒÂ©vÃƒÂ©nement"""
+        """Declenche les callbacks pour un evenement"""
         if event in self.callbacks:
             for callback in self.callbacks[event]:
                 try:
@@ -780,17 +780,17 @@ class OrderManager:
     
     def register_callback(self, event: str, callback: Callable):
         """
-        Enregistre un callback pour un ÃƒÂ©vÃƒÂ©nement
+        Enregistre un callback pour un evenement
         
         Args:
-            event: Nom de l'ÃƒÂ©vÃƒÂ©nement (on_fill, on_error, etc.)
-            callback: Fonction ÃƒÂ  appeler
+            event: Nom de l'evenement (on_fill, on_error, etc.)
+            callback: Fonction  appeler
         """
         if event in self.callbacks:
             self.callbacks[event].append(callback)
     
     def get_stats(self) -> Dict:
-        """Retourne les statistiques d'exÃƒÂ©cution"""
+        """Retourne les statistiques d'execution"""
         success_rate = 0
         if self.stats['total_orders'] > 0:
             success_rate = self.stats['successful_orders'] / self.stats['total_orders']
@@ -869,15 +869,17 @@ if __name__ == "__main__":
     
     # Callbacks
     def on_fill(order):
-        print(f"Ã¢Å“â€¦ Ordre rempli: {order.client_order_id}")
+        print(f"""| Ordre rempli: {order.client_order_id}")
     
     def on_error(order):
-        print(f"Ã¢ÂÅ’ Erreur ordre: {order.client_order_id} - {order.error_message}")
+    """
+    print(f"' Erreur ordre: {order.client_order_id} - {order.error_message}")
+    """
     
     manager.register_callback('on_fill', on_fill)
     manager.register_callback('on_error', on_error)
     
-    # DÃƒÂ©marrer
+    # Demarrer
     manager.start()
     
     # Test 1: Ordre market
@@ -925,6 +927,6 @@ if __name__ == "__main__":
     for key, value in stats.items():
         print(f"  {key}: {value}")
     
-    # ArrÃƒÂªter
+    # Arreter
     manager.stop()
-    print("\nÃ¢Å“â€¦ Test terminÃƒÂ©")
+    print("\n""| Test termine")
