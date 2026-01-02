@@ -1,6 +1,6 @@
 """
 Market Data pour The Bot
-Gestion des donnÃƒÂ©es de marchÃƒÂ© en temps rÃƒÂ©el
+Gestion des donnees de marche en temps reel
 """
 
 import time
@@ -16,13 +16,13 @@ logger = logging.getLogger(__name__)
 
 class MarketData:
     """
-    Gestionnaire de donnÃƒÂ©es de marchÃƒÂ©
+    Gestionnaire de donnees de marche
     
-    ResponsabilitÃƒÂ©s:
-    - RÃƒÂ©cupÃƒÂ©rer les donnÃƒÂ©es OHLCV
-    - Maintenir un buffer de donnÃƒÂ©es rÃƒÂ©centes
-    - Fournir les donnÃƒÂ©es aux stratÃƒÂ©gies
-    - Calculer des agrÃƒÂ©gations rapides
+    Responsabilites:
+    - Recuperer les donnees OHLCV
+    - Maintenir un buffer de donnees recentes
+    - Fournir les donnees aux strategies
+    - Calculer des agregations rapides
     """
     
     def __init__(self, exchange_client, config: Optional[Dict] = None):
@@ -36,12 +36,12 @@ class MarketData:
         self.client = exchange_client
         self.config = config or {}
         
-        # ParamÃƒÂ¨tres
+        # Parametres
         self.buffer_size = self.config.get('buffer_size', 5000)
         self.default_interval = self.config.get('default_interval', '5m')
         self.cache_ttl = self.config.get('cache_ttl', 60)  # secondes
         
-        # Buffers de donnÃƒÂ©es par symbole
+        # Buffers de donnees par symbole
         self.data_buffers = {}  # {symbol: deque of candles}
         self.last_update = {}   # {symbol: timestamp}
         
@@ -59,15 +59,17 @@ class MarketData:
             'symbols_tracked': 0
         }
         
-        logger.info(f"Ã¢Å“â€¦ Market Data initialisÃƒÂ© (buffer: {self.buffer_size})")
+        logger.info(f"""| Market Data initialise (buffer: {self.buffer_size})")
     
     def get_klines(self, 
-                   symbol: str,
+    """
+    symbol: str,
+    """
                    interval: str = '5m',
                    limit: int = 500,
                    use_cache: bool = True) -> pd.DataFrame:
         """
-        RÃƒÂ©cupÃƒÂ¨re les klines (OHLCV)
+        Recupere les klines (OHLCV)
         
         Args:
             symbol: Symbole
@@ -80,7 +82,7 @@ class MarketData:
         """
         cache_key = f"{symbol}_{interval}_{limit}"
         
-        # VÃƒÂ©rifier le cache
+        # Verifier le cache
         if use_cache and cache_key in self.cache:
             data, cached_at = self.cache[cache_key]
             age = time.time() - cached_at
@@ -92,7 +94,7 @@ class MarketData:
         self.stats['cache_misses'] += 1
         
         try:
-            # RÃƒÂ©cupÃƒÂ©rer depuis l'exchange
+            # Recuperer depuis l'exchange
             klines = self.client.get_historical_klines(
                 symbol=symbol,
                 interval=interval,
@@ -116,7 +118,7 @@ class MarketData:
             # Mettre en cache
             self.cache[cache_key] = (df, time.time())
             
-            # Mettre ÃƒÂ  jour le buffer
+            # Mettre  jour le buffer
             self._update_buffer(symbol, df)
             
             self.stats['total_updates'] += 1
@@ -124,13 +126,13 @@ class MarketData:
             return df
             
         except Exception as e:
-            logger.error(f"Ã¢ÂÅ’ Erreur rÃƒÂ©cupÃƒÂ©ration klines {symbol}: {e}")
+            logger.error(f"' Erreur recuperation klines {symbol}: {e}")
             # Retourner DataFrame vide en cas d'erreur
             return pd.DataFrame(columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
     
     def get_ticker(self, symbol: str, use_cache: bool = True) -> Optional[Dict]:
         """
-        RÃƒÂ©cupÃƒÂ¨re le ticker (prix actuel, volume, etc.)
+        Recupere le ticker (prix actuel, volume, etc.)
         
         Args:
             symbol: Symbole
@@ -141,7 +143,7 @@ class MarketData:
         """
         cache_key = f"ticker_{symbol}"
         
-        # Cache trÃƒÂ¨s court pour les tickers (5 secondes)
+        # Cache tres court pour les tickers (5 secondes)
         if use_cache and cache_key in self.cache:
             data, cached_at = self.cache[cache_key]
             if time.time() - cached_at < 5:
@@ -159,12 +161,12 @@ class MarketData:
             return ticker
             
         except Exception as e:
-            logger.error(f"Ã¢ÂÅ’ Erreur rÃƒÂ©cupÃƒÂ©ration ticker {symbol}: {e}")
+            logger.error(f"' Erreur recuperation ticker {symbol}: {e}")
             return None
     
     def get_orderbook(self, symbol: str, limit: int = 10) -> Optional[Dict]:
         """
-        RÃƒÂ©cupÃƒÂ¨re l'orderbook
+        Recupere l'orderbook
         
         Args:
             symbol: Symbole
@@ -178,35 +180,35 @@ class MarketData:
             return orderbook
             
         except Exception as e:
-            logger.error(f"Ã¢ÂÅ’ Erreur rÃƒÂ©cupÃƒÂ©ration orderbook {symbol}: {e}")
+            logger.error(f"' Erreur recuperation orderbook {symbol}: {e}")
             return None
     
     def get_recent_trades(self, symbol: str, limit: int = 100) -> Optional[List]:
         """
-        RÃƒÂ©cupÃƒÂ¨re les trades rÃƒÂ©cents
+        Recupere les trades recents
         
         Args:
             symbol: Symbole
             limit: Nombre de trades
             
         Returns:
-            Liste des trades rÃƒÂ©cents
+            Liste des trades recents
         """
         try:
             trades = self.client.get_recent_trades(symbol, limit=limit)
             return trades
             
         except Exception as e:
-            logger.error(f"Ã¢ÂÅ’ Erreur rÃƒÂ©cupÃƒÂ©ration trades {symbol}: {e}")
+            logger.error(f"' Erreur recuperation trades {symbol}: {e}")
             return None
     
     def _update_buffer(self, symbol: str, df: pd.DataFrame):
         """
-        Met ÃƒÂ  jour le buffer de donnÃƒÂ©es pour un symbole
+        Met  jour le buffer de donnees pour un symbole
         
         Args:
             symbol: Symbole
-            df: DataFrame avec les nouvelles donnÃƒÂ©es
+            df: DataFrame avec les nouvelles donnees
         """
         if symbol not in self.data_buffers:
             self.data_buffers[symbol] = deque(maxlen=self.buffer_size)
@@ -226,7 +228,7 @@ class MarketData:
     
     def get_from_buffer(self, symbol: str, limit: Optional[int] = None) -> pd.DataFrame:
         """
-        RÃƒÂ©cupÃƒÂ¨re les donnÃƒÂ©es depuis le buffer
+        Recupere les donnees depuis le buffer
         
         Args:
             symbol: Symbole
@@ -249,7 +251,7 @@ class MarketData:
     
     def get_latest_price(self, symbol: str) -> Optional[float]:
         """
-        RÃƒÂ©cupÃƒÂ¨re le dernier prix
+        Recupere le dernier prix
         
         Args:
             symbol: Symbole
@@ -264,11 +266,11 @@ class MarketData:
     
     def calculate_vwap(self, symbol: str, periods: int = 20) -> Optional[float]:
         """
-        Calcule le VWAP sur N pÃƒÂ©riodes
+        Calcule le VWAP sur N periodes
         
         Args:
             symbol: Symbole
-            periods: Nombre de pÃƒÂ©riodes
+            periods: Nombre de periodes
             
         Returns:
             VWAP ou None
@@ -285,14 +287,14 @@ class MarketData:
     
     def calculate_volatility(self, symbol: str, periods: int = 20) -> Optional[float]:
         """
-        Calcule la volatilitÃƒÂ© sur N pÃƒÂ©riodes
+        Calcule la volatilite sur N periodes
         
         Args:
             symbol: Symbole
-            periods: Nombre de pÃƒÂ©riodes
+            periods: Nombre de periodes
             
         Returns:
-            VolatilitÃƒÂ© (ÃƒÂ©cart-type des returns) ou None
+            Volatilite (ecart-type des returns) ou None
         """
         df = self.get_from_buffer(symbol, limit=periods + 1)
         
@@ -306,11 +308,11 @@ class MarketData:
     
     def get_price_change(self, symbol: str, periods: int = 1) -> Optional[float]:
         """
-        Calcule le changement de prix sur N pÃƒÂ©riodes
+        Calcule le changement de prix sur N periodes
         
         Args:
             symbol: Symbole
-            periods: Nombre de pÃƒÂ©riodes
+            periods: Nombre de periodes
             
         Returns:
             Changement en % ou None
@@ -333,22 +335,22 @@ class MarketData:
     def clear_cache(self):
         """Vide le cache"""
         self.cache.clear()
-        logger.info("Ã°Å¸Â§Â¹ Cache vidÃƒÂ©")
+        logger.info(" Cache vide")
     
     def clear_buffer(self, symbol: Optional[str] = None):
         """
         Vide le buffer
         
         Args:
-            symbol: Symbole spÃƒÂ©cifique ou None pour tous
+            symbol: Symbole specifique ou None pour tous
         """
         if symbol:
             if symbol in self.data_buffers:
                 self.data_buffers[symbol].clear()
-                logger.info(f"Ã°Å¸Â§Â¹ Buffer vidÃƒÂ©: {symbol}")
+                logger.info(f" Buffer vide: {symbol}")
         else:
             self.data_buffers.clear()
-            logger.info("Ã°Å¸Â§Â¹ Tous les buffers vidÃƒÂ©s")
+            logger.info(" Tous les buffers vides")
     
     def get_stats(self) -> Dict:
         """Retourne les statistiques"""
@@ -366,7 +368,7 @@ class MarketData:
         }
     
     def get_symbols_tracked(self) -> List[str]:
-        """Retourne la liste des symboles trackÃƒÂ©s"""
+        """Retourne la liste des symboles trackes"""
         return list(self.data_buffers.keys())
 
 
@@ -382,7 +384,7 @@ if __name__ == "__main__":
     # Mock du client
     class MockBinanceClient:
         def get_historical_klines(self, symbol, interval, limit):
-            # GÃƒÂ©nÃƒÂ©rer des donnÃƒÂ©es fictives
+            # Generer des donnees fictives
             now = int(time.time() * 1000)
             klines = []
             for i in range(limit):
@@ -415,31 +417,31 @@ if __name__ == "__main__":
         def get_recent_trades(self, symbol, limit):
             return [{'price': 50000, 'qty': 0.1, 'time': int(time.time() * 1000)}]
     
-    # CrÃƒÂ©er le market data
+    # Creer le market data
     client = MockBinanceClient()
     market_data = MarketData(client, {'buffer_size': 1000})
     
-    # Test 1: RÃƒÂ©cupÃƒÂ©ration klines
-    print("1Ã¯Â¸ÂÃ¢Æ’Â£ Test klines:")
+    # Test 1: Recuperation klines
+    print("1' Test klines:")
     df = market_data.get_klines('BTCUSDT', interval='5m', limit=100)
     print(f"   Shape: {df.shape}")
     print(f"   Columns: {list(df.columns)}")
     print(f"   Last price: ${df['close'].iloc[-1]:,.2f}")
     
     # Test 2: Cache
-    print("\n2Ã¯Â¸ÂÃ¢Æ’Â£ Test cache:")
+    print("\n2' Test cache:")
     df1 = market_data.get_klines('BTCUSDT', interval='5m', limit=100, use_cache=True)
     df2 = market_data.get_klines('BTCUSDT', interval='5m', limit=100, use_cache=True)
     stats = market_data.get_stats()
     print(f"   Cache hit rate: {stats['cache_hit_rate']:.1%}")
     
     # Test 3: Buffer
-    print("\n3Ã¯Â¸ÂÃ¢Æ’Â£ Test buffer:")
+    print("\n3' Test buffer:")
     buffer_df = market_data.get_from_buffer('BTCUSDT', limit=10)
     print(f"   Buffer size: {len(buffer_df)}")
     
     # Test 4: Calculs
-    print("\n4Ã¯Â¸ÂÃ¢Æ’Â£ Test calculs:")
+    print("\n4' Test calculs:")
     vwap = market_data.calculate_vwap('BTCUSDT', periods=20)
     vol = market_data.calculate_volatility('BTCUSDT', periods=20)
     change = market_data.get_price_change('BTCUSDT', periods=10)
@@ -448,7 +450,7 @@ if __name__ == "__main__":
     print(f"   Price change: {change:.2%}" if change else "   Price change: N/A")
     
     # Stats finales
-    print("\nÃ°Å¸â€œÅ  Statistiques:")
+    print("\n" Statistiques:")
     final_stats = market_data.get_stats()
     for key, value in final_stats.items():
         if isinstance(value, float):
@@ -456,4 +458,4 @@ if __name__ == "__main__":
         else:
             print(f"   {key}: {value}")
     
-    print("\nÃ¢Å“â€¦ Tests terminÃƒÂ©s")
+    print("\n""| Tests termines")
