@@ -1,6 +1,6 @@
 """
 Position Sizing Module pour The Bot
-Calcul optimisÃƒÂ© des tailles de position avec gestion du risque
+Calcul optimise des tailles de position avec gestion du risque
 """
 
 import numpy as np
@@ -18,27 +18,27 @@ from utils.constants import (
 
 logger = logging.getLogger(__name__)
 
-# ===== CONSTANTES MANQUANTES Ãƒâ‚¬ AJOUTER =====
-# Limites de position et corrÃƒÂ©lation
-MAX_CORRELATION_ALLOWED = 0.70  # CorrÃƒÂ©lation max tolÃƒÂ©rÃƒÂ©e entre positions
+# ===== CONSTANTES MANQUANTES  AJOUTER =====
+# Limites de position et correlation
+MAX_CORRELATION_ALLOWED = 0.70  # Correlation max toleree entre positions
 MIN_POSITION_SIZE_PCT = 0.01    # Taille minimum en % du capital (1%)
 MAX_POSITION_SIZE_PCT = 0.25    # Taille maximum en % du capital (25%)
 
 # Autres constantes utiles pour le module
-DEFAULT_RISK_PER_TRADE = 0.02   # Risque par dÃƒÂ©faut par trade (2%)
+DEFAULT_RISK_PER_TRADE = 0.02   # Risque par defaut par trade (2%)
 KELLY_FRACTION = 0.25            # Fraction de Kelly pour sizing
 MIN_TRADE_SIZE_USDC = 50.0      # Taille minimum Binance
 
 
 class PositionSizer:
     """
-    GÃƒÂ¨re le calcul de la taille des positions avec plusieurs mÃƒÂ©thodes
+    Gere le calcul de la taille des positions avec plusieurs methodes
     
-    MÃƒÂ©thodes supportÃƒÂ©es:
+    Methodes supportees:
     - Fixed Risk (risque fixe par trade)
-    - Kelly Criterion (optimal mais risquÃƒÂ©)
-    - Volatility-based (ajustÃƒÂ© ÃƒÂ  la volatilitÃƒÂ©)
-    - Risk Parity (ÃƒÂ©quilibrage du risque)
+    - Kelly Criterion (optimal mais risque)
+    - Volatility-based (ajuste  la volatilite)
+    - Risk Parity (equilibrage du risque)
     - Dynamic (combinaison adaptative)
     """
     
@@ -48,11 +48,11 @@ class PositionSizer:
         
         Args:
             config: Configuration incluant:
-                - initial_capital: Capital de dÃƒÂ©part
+                - initial_capital: Capital de depart
                 - risk_per_trade: Risque max par trade (ex: 0.02 pour 2%)
                 - max_position_size: Taille max d'une position (ex: 0.25 pour 25%)
                 - min_position_size: Taille min en USDC (ex: 50)
-                - kelly_fraction: Fraction de Kelly ÃƒÂ  utiliser (ex: 0.25)
+                - kelly_fraction: Fraction de Kelly  utiliser (ex: 0.25)
                 - use_dynamic_sizing: Utiliser sizing dynamique
         """
         self.config = config
@@ -63,7 +63,7 @@ class PositionSizer:
         self.kelly_fraction = config.get('kelly_fraction', 0.25)
         self.use_dynamic = config.get('use_dynamic_sizing', True)
         
-        # Ãƒâ€°tat du portfolio
+        # "tat du portfolio
         self.open_positions = {}
         self.total_exposure = 0
         self.current_drawdown = 0
@@ -75,7 +75,7 @@ class PositionSizer:
         self.avg_win = 0.01
         self.avg_loss = 0.01
         
-        logger.info(f"Position Sizer initialisÃƒÂ© - Capital: ${self.capital:,.2f}")
+        logger.info(f"Position Sizer initialise - Capital: ${self.capital:,.2f}")
     
     def calculate_position_size(self, 
                                signal: Dict,
@@ -89,35 +89,35 @@ class PositionSizer:
             signal: Signal de trading avec confidence, side, etc.
             current_price: Prix actuel de l'actif
             stop_loss_price: Prix du stop loss
-            market_conditions: Conditions de marchÃƒÂ© (volatilitÃƒÂ©, trend, etc.)
+            market_conditions: Conditions de marche (volatilite, trend, etc.)
             
         Returns:
             Dict avec:
                 - position_size_usdc: Taille en USDC
-                - position_size_units: Nombre d'unitÃƒÂ©s
-                - risk_amount: Montant risquÃƒÂ©
-                - method_used: MÃƒÂ©thode utilisÃƒÂ©e
-                - confidence_adjusted: Si ajustÃƒÂ© par confidence
+                - position_size_units: Nombre d'unites
+                - risk_amount: Montant risque
+                - method_used: Methode utilisee
+                - confidence_adjusted: Si ajuste par confidence
         """
         try:
             # Calcul du risque de base
             stop_loss_distance = abs(current_price - stop_loss_price) / current_price
             
             if stop_loss_distance == 0:
-                logger.warning("Stop loss distance = 0, utilisation du dÃƒÂ©faut")
-                stop_loss_distance = 0.003  # 0.3% dÃƒÂ©faut
+                logger.warning("Stop loss distance = 0, utilisation du defaut")
+                stop_loss_distance = 0.003  # 0.3% defaut
             
-            # Calculer avec diffÃƒÂ©rentes mÃƒÂ©thodes
+            # Calculer avec differentes methodes
             sizes = {}
             
-            # 1. Fixed Risk Method (mÃƒÂ©thode de base)
+            # 1. Fixed Risk Method (methode de base)
             sizes['fixed_risk'] = self._fixed_risk_sizing(stop_loss_distance)
             
             # 2. Kelly Criterion (si assez d'historique)
             if len(self.trade_history) >= 20:
                 sizes['kelly'] = self._kelly_sizing(signal.get('confidence', 0.65))
             
-            # 3. Volatility-based (si donnÃƒÂ©es disponibles)
+            # 3. Volatility-based (si donnees disponibles)
             if market_conditions and 'volatility' in market_conditions:
                 sizes['volatility'] = self._volatility_sizing(
                     market_conditions['volatility'],
@@ -128,7 +128,7 @@ class PositionSizer:
             if len(self.open_positions) > 0:
                 sizes['risk_parity'] = self._risk_parity_sizing(signal['symbol'])
             
-            # SÃƒÂ©lection de la taille finale
+            # Selection de la taille finale
             if self.use_dynamic:
                 final_size = self._dynamic_sizing(sizes, signal, market_conditions)
             else:
@@ -144,10 +144,10 @@ class PositionSizer:
             # Contraintes absolues
             final_size = self._apply_constraints(final_size)
             
-            # Calculer le nombre d'unitÃƒÂ©s
+            # Calculer le nombre d'unites
             position_units = final_size / current_price
             
-            # Montant risquÃƒÂ©
+            # Montant risque
             risk_amount = final_size * stop_loss_distance
             
             result = {
@@ -160,14 +160,14 @@ class PositionSizer:
                 'methods_calculated': sizes
             }
             
-            logger.info(f"Position calculÃƒÂ©e: ${result['position_size_usdc']:.2f} "
+            logger.info(f"Position calculee: ${result['position_size_usdc']:.2f} "
                        f"(Risk: ${result['risk_amount']:.2f} = {result['risk_percent']:.2%})")
             
             return result
             
         except Exception as e:
             logger.error(f"Erreur calcul position: {e}")
-            # Retour sÃƒÂ©curitaire
+            # Retour securitaire
             return {
                 'position_size_usdc': self.min_position_usdc,
                 'position_size_units': self.min_position_usdc / current_price,
@@ -179,7 +179,7 @@ class PositionSizer:
     
     def _fixed_risk_sizing(self, stop_loss_distance: float) -> float:
         """
-        MÃƒÂ©thode de risque fixe : risque toujours le mÃƒÂªme % du capital
+        Methode de risque fixe : risque toujours le meme % du capital
         
         Args:
             stop_loss_distance: Distance au stop loss en %
@@ -196,13 +196,13 @@ class PositionSizer:
         """
         Kelly Criterion pour taille optimale
         f* = (p*b - q) / b
-        oÃƒÂ¹:
-        - p = probabilitÃƒÂ© de gain
-        - q = probabilitÃƒÂ© de perte (1-p)
+        o:
+        - p = probabilite de gain
+        - q = probabilite de perte (1-p)
         - b = ratio gain/perte
         
         Args:
-            win_probability: ProbabilitÃƒÂ© de succÃƒÂ¨s estimÃƒÂ©e
+            win_probability: Probabilite de succes estimee
             
         Returns:
             Taille de position en USDC
@@ -229,16 +229,16 @@ class PositionSizer:
     
     def _volatility_sizing(self, volatility: float, stop_loss_distance: float) -> float:
         """
-        Sizing basÃƒÂ© sur la volatilitÃƒÂ© : moins de taille si marchÃƒÂ© volatil
+        Sizing base sur la volatilite : moins de taille si marche volatil
         
         Args:
-            volatility: VolatilitÃƒÂ© actuelle (ATR/prix par exemple)
+            volatility: Volatilite actuelle (ATR/prix par exemple)
             stop_loss_distance: Distance au stop loss
             
         Returns:
             Taille de position en USDC
         """
-        # VolatilitÃƒÂ© cible (2% par jour est raisonnable)
+        # Volatilite cible (2% par jour est raisonnable)
         target_volatility = 0.02
         
         # Ajustement
@@ -251,14 +251,14 @@ class PositionSizer:
         # Position de base
         base_position = self.capital * self.risk_per_trade / stop_loss_distance
         
-        # Ajuster par volatilitÃƒÂ©
+        # Ajuster par volatilite
         position_size = base_position * volatility_scalar
         
         return position_size
     
     def _risk_parity_sizing(self, symbol: str) -> float:
         """
-        Risk Parity : ÃƒÂ©quilibrer le risque entre toutes les positions
+        Risk Parity : equilibrer le risque entre toutes les positions
         
         Args:
             symbol: Symbole de la nouvelle position
@@ -272,13 +272,13 @@ class PositionSizer:
         # Capital disponible
         available_capital = self.capital - self.total_exposure
         
-        # Allouer ÃƒÂ©quitablement le risque
+        # Allouer equitablement le risque
         risk_per_position = self.risk_per_trade * self.capital / total_positions
         
-        # Convertir en taille de position (assume stop loss ÃƒÂ  2%)
+        # Convertir en taille de position (assume stop loss  2%)
         position_size = risk_per_position / 0.02
         
-        # Ne pas dÃƒÂ©passer le capital disponible
+        # Ne pas depasser le capital disponible
         position_size = min(position_size, available_capital * 0.9)
         
         return position_size
@@ -288,12 +288,12 @@ class PositionSizer:
                        signal: Dict,
                        market_conditions: Optional[Dict]) -> float:
         """
-        Combine intelligemment plusieurs mÃƒÂ©thodes selon les conditions
+        Combine intelligemment plusieurs methodes selon les conditions
         
         Args:
-            sizes: Dict des tailles calculÃƒÂ©es par diffÃƒÂ©rentes mÃƒÂ©thodes
+            sizes: Dict des tailles calculees par differentes methodes
             signal: Signal de trading
-            market_conditions: Conditions de marchÃƒÂ©
+            market_conditions: Conditions de marche
             
         Returns:
             Taille finale en USDC
@@ -301,7 +301,7 @@ class PositionSizer:
         weights = {}
         
         # Poids de base
-        weights['fixed_risk'] = 0.4  # Toujours inclure pour stabilitÃƒÂ©
+        weights['fixed_risk'] = 0.4  # Toujours inclure pour stabilite
         
         # Kelly si disponible et win rate bon
         if 'kelly' in sizes and self.win_rate > 0.55:
@@ -318,7 +318,7 @@ class PositionSizer:
         # Ajuster les poids selon la confiance du signal
         confidence = signal.get('confidence', 0.65)
         if confidence > 0.8:
-            # Augmenter le poids de Kelly si trÃƒÂ¨s confiant
+            # Augmenter le poids de Kelly si tres confiant
             if 'kelly' in weights:
                 weights['kelly'] *= 1.5
         elif confidence < 0.6:
@@ -330,7 +330,7 @@ class PositionSizer:
         if total_weight > 0:
             weights = {k: v/total_weight for k, v in weights.items()}
         
-        # Calculer la moyenne pondÃƒÂ©rÃƒÂ©e
+        # Calculer la moyenne ponderee
         final_size = sum(sizes.get(method, 0) * weight 
                         for method, weight in weights.items())
         
@@ -343,33 +343,33 @@ class PositionSizer:
                           signal: Dict,
                           market_conditions: Optional[Dict]) -> float:
         """
-        Applique des ajustements contextuels ÃƒÂ  la taille
+        Applique des ajustements contextuels  la taille
         
         Args:
             size: Taille de base
             signal: Signal de trading
-            market_conditions: Conditions de marchÃƒÂ©
+            market_conditions: Conditions de marche
             
         Returns:
-            Taille ajustÃƒÂ©e
+            Taille ajustee
         """
         adjusted_size = size
         
         # 1. Ajustement par confidence du signal
         confidence = signal.get('confidence', 0.65)
         if confidence > 0.8:
-            adjusted_size *= 1.2  # +20% si trÃƒÂ¨s confiant
+            adjusted_size *= 1.2  # +20% si tres confiant
         elif confidence < 0.6:
             adjusted_size *= 0.7  # -30% si peu confiant
         
         # 2. Ajustement par drawdown
         if self.current_drawdown > 0.05:  # Drawdown > 5%
-            # RÃƒÂ©duire progressivement
-            reduction = min(self.current_drawdown * 2, 0.5)  # Max 50% rÃƒÂ©duction
+            # Reduire progressivement
+            reduction = min(self.current_drawdown * 2, 0.5)  # Max 50% reduction
             adjusted_size *= (1 - reduction)
-            logger.info(f"RÃƒÂ©duction pour drawdown: -{reduction:.1%}")
+            logger.info(f"Reduction pour drawdown: -{reduction:.1%}")
         
-        # 3. Ajustement par conditions de marchÃƒÂ©
+        # 3. Ajustement par conditions de marche
         if market_conditions:
             # Trend fort
             if market_conditions.get('trend_strength', 0) > 0.7:
@@ -378,24 +378,24 @@ class PositionSizer:
                 else:
                     adjusted_size *= 0.8  # -20% contre trend
             
-            # Haute volatilitÃƒÂ©
-            if market_conditions.get('volatility', 0) > 0.05:  # > 5% volatilitÃƒÂ©
-                adjusted_size *= 0.8  # RÃƒÂ©duire en pÃƒÂ©riode volatile
+            # Haute volatilite
+            if market_conditions.get('volatility', 0) > 0.05:  # > 5% volatilite
+                adjusted_size *= 0.8  # Reduire en periode volatile
         
         # 4. Ajustement par nombre de positions ouvertes
         if len(self.open_positions) > 10:
-            # RÃƒÂ©duire si trop de positions
+            # Reduire si trop de positions
             adjusted_size *= 0.9
         elif len(self.open_positions) < 3:
             # Augmenter si peu de positions
             adjusted_size *= 1.1
         
-        # 5. Ajustement par performance rÃƒÂ©cente
+        # 5. Ajustement par performance recente
         recent_performance = self._calculate_recent_performance(10)
         if recent_performance > 0.1:  # +10% sur 10 derniers trades
-            adjusted_size *= 1.15  # Augmenter aprÃƒÂ¨s bonne perf
+            adjusted_size *= 1.15  # Augmenter apres bonne perf
         elif recent_performance < -0.05:  # -5% sur 10 derniers
-            adjusted_size *= 0.85  # RÃƒÂ©duire aprÃƒÂ¨s mauvaise perf
+            adjusted_size *= 0.85  # Reduire apres mauvaise perf
         
         return adjusted_size
     
@@ -404,7 +404,7 @@ class PositionSizer:
         Applique les contraintes absolues
         
         Args:
-            size: Taille calculÃƒÂ©e
+            size: Taille calculee
             
         Returns:
             Taille contrainte
@@ -420,7 +420,7 @@ class PositionSizer:
         available = self.capital - self.total_exposure
         size = min(size, available * 0.95)  # Garder 5% de marge
         
-        # Arrondir ÃƒÂ  2 dÃƒÂ©cimales
+        # Arrondir  2 decimales
         size = round(size, 2)
         
         return size
@@ -430,7 +430,7 @@ class PositionSizer:
         Calcule la performance sur les n derniers trades
         
         Args:
-            n_trades: Nombre de trades ÃƒÂ  considÃƒÂ©rer
+            n_trades: Nombre de trades  considerer
             
         Returns:
             Performance en %
@@ -445,21 +445,21 @@ class PositionSizer:
     
     def update_capital(self, new_capital: float):
         """
-        Met ÃƒÂ  jour le capital disponible
+        Met  jour le capital disponible
         
         Args:
             new_capital: Nouveau capital
         """
         self.capital = new_capital
         
-        # Mettre ÃƒÂ  jour le peak pour drawdown
+        # Mettre  jour le peak pour drawdown
         if new_capital > self.peak_capital:
             self.peak_capital = new_capital
             self.current_drawdown = 0
         else:
             self.current_drawdown = (self.peak_capital - new_capital) / self.peak_capital
         
-        logger.info(f"Capital mis ÃƒÂ  jour: ${new_capital:.2f} (DD: {self.current_drawdown:.2%})")
+        logger.info(f"Capital mis  jour: ${new_capital:.2f} (DD: {self.current_drawdown:.2%})")
     
     def register_position(self, 
                          symbol: str,
@@ -472,7 +472,7 @@ class PositionSizer:
         Args:
             symbol: Symbole
             size_usdc: Taille en USDC
-            entry_price: Prix d'entrÃƒÂ©e
+            entry_price: Prix d'entree
             side: BUY ou SELL
         """
         self.open_positions[symbol] = {
@@ -484,7 +484,7 @@ class PositionSizer:
         
         self.total_exposure += size_usdc
         
-        logger.info(f"Position enregistrÃƒÂ©e: {symbol} ${size_usdc:.2f} @ {entry_price}")
+        logger.info(f"Position enregistree: {symbol} ${size_usdc:.2f} @ {entry_price}")
         logger.info(f"Exposition totale: ${self.total_exposure:.2f} ({self.total_exposure/self.capital:.1%})")
     
     def close_position(self,
@@ -492,7 +492,7 @@ class PositionSizer:
                        exit_price: float,
                        profit_pct: float):
         """
-        Ferme une position et met ÃƒÂ  jour les stats
+        Ferme une position et met  jour les stats
         
         Args:
             symbol: Symbole
@@ -502,10 +502,10 @@ class PositionSizer:
         if symbol in self.open_positions:
             position = self.open_positions[symbol]
             
-            # Mettre ÃƒÂ  jour l'exposition
+            # Mettre  jour l'exposition
             self.total_exposure -= position['size_usdc']
             
-            # Ajouter ÃƒÂ  l'historique
+            # Ajouter  l'historique
             self.trade_history.append({
                 'symbol': symbol,
                 'entry_price': position['entry_price'],
@@ -515,16 +515,16 @@ class PositionSizer:
                 'side': position['side']
             })
             
-            # Mettre ÃƒÂ  jour les stats
+            # Mettre  jour les stats
             self._update_stats()
             
             # Retirer la position
             del self.open_positions[symbol]
             
-            logger.info(f"Position fermÃƒÂ©e: {symbol} @ {exit_price} ({profit_pct:+.2%})")
+            logger.info(f"Position fermee: {symbol} @ {exit_price} ({profit_pct:+.2%})")
     
     def _update_stats(self):
-        """Met ÃƒÂ  jour les statistiques de trading"""
+        """Met  jour les statistiques de trading"""
         if len(self.trade_history) == 0:
             return
         
@@ -598,7 +598,7 @@ if __name__ == "__main__":
     result = sizer.calculate_position_size(
         signal=signal,
         current_price=50000,
-        stop_loss_price=49000  # Stop ÃƒÂ  -2%
+        stop_loss_price=49000  # Stop  -2%
     )
     
     print(f"Position size: ${result['position_size_usdc']:.2f}")
@@ -606,12 +606,12 @@ if __name__ == "__main__":
     print(f"Risk percent: {result['risk_percent']:.2%}")
     print(f"Method: {result['method_used']}")
     
-    # Test 2: Avec conditions de marchÃƒÂ©
+    # Test 2: Avec conditions de marche
     print("\n" + "=" * 50)
-    print("TEST 2: Avec conditions de marchÃƒÂ©")
+    print("TEST 2: Avec conditions de marche")
     
     market_conditions = {
-        'volatility': 0.03,  # 3% volatilitÃƒÂ©
+        'volatility': 0.03,  # 3% volatilite
         'trend_strength': 0.8,
         'trend_direction': 'BUY'
     }
@@ -619,20 +619,20 @@ if __name__ == "__main__":
     result = sizer.calculate_position_size(
         signal=signal,
         current_price=50000,
-        stop_loss_price=49500,  # Stop plus serrÃƒÂ©
+        stop_loss_price=49500,  # Stop plus serre
         market_conditions=market_conditions
     )
     
     print(f"Position size: ${result['position_size_usdc']:.2f}")
-    print(f"MÃƒÂ©thodes calculÃƒÂ©es: {result.get('methods_calculated', {})}")
+    print(f"Methodes calculees: {result.get('methods_calculated', {})}")
     
-    # Test 3: AprÃƒÂ¨s plusieurs trades
+    # Test 3: Apres plusieurs trades
     print("\n" + "=" * 50)
-    print("TEST 3: AprÃƒÂ¨s historique de trades")
+    print("TEST 3: Apres historique de trades")
     
     # Simuler des trades
     for i in range(10):
-        profit = np.random.randn() * 0.02  # Ã‚Â±2%
+        profit = np.random.randn() * 0.02  # 2%
         sizer.trade_history.append({
             'profit_pct': profit
         })
