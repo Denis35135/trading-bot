@@ -1,6 +1,6 @@
 """
 Alert Manager
-GÃƒÂ¨re les alertes et notifications du systÃƒÂ¨me
+Gere les alertes et notifications du systeme
 """
 
 import logging
@@ -22,9 +22,9 @@ class AlertLevel(Enum):
 
 class AlertManager:
     """
-    Gestionnaire d'alertes centralisÃƒÂ©
+    Gestionnaire d'alertes centralise
     
-    FonctionnalitÃƒÂ©s:
+    Fonctionnalites:
     - Alertes multi-niveaux
     - Rate limiting (pas de spam)
     - Historique des alertes
@@ -44,8 +44,8 @@ class AlertManager:
             'max_history': 1000,
             'enable_console': True,
             'enable_file': True,
-            'enable_email': False,  # Ãƒâ‚¬ activer avec config SMTP
-            'enable_telegram': False  # Ãƒâ‚¬ activer avec bot token
+            'enable_email': False,  #  activer avec config SMTP
+            'enable_telegram': False  #  activer avec bot token
         }
         
         if config:
@@ -63,7 +63,7 @@ else:
         self.alert_history = deque(maxlen=self.config['max_history'])
         self.last_alert_times = {}  # {alert_key: timestamp}
         
-        # Handlers personnalisÃƒÂ©s
+        # Handlers personnalises
         self.custom_handlers = []
         
         # Stats
@@ -78,10 +78,12 @@ else:
             'suppressed_alerts': 0
         }
         
-        logger.info("Ã°Å¸â€â€ Alert Manager initialisÃƒÂ©")
+        logger.info(""" Alert Manager initialise")
     
     def send_alert(
-        self,
+    """
+    self,
+    """
         title: str,
         message: str,
         level: AlertLevel = AlertLevel.INFO,
@@ -93,21 +95,21 @@ else:
         
         Args:
             title: Titre de l'alerte
-            message: Message dÃƒÂ©taillÃƒÂ©
+            message: Message detaille
             level: Niveau d'alerte
-            category: CatÃƒÂ©gorie (trading, system, risk, etc.)
-            data: DonnÃƒÂ©es supplÃƒÂ©mentaires
+            category: Categorie (trading, system, risk, etc.)
+            data: Donnees supplementaires
         """
-        # CrÃƒÂ©er une clÃƒÂ© pour rate limiting
+        # Creer une cle pour rate limiting
         alert_key = f"{category}_{title}"
         
-        # VÃƒÂ©rifier rate limiting
+        # Verifier rate limiting
         if self._should_suppress(alert_key, level):
             self.stats['suppressed_alerts'] += 1
-            logger.debug(f"Alerte supprimÃƒÂ©e (rate limit): {title}")
+            logger.debug(f"Alerte supprimee (rate limit): {title}")
             return
         
-        # CrÃƒÂ©er l'alerte
+        # Creer l'alerte
         alert = {
             'timestamp': datetime.now(),
             'title': title,
@@ -117,17 +119,17 @@ else:
             'data': data or {}
         }
         
-        # Ajouter ÃƒÂ  l'historique
+        # Ajouter  l'historique
         self.alert_history.append(alert)
         
-        # Mettre ÃƒÂ  jour les stats
+        # Mettre  jour les stats
         self.stats['total_alerts'] += 1
         self.stats['alerts_by_level'][level] += 1
         
-        # Mettre ÃƒÂ  jour le rate limiting
+        # Mettre  jour le rate limiting
         self.last_alert_times[alert_key] = datetime.now()
         
-        # Envoyer via les diffÃƒÂ©rents canaux
+        # Envoyer via les differents canaux
         self._send_to_handlers(alert)
         
         # Log selon le niveau
@@ -144,16 +146,16 @@ else:
     
     def _should_suppress(self, alert_key: str, level: AlertLevel) -> bool:
         """
-        VÃƒÂ©rifie si l'alerte doit ÃƒÂªtre supprimÃƒÂ©e (rate limiting)
+        Verifie si l'alerte doit etre supprimee (rate limiting)
         
         Args:
-            alert_key: ClÃƒÂ© de l'alerte
+            alert_key: Cle de l'alerte
             level: Niveau
             
         Returns:
-            True si doit ÃƒÂªtre supprimÃƒÂ©e
+            True si doit etre supprimee
         """
-        # Les alertes CRITICAL ne sont jamais supprimÃƒÂ©es
+        # Les alertes CRITICAL ne sont jamais supprimees
         if level == AlertLevel.CRITICAL:
             return False
         
@@ -166,17 +168,17 @@ else:
         return elapsed < self.config['rate_limit_seconds']
     
     def _send_to_handlers(self, alert: Dict):
-        """Envoie l'alerte ÃƒÂ  tous les handlers activÃƒÂ©s"""
-        # Console (toujours activÃƒÂ©)
+        """Envoie l'alerte  tous les handlers actives"""
+        # Console (toujours active)
         if self.config['enable_console']:
             self._send_to_console(alert)
         
-        # Handlers personnalisÃƒÂ©s
+        # Handlers personnalises
         for handler in self.custom_handlers:
             try:
                 handler(alert)
             except Exception as e:
-                logger.error(f"Erreur handler personnalisÃƒÂ©: {e}")
+                logger.error(f"Erreur handler personnalise: {e}")
     
     def _send_to_console(self, alert: Dict):
         """Affiche l'alerte en console avec formatage"""
@@ -184,13 +186,13 @@ else:
         
         # Emoji selon le niveau
         emoji_map = {
-            AlertLevel.INFO: Ã¢â€žÂ¹Ã¯Â¸Â',
-            AlertLevel.WARNING: 'Ã¢Å¡Â Ã¯Â¸Â',
-            AlertLevel.ERROR: 'Ã¢ÂÅ’',
-            AlertLevel.CRITICAL: 'Ã°Å¸Å¡Â¨'
+            AlertLevel.INFO: "',
+            AlertLevel.WARNING: '',
+            AlertLevel.ERROR: ''',
+            AlertLevel.CRITICAL: ''
         }
         
-        emoji = emoji_map.get(level, 'Ã¢â€žÂ¹Ã¯Â¸Â')
+        emoji = emoji_map.get(level, '"')
         timestamp = alert['timestamp'].strftime('%H:%M:%S')
         
         print(f"\n{emoji} [{timestamp}] {alert['title']}")
@@ -201,13 +203,13 @@ else:
     
     def add_handler(self, handler: Callable):
         """
-        Ajoute un handler personnalisÃƒÂ©
+        Ajoute un handler personnalise
         
         Args:
-            handler: Fonction qui prend un dict alert en paramÃƒÂ¨tre
+            handler: Fonction qui prend un dict alert en parametre
         """
         self.custom_handlers.append(handler)
-        logger.info(f"Handler personnalisÃƒÂ© ajoutÃƒÂ© ({len(self.custom_handlers)} total)")
+        logger.info(f"Handler personnalise ajoute ({len(self.custom_handlers)} total)")
     
     def get_recent_alerts(
         self,
@@ -216,12 +218,12 @@ else:
         category: str = None
     ) -> List[Dict]:
         """
-        Retourne les alertes rÃƒÂ©centes
+        Retourne les alertes recentes
         
         Args:
             count: Nombre d'alertes
             level: Filtrer par niveau
-            category: Filtrer par catÃƒÂ©gorie
+            category: Filtrer par categorie
             
         Returns:
             Liste d'alertes
@@ -232,22 +234,22 @@ else:
         if level:
             alerts = [a for a in alerts if a['level'] == level]
         
-        # Filtrer par catÃƒÂ©gorie
+        # Filtrer par categorie
         if category:
             alerts = [a for a in alerts if a['category'] == category]
         
-        # Retourner les N plus rÃƒÂ©centes
+        # Retourner les N plus recentes
         return alerts[-count:]
     
     def get_alert_summary(self, hours: int = 24) -> Dict:
         """
-        RÃƒÂ©sumÃƒÂ© des alertes sur une pÃƒÂ©riode
+        Resume des alertes sur une periode
         
         Args:
             hours: Nombre d'heures
             
         Returns:
-            Dict avec rÃƒÂ©sumÃƒÂ©
+            Dict avec resume
         """
         cutoff = datetime.now() - timedelta(hours=hours)
         
@@ -264,7 +266,7 @@ else:
             'by_category': {}
         }
         
-        # Compter par catÃƒÂ©gorie
+        # Compter par categorie
         for alert in recent:
             cat = alert['category']
             summary['by_category'][cat] = summary['by_category'].get(cat, 0) + 1
@@ -275,7 +277,7 @@ else:
         """Efface l'historique des alertes"""
         self.alert_history.clear()
         self.last_alert_times.clear()
-        logger.info("Historique des alertes effacÃƒÂ©")
+        logger.info("Historique des alertes efface")
     
     def get_stats(self) -> Dict:
         """Retourne les statistiques"""
@@ -313,7 +315,7 @@ def alert_trade_closed(manager: AlertManager, symbol: str, pnl: float, pnl_pct: 
 
 
 def alert_drawdown_warning(manager: AlertManager, drawdown: float):
-    """Alerte pour drawdown ÃƒÂ©levÃƒÂ©"""
+    """Alerte pour drawdown eleve"""
     if drawdown > 0.08:
         level = AlertLevel.CRITICAL
     elif drawdown > 0.06:
@@ -331,7 +333,7 @@ def alert_drawdown_warning(manager: AlertManager, drawdown: float):
 
 
 def alert_system_error(manager: AlertManager, error: str, details: str = None):
-    """Alerte pour erreur systÃƒÂ¨me"""
+    """Alerte pour erreur systeme"""
     manager.send_alert(
         title="System Error",
         message=f"{error}" + (f" - {details}" if details else ""),
@@ -353,7 +355,7 @@ if __name__ == "__main__":
     print("Test Alert Manager")
     print("=" * 50)
     
-    # Test 1: Alertes de diffÃƒÂ©rents niveaux
+    # Test 1: Alertes de differents niveaux
     print("\n1. Test alertes multi-niveaux:")
     manager.send_alert(
         "Test Info",
@@ -391,8 +393,8 @@ if __name__ == "__main__":
     alert_trade_opened(manager, 'BTCUSDC', 'BUY', 0.1, 50000)
     alert_trade_closed(manager, 'BTCUSDC', 150, 0.03)
     
-    # Test 4: RÃƒÂ©sumÃƒÂ©
-    print("\n4. RÃƒÂ©sumÃƒÂ© des alertes:")
+    # Test 4: Resume
+    print("\n4. Resume des alertes:")
     summary = manager.get_alert_summary(24)
     print(f"   Total: {summary['total']}")
     print(f"   Par niveau: {summary['by_level']}")
