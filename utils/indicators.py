@@ -1,5 +1,5 @@
 """
-Indicateurs techniques optimisÃƒÂ©s pour The Bot
+Indicateurs techniques optimises pour The Bot
 Utilise NumPy pour performances maximales
 """
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class TechnicalIndicators:
     """
-    Classe contenant tous les indicateurs techniques optimisÃƒÂ©s
+    Classe contenant tous les indicateurs techniques optimises
     Utilise NumPy pour des calculs ultra-rapides
     """
     
@@ -24,7 +24,7 @@ class TechnicalIndicators:
         
         Args:
             data: Prix ou array
-            period: PÃƒÂ©riode de la moyenne
+            period: Periode de la moyenne
             
         Returns:
             Array des SMA
@@ -33,7 +33,7 @@ class TechnicalIndicators:
             data = data.values
         
         sma = np.convolve(data, np.ones(period)/period, mode='valid')
-        # Pad avec NaN pour garder la mÃƒÂªme longueur
+        # Pad avec NaN pour garder la meme longueur
         return np.concatenate([np.full(period-1, np.nan), sma])
     
     @staticmethod
@@ -43,7 +43,7 @@ class TechnicalIndicators:
         
         Args:
             data: Prix ou array
-            period: PÃƒÂ©riode
+            period: Periode
             
         Returns:
             Array des EMA
@@ -66,8 +66,8 @@ class TechnicalIndicators:
         Relative Strength Index
         
         Args:
-            data: Prix de clÃƒÂ´ture
-            period: PÃƒÂ©riode (dÃƒÂ©faut 14)
+            data: Prix de clture
+            period: Periode (defaut 14)
             
         Returns:
             Array des RSI (0-100)
@@ -79,7 +79,7 @@ class TechnicalIndicators:
         deltas = np.diff(data)
         seed = deltas[:period+1]
         
-        # SÃƒÂ©parer gains et pertes
+        # Separer gains et pertes
         up = seed[seed >= 0].sum() / period
         down = -seed[seed < 0].sum() / period
         
@@ -123,10 +123,10 @@ class TechnicalIndicators:
         MACD (Moving Average Convergence Divergence)
         
         Args:
-            data: Prix de clÃƒÂ´ture
-            fast: PÃƒÂ©riode EMA rapide (12)
-            slow: PÃƒÂ©riode EMA lente (26)
-            signal: PÃƒÂ©riode signal (9)
+            data: Prix de clture
+            fast: Periode EMA rapide (12)
+            slow: Periode EMA lente (26)
+            signal: Periode signal (9)
             
         Returns:
             Tuple (macd_line, signal_line, histogram)
@@ -161,9 +161,9 @@ class TechnicalIndicators:
         Bollinger Bands
         
         Args:
-            data: Prix de clÃƒÂ´ture
-            period: PÃƒÂ©riode SMA (20)
-            std_dev: Nombre d'ÃƒÂ©carts-types (2)
+            data: Prix de clture
+            period: Periode SMA (20)
+            std_dev: Nombre d'ecarts-types (2)
             
         Returns:
             Tuple (upper_band, middle_band, lower_band)
@@ -174,7 +174,7 @@ class TechnicalIndicators:
         # Middle band (SMA)
         middle = TechnicalIndicators.sma(data, period)
         
-        # Calcul de l'ÃƒÂ©cart-type
+        # Calcul de l'ecart-type
         std = np.zeros_like(data)
         for i in range(period-1, len(data)):
             std[i] = np.std(data[i-period+1:i+1])
@@ -191,13 +191,13 @@ class TechnicalIndicators:
             close: np.ndarray, 
             period: int = 14) -> np.ndarray:
         """
-        Average True Range (volatilitÃƒÂ©)
+        Average True Range (volatilite)
         
         Args:
             high: Prix hauts
             low: Prix bas
-            close: Prix de clÃƒÂ´ture
-            period: PÃƒÂ©riode (14)
+            close: Prix de clture
+            period: Periode (14)
             
         Returns:
             Array des ATR
@@ -208,7 +208,7 @@ class TechnicalIndicators:
         lc = np.abs(low - np.roll(close, 1))
         
         tr = np.maximum(hl, np.maximum(hc, lc))
-        tr[0] = hl[0]  # Premier ÃƒÂ©lÃƒÂ©ment
+        tr[0] = hl[0]  # Premier element
         
         # ATR
         atr = np.zeros_like(tr)
@@ -234,8 +234,8 @@ class TechnicalIndicators:
         Args:
             high: Prix hauts
             low: Prix bas
-            close: Prix de clÃƒÂ´ture
-            period: PÃƒÂ©riode lookback (14)
+            close: Prix de clture
+            period: Periode lookback (14)
             smooth_k: Lissage %K (3)
             smooth_d: Lissage %D (3)
             
@@ -279,8 +279,8 @@ class TechnicalIndicators:
         Args:
             high: Prix hauts
             low: Prix bas
-            close: Prix de clÃƒÂ´ture
-            period: PÃƒÂ©riode (14)
+            close: Prix de clture
+            period: Periode (14)
             
         Returns:
             Array des ADX (0-100)
@@ -319,7 +319,7 @@ class TechnicalIndicators:
         On Balance Volume
         
         Args:
-            close: Prix de clÃƒÂ´ture
+            close: Prix de clture
             volume: Volumes
             
         Returns:
@@ -350,9 +350,9 @@ class TechnicalIndicators:
         Args:
             high: Prix hauts
             low: Prix bas
-            close: Prix de clÃƒÂ´ture
+            close: Prix de clture
             volume: Volumes
-            period: PÃƒÂ©riode (14)
+            period: Periode (14)
             
         Returns:
             Array des MFI (0-100)
@@ -397,7 +397,7 @@ class TechnicalIndicators:
         Args:
             high: Prix hauts
             low: Prix bas
-            close: Prix de clÃƒÂ´ture
+            close: Prix de clture
             volume: Volumes
             
         Returns:
@@ -417,13 +417,13 @@ class TechnicalIndicators:
                           close: np.ndarray, 
                           window: int = 20) -> Tuple[List[float], List[float]]:
         """
-        DÃƒÂ©tecte les niveaux de support et rÃƒÂ©sistance
+        Detecte les niveaux de support et resistance
         
         Args:
             high: Prix hauts
             low: Prix bas  
-            close: Prix de clÃƒÂ´ture
-            window: FenÃƒÂªtre de dÃƒÂ©tection
+            close: Prix de clture
+            window: Fenetre de detection
             
         Returns:
             Tuple (supports, resistances)
@@ -431,7 +431,7 @@ class TechnicalIndicators:
         supports = []
         resistances = []
         
-        # DÃƒÂ©tection des pivots
+        # Detection des pivots
         for i in range(window, len(close) - window):
             # Resistance: high local maximum
             if high[i] == np.max(high[i-window:i+window+1]):
@@ -441,7 +441,7 @@ class TechnicalIndicators:
             if low[i] == np.min(low[i-window:i+window+1]):
                 supports.append(low[i])
         
-        # Regrouper les niveaux proches (Ã‚Â± 0.5%)
+        # Regrouper les niveaux proches ( 0.5%)
         def cluster_levels(levels, threshold=0.005):
             if not levels:
                 return []
@@ -497,9 +497,9 @@ class TechnicalIndicators:
         Calcule les points pivots
         
         Args:
-            high: High de la pÃƒÂ©riode prÃƒÂ©cÃƒÂ©dente
-            low: Low de la pÃƒÂ©riode prÃƒÂ©cÃƒÂ©dente
-            close: Close de la pÃƒÂ©riode prÃƒÂ©cÃƒÂ©dente
+            high: High de la periode precedente
+            low: Low de la periode precedente
+            close: Close de la periode precedente
             
         Returns:
             Dict avec les niveaux pivots
@@ -525,10 +525,10 @@ class TechnicalIndicators:
         
         Args:
             df: DataFrame avec OHLCV
-            config: Configuration des pÃƒÂ©riodes (optionnel)
+            config: Configuration des periodes (optionnel)
             
         Returns:
-            DataFrame avec tous les indicateurs ajoutÃƒÂ©s
+            DataFrame avec tous les indicateurs ajoutes
         """
         if config is None:
             config = {
@@ -570,7 +570,7 @@ class TechnicalIndicators:
         result['bb_middle'] = middle
         result['bb_lower'] = lower
         
-        # ATR (volatilitÃƒÂ©)
+        # ATR (volatilite)
         result['atr'] = TechnicalIndicators.atr(high, low, close, config['atr_period'])
         
         # Stochastic
@@ -590,7 +590,7 @@ class TechnicalIndicators:
         # VWAP
         result['vwap'] = TechnicalIndicators.vwap(high, low, close, volume)
         
-        logger.info(f"Ã¢Å“â€¦ {len(config)} indicateurs calculÃƒÂ©s")
+        logger.info(f"""| {len(config)} indicateurs calcules")
         
         return result
 
@@ -601,12 +601,12 @@ class TechnicalIndicators:
 
 def detect_divergence(price: np.ndarray, indicator: np.ndarray, window: int = 14) -> str:
     """
-    DÃƒÂ©tecte les divergences entre prix et indicateur
+    Detecte les divergences entre prix et indicateur
     
     Args:
         price: Array des prix
         indicator: Array de l'indicateur
-        window: FenÃƒÂªtre de dÃƒÂ©tection
+        window: Fenetre de detection
         
     Returns:
         'bullish', 'bearish' ou 'none'
@@ -653,17 +653,17 @@ def trend_strength(prices: np.ndarray, period: int = 20) -> float:
     
     Args:
         prices: Array des prix
-        period: PÃƒÂ©riode d'analyse
+        period: Periode d'analyse
         
     Returns:
-        Score de 0 (pas de tendance) ÃƒÂ  1 (forte tendance)
+        Score de 0 (pas de tendance)  1 (forte tendance)
     """
     if len(prices) < period:
         return 0.0
     
     recent = prices[-period:]
     
-    # RÃƒÂ©gression linÃƒÂ©aire
+    # Regression lineaire
     x = np.arange(period)
     coeffs = np.polyfit(x, recent, 1)
     slope = coeffs[0]
@@ -681,7 +681,7 @@ def trend_strength(prices: np.ndarray, period: int = 20) -> float:
     # Normaliser le slope
     normalized_slope = abs(slope) / np.mean(recent)
     
-    # Combiner RÃ‚Â² et slope
+    # Combiner R et slope
     trend_score = (r_squared * 0.7 + min(normalized_slope * 10, 1) * 0.3)
     
     return max(0, min(1, trend_score))
@@ -694,7 +694,7 @@ def trend_strength(prices: np.ndarray, period: int = 20) -> float:
 if __name__ == "__main__":
     """Test des indicateurs"""
     
-    # CrÃƒÂ©er des donnÃƒÂ©es de test
+    # Creer des donnees de test
     np.random.seed(42)
     size = 100
     
@@ -704,7 +704,7 @@ if __name__ == "__main__":
     low = close - np.abs(np.random.randn(size))
     volume = np.random.randint(1000, 10000, size)
     
-    # CrÃƒÂ©er DataFrame
+    # Creer DataFrame
     df = pd.DataFrame({
         'open': close + np.random.randn(size) * 0.5,
         'high': high,
@@ -717,12 +717,12 @@ if __name__ == "__main__":
     indicators = TechnicalIndicators()
     result = indicators.calculate_all(df)
     
-    print("Indicateurs calculÃƒÂ©s:")
+    print("Indicateurs calcules:")
     print(result[['close', 'rsi', 'macd', 'bb_upper', 'bb_lower', 'atr']].tail(10))
     
     # Test divergence
     divergence = detect_divergence(close, indicators.rsi(close))
-    print(f"\nDivergence dÃƒÂ©tectÃƒÂ©e: {divergence}")
+    print(f"\nDivergence detectee: {divergence}")
     
     # Test trend strength
     strength = trend_strength(close)
