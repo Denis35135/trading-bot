@@ -1,6 +1,6 @@
 """
 Correlation Analyzer
-Analyse les corrÃƒÂ©lations entre symboles pour ÃƒÂ©viter le sur-risque
+Analyse les correlations entre symboles pour eviter le sur-risque
 """
 
 import numpy as np
@@ -14,27 +14,27 @@ logger = logging.getLogger(__name__)
 
 class CorrelationAnalyzer:
     """
-    Analyseur de corrÃƒÂ©lations entre symboles
+    Analyseur de correlations entre symboles
     
-    FonctionnalitÃƒÂ©s:
-    - Calcul de la matrice de corrÃƒÂ©lation
-    - DÃƒÂ©tection des paires fortement corrÃƒÂ©lÃƒÂ©es
-    - Groupement par cluster de corrÃƒÂ©lation
+    Fonctionnalites:
+    - Calcul de la matrice de correlation
+    - Detection des paires fortement correlees
+    - Groupement par cluster de correlation
     - Diversification intelligente du portfolio
     - Alerte sur sur-exposition
     """
     
     def __init__(self, config: Dict = None):
         """
-        Initialise l'analyseur de corrÃƒÂ©lations
+        Initialise l'analyseur de correlations
         
         Args:
             config: Configuration
         """
         default_config = {
-            'lookback_period': 100,  # Nombre de candles pour corrÃƒÂ©lation
-            'high_correlation_threshold': 0.7,  # Seuil corrÃƒÂ©lation forte
-            'update_frequency': 3600,  # Mise ÃƒÂ  jour toutes les heures
+            'lookback_period': 100,  # Nombre de candles pour correlation
+            'high_correlation_threshold': 0.7,  # Seuil correlation forte
+            'update_frequency': 3600,  # Mise  jour toutes les heures
             'min_data_points': 50  # Minimum de points pour calcul
         }
         
@@ -59,18 +59,18 @@ else:
             'clusters': 0
         }
         
-        logger.info("Ã°Å¸â€œÅ  Correlation Analyzer initialisÃƒÂ©")
+        logger.info("" Correlation Analyzer initialise")
     
     def add_symbol_data(self, symbol: str, prices: pd.Series):
         """
-        Ajoute les donnÃƒÂ©es de prix d'un symbole
+        Ajoute les donnees de prix d'un symbole
         
         Args:
             symbol: Le symbole
             prices: Series de prix
         """
         if len(prices) < self.config['min_data_points']:
-            logger.warning(f"Pas assez de donnÃƒÂ©es pour {symbol}: {len(prices)} points")
+            logger.warning(f"Pas assez de donnees pour {symbol}: {len(prices)} points")
             return
         
         # Garder seulement les N derniers points
@@ -78,14 +78,14 @@ else:
     
     def update_correlations(self):
         """
-        Met ÃƒÂ  jour la matrice de corrÃƒÂ©lation
+        Met  jour la matrice de correlation
         """
         try:
             if len(self.price_data) < 2:
-                logger.warning("Pas assez de symboles pour calculer les corrÃƒÂ©lations")
+                logger.warning("Pas assez de symboles pour calculer les correlations")
                 return
             
-            logger.info(f"Ã°Å¸â€â€ž Calcul des corrÃƒÂ©lations pour {len(self.price_data)} symboles")
+            logger.info(f""" Calcul des correlations pour {len(self.price_data)} symboles")
             
             # Aligner les longueurs
             min_length = min(len(data) for data in self.price_data.values())
@@ -94,31 +94,31 @@ else:
             for symbol, prices in self.price_data.items():
                 aligned_data[symbol] = prices.tail(min_length).values
             
-            # CrÃƒÂ©er DataFrame et calculer corrÃƒÂ©lations
+            # Creer DataFrame et calculer correlations
             df = pd.DataFrame(aligned_data)
             self.correlation_matrix = df.corr()
             
-            # Mettre ÃƒÂ  jour les stats
+            # Mettre  jour les stats
             self._update_stats()
             
             self.last_update = datetime.now()
             
-            logger.info(f"Ã¢Å“â€¦ Matrice de corrÃƒÂ©lation mise ÃƒÂ  jour")
-            logger.info(f"   Paires fortement corrÃƒÂ©lÃƒÂ©es: {self.stats['high_correlation_pairs']}")
+            logger.info(f"""| Matrice de correlation mise  jour")
+            logger.info(f"   Paires fortement correlees: {self.stats['high_correlation_pairs']}")
             
         except Exception as e:
-            logger.error(f"Erreur calcul corrÃƒÂ©lations: {e}")
+            logger.error(f"Erreur calcul correlations: {e}")
     
     def get_correlation(self, symbol1: str, symbol2: str) -> Optional[float]:
         """
-        Retourne la corrÃƒÂ©lation entre deux symboles
+        Retourne la correlation entre deux symboles
         
         Args:
             symbol1: Premier symbole
-            symbol2: DeuxiÃƒÂ¨me symbole
+            symbol2: Deuxieme symbole
             
         Returns:
-            CorrÃƒÂ©lation ou None
+            Correlation ou None
         """
         if self.correlation_matrix is None:
             return None
@@ -127,16 +127,16 @@ else:
             if symbol1 in self.correlation_matrix.index and symbol2 in self.correlation_matrix.columns:
                 return self.correlation_matrix.loc[symbol1, symbol2]
         except Exception as e:
-            logger.error(f"Erreur rÃƒÂ©cupÃƒÂ©ration corrÃƒÂ©lation: {e}")
+            logger.error(f"Erreur recuperation correlation: {e}")
         
         return None
     
     def get_highly_correlated_pairs(self, threshold: float = None) -> List[Tuple[str, str, float]]:
         """
-        Retourne les paires fortement corrÃƒÂ©lÃƒÂ©es
+        Retourne les paires fortement correlees
         
         Args:
-            threshold: Seuil de corrÃƒÂ©lation (utilise config si None)
+            threshold: Seuil de correlation (utilise config si None)
             
         Returns:
             Liste de tuples (symbol1, symbol2, correlation)
@@ -149,7 +149,7 @@ else:
         
         pairs = []
         
-        # Parcourir la matrice (triangle supÃƒÂ©rieur uniquement)
+        # Parcourir la matrice (triangle superieur uniquement)
         for i in range(len(self.correlation_matrix)):
             for j in range(i + 1, len(self.correlation_matrix)):
                 corr = self.correlation_matrix.iloc[i, j]
@@ -159,45 +159,45 @@ else:
                     symbol2 = self.correlation_matrix.columns[j]
                     pairs.append((symbol1, symbol2, corr))
         
-        # Trier par corrÃƒÂ©lation dÃƒÂ©croissante
+        # Trier par correlation decroissante
         pairs.sort(key=lambda x: abs(x[2]), reverse=True)
         
         return pairs
     
     def get_symbol_correlations(self, symbol: str) -> Dict[str, float]:
         """
-        Retourne toutes les corrÃƒÂ©lations d'un symbole
+        Retourne toutes les correlations d'un symbole
         
         Args:
             symbol: Le symbole
             
         Returns:
-            Dict {symbole: corrÃƒÂ©lation}
+            Dict {symbole: correlation}
         """
         if self.correlation_matrix is None or symbol not in self.correlation_matrix.index:
             return {}
         
         correlations = self.correlation_matrix[symbol].to_dict()
         
-        # Enlever l'auto-corrÃƒÂ©lation
+        # Enlever l'auto-correlation
         if symbol in correlations:
             del correlations[symbol]
         
-        # Trier par corrÃƒÂ©lation absolue dÃƒÂ©croissante
+        # Trier par correlation absolue decroissante
         sorted_corr = dict(sorted(correlations.items(), key=lambda x: abs(x[1]), reverse=True))
         
         return sorted_corr
     
     def find_diversified_symbols(self, n: int, existing_symbols: List[str] = None) -> List[str]:
         """
-        Trouve N symboles les moins corrÃƒÂ©lÃƒÂ©s entre eux
+        Trouve N symboles les moins correles entre eux
         
         Args:
-            n: Nombre de symboles ÃƒÂ  trouver
-            existing_symbols: Symboles dÃƒÂ©jÃƒÂ  en portfolio
+            n: Nombre de symboles  trouver
+            existing_symbols: Symboles dej en portfolio
             
         Returns:
-            Liste de symboles diversifiÃƒÂ©s
+            Liste de symboles diversifies
         """
         if self.correlation_matrix is None:
             return []
@@ -212,10 +212,10 @@ else:
             return available_symbols
         
         # Algorithme glouton: ajouter les symboles un par un
-        # en minimisant la corrÃƒÂ©lation moyenne avec les dÃƒÂ©jÃƒÂ  sÃƒÂ©lectionnÃƒÂ©s
+        # en minimisant la correlation moyenne avec les dej selectionnes
         selected = []
         
-        # Commencer avec le symbole ayant la corrÃƒÂ©lation moyenne la plus faible
+        # Commencer avec le symbole ayant la correlation moyenne la plus faible
         avg_correlations = {}
         for symbol in available_symbols:
             corrs = [abs(self.correlation_matrix.loc[symbol, other]) 
@@ -232,7 +232,7 @@ else:
             min_avg_corr = float('inf')
             
             for symbol in available_symbols:
-                # Calculer corrÃƒÂ©lation moyenne avec les dÃƒÂ©jÃƒÂ  sÃƒÂ©lectionnÃƒÂ©s
+                # Calculer correlation moyenne avec les dej selectionnes
                 corrs = [abs(self.correlation_matrix.loc[symbol, sel]) for sel in selected]
                 avg_corr = np.mean(corrs)
                 
@@ -244,17 +244,17 @@ else:
                 selected.append(best_symbol)
                 available_symbols.remove(best_symbol)
         
-        logger.info(f"Ã°Å¸Å½Â¯ Symboles diversifiÃƒÂ©s trouvÃƒÂ©s: {', '.join(selected)}")
-        logger.info(f"   CorrÃƒÂ©lation moyenne: {self._calculate_avg_correlation(selected):.2f}")
+        logger.info(f" Symboles diversifies trouves: {', '.join(selected)}")
+        logger.info(f"   Correlation moyenne: {self._calculate_avg_correlation(selected):.2f}")
         
         return selected
     
     def cluster_symbols(self, n_clusters: int = 3) -> Dict[int, List[str]]:
         """
-        Groupe les symboles en clusters selon leurs corrÃƒÂ©lations
+        Groupe les symboles en clusters selon leurs correlations
         
         Args:
-            n_clusters: Nombre de clusters souhaitÃƒÂ©s
+            n_clusters: Nombre de clusters souhaites
             
         Returns:
             Dict {cluster_id: [symboles]}
@@ -265,10 +265,10 @@ else:
         try:
             from sklearn.cluster import AgglomerativeClustering
             
-            # Utiliser 1-corrÃƒÂ©lation comme distance
+            # Utiliser 1-correlation comme distance
             distance_matrix = 1 - np.abs(self.correlation_matrix.values)
             
-            # Clustering hiÃƒÂ©rarchique
+            # Clustering hierarchique
             clustering = AgglomerativeClustering(
                 n_clusters=n_clusters,
                 metric='precomputed',
@@ -287,7 +287,7 @@ else:
             
             self.stats['clusters'] = len(clusters)
             
-            logger.info(f"Ã°Å¸â€œÅ  {len(clusters)} clusters crÃƒÂ©ÃƒÂ©s")
+            logger.info(f"" {len(clusters)} clusters crees")
             for cluster_id, symbols in clusters.items():
                 logger.info(f"   Cluster {cluster_id}: {len(symbols)} symboles")
             
@@ -302,7 +302,7 @@ else:
     
     def check_portfolio_correlation(self, symbols: List[str]) -> Dict:
         """
-        Analyse la corrÃƒÂ©lation d'un portfolio
+        Analyse la correlation d'un portfolio
         
         Args:
             symbols: Liste des symboles du portfolio
@@ -311,7 +311,7 @@ else:
             Dict avec analyse
         """
         if self.correlation_matrix is None:
-            return {'error': 'Matrice de corrÃƒÂ©lation non disponible'}
+            return {'error': 'Matrice de correlation non disponible'}
         
         try:
             # Filtrer les symboles disponibles
@@ -320,7 +320,7 @@ else:
             if len(available) < 2:
                 return {'error': 'Pas assez de symboles disponibles'}
             
-            # Calculer corrÃƒÂ©lation moyenne
+            # Calculer correlation moyenne
             correlations = []
             for i in range(len(available)):
                 for j in range(i + 1, len(available)):
@@ -331,18 +331,18 @@ else:
             max_corr = max(correlations)
             min_corr = min(correlations)
             
-            # Nombre de paires fortement corrÃƒÂ©lÃƒÂ©es
+            # Nombre de paires fortement correlees
             high_corr_count = sum(1 for c in correlations if c > self.config['high_correlation_threshold'])
             
-            # Score de diversification (0-100, 100 = trÃƒÂ¨s diversifiÃƒÂ©)
+            # Score de diversification (0-100, 100 = tres diversifie)
             diversification_score = max(0, 100 * (1 - avg_corr))
             
-            # Avertissement si corrÃƒÂ©lation ÃƒÂ©levÃƒÂ©e
+            # Avertissement si correlation elevee
             warning = None
             if avg_corr > 0.6:
-                warning = "Portfolio fortement corrÃƒÂ©lÃƒÂ© - risque de concentration ÃƒÂ©levÃƒÂ©"
+                warning = "Portfolio fortement correle - risque de concentration eleve"
             elif avg_corr > 0.4:
-                warning = "CorrÃƒÂ©lation modÃƒÂ©rÃƒÂ©e - envisager plus de diversification"
+                warning = "Correlation moderee - envisager plus de diversification"
             
             return {
                 'symbols': available,
@@ -359,14 +359,14 @@ else:
             return {'error': str(e)}
     
     def _update_stats(self):
-        """Met ÃƒÂ  jour les statistiques"""
+        """Met  jour les statistiques"""
         if self.correlation_matrix is None:
             return
         
         n = len(self.correlation_matrix)
         self.stats['total_pairs'] = n * (n - 1) // 2
         
-        # Compter les paires fortement corrÃƒÂ©lÃƒÂ©es
+        # Compter les paires fortement correlees
         high_corr = 0
         for i in range(n):
             for j in range(i + 1, n):
@@ -377,13 +377,13 @@ else:
     
     def _calculate_avg_correlation(self, symbols: List[str]) -> float:
         """
-        Calcule la corrÃƒÂ©lation moyenne entre symboles
+        Calcule la correlation moyenne entre symboles
         
         Args:
             symbols: Liste des symboles
             
         Returns:
-            CorrÃƒÂ©lation moyenne
+            Correlation moyenne
         """
         if self.correlation_matrix is None or len(symbols) < 2:
             return 0.0
@@ -415,10 +415,10 @@ else:
     
     def needs_update(self) -> bool:
         """
-        VÃƒÂ©rifie si une mise ÃƒÂ  jour est nÃƒÂ©cessaire
+        Verifie si une mise  jour est necessaire
         
         Returns:
-            True si mise ÃƒÂ  jour nÃƒÂ©cessaire
+            True si mise  jour necessaire
         """
         if self.correlation_matrix is None:
             return True
@@ -437,18 +437,18 @@ else:
 if __name__ == "__main__":
     """Test du Correlation Analyzer"""
     
-    # DonnÃƒÂ©es de test
+    # Donnees de test
     dates = pd.date_range(start='2024-01-01', periods=200, freq='5min')
     
-    # CrÃƒÂ©er des prix corrÃƒÂ©lÃƒÂ©s
+    # Creer des prix correles
     base_prices = 100 + np.cumsum(np.random.randn(200) * 0.5)
     
     symbols_data = {
         'BTCUSDC': pd.Series(base_prices, index=dates),
-        'ETHUSDC': pd.Series(base_prices + np.random.randn(200) * 2, index=dates),  # CorrÃƒÂ©lÃƒÂ©
-        'BNBUSDC': pd.Series(base_prices * 0.5 + np.random.randn(200) * 3, index=dates),  # Moyennement corrÃƒÂ©lÃƒÂ©
-        'ADAUSDC': pd.Series(100 + np.cumsum(np.random.randn(200) * 0.3), index=dates),  # IndÃƒÂ©pendant
-        'DOGEUSDC': pd.Series(50 + np.cumsum(np.random.randn(200) * 0.2), index=dates)  # IndÃƒÂ©pendant
+        'ETHUSDC': pd.Series(base_prices + np.random.randn(200) * 2, index=dates),  # Correle
+        'BNBUSDC': pd.Series(base_prices * 0.5 + np.random.randn(200) * 3, index=dates),  # Moyennement correle
+        'ADAUSDC': pd.Series(100 + np.cumsum(np.random.randn(200) * 0.3), index=dates),  # Independant
+        'DOGEUSDC': pd.Series(50 + np.cumsum(np.random.randn(200) * 0.2), index=dates)  # Independant
     }
     
     analyzer = CorrelationAnalyzer()
@@ -456,34 +456,34 @@ if __name__ == "__main__":
     print("Test Correlation Analyzer")
     print("=" * 50)
     
-    # Ajouter les donnÃƒÂ©es
+    # Ajouter les donnees
     for symbol, prices in symbols_data.items():
         analyzer.add_symbol_data(symbol, prices)
     
-    # Calculer les corrÃƒÂ©lations
+    # Calculer les correlations
     analyzer.update_correlations()
     
     # Tester les fonctions
-    print("\n1. Paires fortement corrÃƒÂ©lÃƒÂ©es:")
+    print("\n1. Paires fortement correlees:")
     pairs = analyzer.get_highly_correlated_pairs(0.5)
     for s1, s2, corr in pairs[:5]:
         print(f"   {s1} <-> {s2}: {corr:.2f}")
     
-    print("\n2. CorrÃƒÂ©lations de BTCUSDC:")
+    print("\n2. Correlations de BTCUSDC:")
     btc_corrs = analyzer.get_symbol_correlations('BTCUSDC')
     for symbol, corr in list(btc_corrs.items())[:3]:
         print(f"   {symbol}: {corr:.2f}")
     
-    print("\n3. Portfolio diversifiÃƒÂ© (3 symboles):")
+    print("\n3. Portfolio diversifie (3 symboles):")
     diversified = analyzer.find_diversified_symbols(3)
     print(f"   {', '.join(diversified)}")
     
     print("\n4. Analyse du portfolio:")
     analysis = analyzer.check_portfolio_correlation(['BTCUSDC', 'ETHUSDC', 'ADAUSDC'])
-    print(f"   CorrÃƒÂ©lation moyenne: {analysis['avg_correlation']:.2f}")
+    print(f"   Correlation moyenne: {analysis['avg_correlation']:.2f}")
     print(f"   Score de diversification: {analysis['diversification_score']:.1f}")
     if analysis['warning']:
-        print(f"   Ã¢Å¡Â Ã¯Â¸Â  {analysis['warning']}")
+        print(f"     {analysis['warning']}")
     
     print("\n5. Statistiques:")
     stats = analyzer.get_stats()
