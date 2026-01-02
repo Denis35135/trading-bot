@@ -1,6 +1,6 @@
 """
 Stop Loss Manager
-GÃƒÂ¨re intelligemment les stop loss et trailing stops
+Gere intelligemment les stop loss et trailing stops
 """
 
 import numpy as np
@@ -25,10 +25,10 @@ class StopLossManager:
     """
     Gestionnaire de stop loss intelligent
     
-    FonctionnalitÃƒÂ©s:
+    Fonctionnalites:
     - Stop loss fixe
     - Trailing stop
-    - Stop basÃƒÂ© sur ATR
+    - Stop base sur ATR
     - Break-even automatique
     - Time-based stop
     - Ajustement dynamique
@@ -42,10 +42,10 @@ class StopLossManager:
             config: Configuration
         """
         default_config = {
-            'default_stop_pct': 0.02,  # 2% stop par dÃƒÂ©faut
-            'trailing_stop_activation': 0.015,  # Active ÃƒÂ  +1.5%
+            'default_stop_pct': 0.02,  # 2% stop par defaut
+            'trailing_stop_activation': 0.015,  # Active  +1.5%
             'trailing_stop_distance': 0.01,  # 1% de trailing
-            'break_even_activation': 0.01,  # Break-even ÃƒÂ  +1%
+            'break_even_activation': 0.01,  # Break-even  +1%
             'atr_multiplier': 2.0,  # 2x ATR pour stop
             'max_stop_distance': 0.05,  # 5% maximum
             'min_stop_distance': 0.005,  # 0.5% minimum
@@ -67,7 +67,7 @@ class StopLossManager:
             'avg_stop_distance': 0
         }
         
-        logger.info("Ã°Å¸â€ºÂ¡Ã¯Â¸Â Stop Loss Manager initialisÃƒÂ©")
+        logger.info("" Stop Loss Manager initialise")
     
     def create_stop(
         self,
@@ -79,18 +79,18 @@ class StopLossManager:
         atr: float = None
     ) -> Dict:
         """
-        CrÃƒÂ©e un stop loss pour une position
+        Cree un stop loss pour une position
         
         Args:
             position_id: ID de la position
-            entry_price: Prix d'entrÃƒÂ©e
+            entry_price: Prix d'entree
             side: BUY ou SELL
             stop_type: Type de stop
             custom_distance: Distance custom (si None, utilise config)
             atr: ATR pour calcul (si stop ATR-based)
             
         Returns:
-            Dict avec donnÃƒÂ©es du stop
+            Dict avec donnees du stop
         """
         # Calculer la distance du stop
         if stop_type == StopType.ATR_BASED and atr:
@@ -113,7 +113,7 @@ class StopLossManager:
         else:  # SELL
             stop_price = entry_price * (1 + stop_distance_pct)
         
-        # CrÃƒÂ©er le stop
+        # Creer le stop
         stop_data = {
             'position_id': position_id,
             'type': stop_type,
@@ -132,7 +132,7 @@ class StopLossManager:
         
         self.stops[position_id] = stop_data
         
-        logger.info(f"Ã°Å¸â€ºÂ¡Ã¯Â¸Â Stop crÃƒÂ©ÃƒÂ© pour {position_id}")
+        logger.info(f"" Stop cree pour {position_id}")
         logger.info(f"   Type: {stop_type.value}")
         logger.info(f"   Entry: ${entry_price:.2f}")
         logger.info(f"   Stop: ${stop_price:.2f} ({stop_distance_pct:.2%})")
@@ -145,7 +145,7 @@ class StopLossManager:
         current_price: float
     ) -> Tuple[bool, Optional[str]]:
         """
-        Met ÃƒÂ  jour un stop et vÃƒÂ©rifie s'il est touchÃƒÂ©
+        Met  jour un stop et verifie s'il est touche
         
         Args:
             position_id: ID de la position
@@ -161,7 +161,7 @@ class StopLossManager:
         side = stop['side']
         entry_price = stop['entry_price']
         
-        # Mettre ÃƒÂ  jour les extrÃƒÂªmes
+        # Mettre  jour les extremes
         if side == 'BUY':
             if current_price > stop['highest_price']:
                 stop['highest_price'] = current_price
@@ -175,23 +175,23 @@ class StopLossManager:
         else:
             profit_pct = (entry_price - current_price) / entry_price
         
-        # 1. VÃƒÂ©rifier break-even
+        # 1. Verifier break-even
         if not stop['is_break_even'] and profit_pct >= self.config['break_even_activation']:
             self._activate_break_even(position_id, entry_price)
-            stop = self.stops[position_id]  # Recharger aprÃƒÂ¨s modification
+            stop = self.stops[position_id]  # Recharger apres modification
         
-        # 2. VÃƒÂ©rifier trailing stop
+        # 2. Verifier trailing stop
         if stop['is_trailing'] and profit_pct >= self.config['trailing_stop_activation']:
             self._update_trailing_stop(position_id, current_price)
             stop = self.stops[position_id]  # Recharger
         
-        # 3. VÃƒÂ©rifier time-based stop
+        # 3. Verifier time-based stop
         time_in_position = (datetime.now() - stop['created_at']).seconds / 3600  # heures
         if time_in_position > self.config['max_time_in_position']:
             self.stats['time_stops_hit'] += 1
             return True, f"Time stop ({time_in_position:.1f}h)"
         
-        # 4. VÃƒÂ©rifier si stop touchÃƒÂ©
+        # 4. Verifier si stop touche
         triggered, reason = self._check_stop_hit(position_id, current_price)
         
         if triggered:
@@ -205,7 +205,7 @@ class StopLossManager:
         """Active le break-even"""
         stop = self.stops[position_id]
         
-        # Mettre le stop au break-even (lÃƒÂ©gÃƒÂ¨rement au-dessus/en-dessous)
+        # Mettre le stop au break-even (legerement au-dessus/en-dessous)
         if stop['side'] == 'BUY':
             stop['current_stop'] = entry_price * 1.001  # +0.1% pour fees
         else:
@@ -213,33 +213,35 @@ class StopLossManager:
         
         stop['is_break_even'] = True
         
-        logger.info(f"Ã¢Å“â€¦ Break-even activÃƒÂ© pour {position_id}")
+        logger.info(f"""| Break-even active pour {position_id}")
         logger.info(f"   Nouveau stop: ${stop['current_stop']:.2f}")
     
     def _update_trailing_stop(self, position_id: str, current_price: float):
-        """Met ÃƒÂ  jour le trailing stop"""
+        """Met  jour le trailing stop"""
         stop = self.stops[position_id]
         distance = self.config['trailing_stop_distance']
         
         if stop['side'] == 'BUY':
-            # Trailing stop suit le prix ÃƒÂ  la hausse
+            # Trailing stop suit le prix  la hausse
             new_stop = current_price * (1 - distance)
             if new_stop > stop['current_stop']:
                 stop['current_stop'] = new_stop
-                logger.debug(f"Ã°Å¸â€œË† Trailing stop ajustÃƒÂ©: ${new_stop:.2f}")
+                logger.debug(f"" Trailing stop ajuste: ${new_stop:.2f}"")
         else:  # SELL
-            # Trailing stop suit le prix ÃƒÂ  la baisse
+            # Trailing stop suit le prix  la baisse
             new_stop = current_price * (1 + distance)
             if new_stop < stop['current_stop']:
                 stop['current_stop'] = new_stop
-                logger.debug(f"Ã°Å¸â€œâ€° Trailing stop ajustÃƒÂ©: ${new_stop:.2f}")
+                logger.debug(f""" Trailing stop ajuste: ${new_stop:.2f}")
     
     def _check_stop_hit(
-        self,
+    """
+    self,
+    """
         position_id: str,
         current_price: float
     ) -> Tuple[bool, Optional[str]]:
-        """VÃƒÂ©rifie si le stop est touchÃƒÂ©"""
+        """Verifie si le stop est touche"""
         stop = self.stops[position_id]
         
         if stop['side'] == 'BUY':
@@ -262,7 +264,7 @@ class StopLossManager:
         return False, None
     
     def _handle_stop_hit(self, position_id: str, reason: str):
-        """GÃƒÂ¨re un stop touchÃƒÂ©"""
+        """Gere un stop touche"""
         self.stats['stops_hit'] += 1
         
         if 'trailing' in reason.lower():
@@ -270,11 +272,13 @@ class StopLossManager:
         elif 'break-even' in reason.lower():
             self.stats['break_even_stops_hit'] += 1
         
-        logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â Stop touchÃƒÂ©: {position_id}")
+        logger.warning(f" Stop touche: {position_id}")
         logger.warning(f"   Raison: {reason}")
     
     def modify_stop(
-        self,
+    """
+    self,
+    """
         position_id: str,
         new_stop_price: float
     ) -> bool:
@@ -286,7 +290,7 @@ class StopLossManager:
             new_stop_price: Nouveau prix de stop
             
         Returns:
-            True si succÃƒÂ¨s
+            True si succes
         """
         if position_id not in self.stops:
             return False
@@ -295,7 +299,7 @@ class StopLossManager:
         old_stop = stop['current_stop']
         stop['current_stop'] = new_stop_price
         
-        logger.info(f"Ã°Å¸â€Â§ Stop modifiÃƒÂ© pour {position_id}")
+        logger.info(f"" Stop modifie pour {position_id}")
         logger.info(f"   Ancien: ${old_stop:.2f}")
         logger.info(f"   Nouveau: ${new_stop_price:.2f}")
         
@@ -305,10 +309,10 @@ class StopLossManager:
         """Retire un stop"""
         if position_id in self.stops:
             del self.stops[position_id]
-            logger.info(f"Ã°Å¸â€”â€˜Ã¯Â¸Â Stop retirÃƒÂ©: {position_id}")
+            logger.info(f"""" Stop retire: {position_id}")
     
     def get_stop(self, position_id: str) -> Optional[Dict]:
-        """Retourne les donnÃƒÂ©es d'un stop"""
+        """Retourne les donnees d'un stop"""
         return self.stops.get(position_id)
     
     def get_all_stops(self) -> Dict:
@@ -316,7 +320,9 @@ class StopLossManager:
         return self.stops.copy()
     
     def calculate_stop_price(
-        self,
+    """
+    self,
+    """
         entry_price: float,
         side: str,
         atr: float = None,
@@ -326,7 +332,7 @@ class StopLossManager:
         Calcule un prix de stop optimal
         
         Args:
-            entry_price: Prix d'entrÃƒÂ©e
+            entry_price: Prix d'entree
             side: BUY ou SELL
             atr: ATR (optionnel)
             custom_pct: Distance custom (optionnel)
@@ -369,15 +375,15 @@ if __name__ == "__main__":
     print("Test Stop Loss Manager")
     print("=" * 50)
     
-    # Test 1: CrÃƒÂ©er un stop fixe
-    print("\n1. CrÃƒÂ©ation d'un stop fixe:")
+    # Test 1: Creer un stop fixe
+    print("\n1. Creation d'un stop fixe:")
     stop = manager.create_stop(
         position_id='BTC_001',
         entry_price=50000,
         side='BUY',
         stop_type=StopType.FIXED
     )
-    print(f"   Stop crÃƒÂ©ÃƒÂ© ÃƒÂ  ${stop['current_stop']:.2f}")
+    print(f"   Stop cree  ${stop['current_stop']:.2f}")
     
     # Test 2: Simuler mouvement de prix
     print("\n2. Simulation de prix:")
