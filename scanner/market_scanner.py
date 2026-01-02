@@ -1,6 +1,6 @@
 """
 Market Scanner pour The Bot
-Scan et sÃƒÂ©lectionne les meilleures opportunitÃƒÂ©s de trading
+Scan et selectionne les meilleures opportunites de trading
 """
 
 import time
@@ -17,14 +17,14 @@ logger = logging.getLogger(__name__)
 
 class MarketScanner:
     """
-    Scanner de marchÃƒÂ© intelligent
+    Scanner de marche intelligent
     
-    ResponsabilitÃƒÂ©s:
+    Responsabilites:
     - Scanner tous les symboles disponibles
-    - Filtrer selon critÃƒÂ¨res (volume, volatilitÃƒÂ©, etc.)
+    - Filtrer selon criteres (volume, volatilite, etc.)
     - Calculer un score pour chaque symbole
-    - SÃƒÂ©lectionner les top N symboles
-    - Mettre ÃƒÂ  jour pÃƒÂ©riodiquement la sÃƒÂ©lection
+    - Selectionner les top N symboles
+    - Mettre  jour periodiquement la selection
     """
     
     def __init__(self, exchange_client, config: Dict):
@@ -48,13 +48,13 @@ class MarketScanner:
         self.scan_interval = getattr(config, 'SCAN_INTERVAL', 300)  # 5 minutes
         self.blacklist = getattr(config, 'BLACKLIST_SYMBOLS', ['USDCUSDT', 'BUSDUSDC'])
         
-        # Ãƒâ€°tat
+        # "tat
         self.all_symbols = []
         self.top_symbols = []
         self.symbol_scores = {}
         self.symbol_data = {}
         
-        # Cache des donnÃƒÂ©es
+        # Cache des donnees
         self.volume_cache = {}
         self.volatility_cache = {}
         self.correlation_matrix = None
@@ -72,13 +72,13 @@ class MarketScanner:
             'symbols_qualified': 0
         }
         
-        logger.info("Market Scanner initialisÃƒÂ©")
-        logger.info(f"Scan de {self.symbols_to_scan} symboles, sÃƒÂ©lection de {self.symbols_to_trade}")
+        logger.info("Market Scanner initialise")
+        logger.info(f"Scan de {self.symbols_to_scan} symboles, selection de {self.symbols_to_trade}")
     
     def start(self):
-        """DÃƒÂ©marre le scanner"""
+        """Demarre le scanner"""
         if self.is_running:
-            logger.warning("Scanner dÃƒÂ©jÃƒÂ  en cours")
+            logger.warning("Scanner dej en cours")
             return
         
         self.is_running = True
@@ -86,43 +86,43 @@ class MarketScanner:
         # Scan initial
         self.perform_scan()
         
-        # DÃƒÂ©marrer le thread de scan pÃƒÂ©riodique
+        # Demarrer le thread de scan periodique
         self.scan_thread = threading.Thread(
             target=self._scan_loop,
             daemon=True
         )
         self.scan_thread.start()
         
-        logger.info("Market Scanner dÃƒÂ©marrÃƒÂ©")
+        logger.info("Market Scanner demarre")
     
     def stop(self):
-        """ArrÃƒÂªte le scanner"""
+        """Arrete le scanner"""
         self.is_running = False
         
         if self.scan_thread:
             self.scan_thread.join(timeout=5)
         
-        logger.info("Market Scanner arrÃƒÂªtÃƒÂ©")
+        logger.info("Market Scanner arrete")
     
     def perform_scan(self):
-        """Effectue un scan complet du marchÃƒÂ©"""
+        """Effectue un scan complet du marche"""
         start_time = time.time()
-        logger.info("Ã°Å¸â€Â DÃƒÂ©but du scan de marchÃƒÂ©...")
+        logger.info("" Debut du scan de marche...")
         
         try:
-            # 1. RÃƒÂ©cupÃƒÂ©rer tous les symboles USDC
+            # 1. Recuperer tous les symboles USDC
             self._fetch_all_symbols()
             
-            # 2. Filtrer et collecter les donnÃƒÂ©es
+            # 2. Filtrer et collecter les donnees
             qualified_symbols = self._filter_symbols()
             
             # 3. Calculer les scores
             self._calculate_scores(qualified_symbols)
             
-            # 4. SÃƒÂ©lectionner les top symboles
+            # 4. Selectionner les top symboles
             self._select_top_symbols()
             
-            # 5. Calculer les corrÃƒÂ©lations
+            # 5. Calculer les correlations
             self._calculate_correlations()
             
             # Statistiques
@@ -134,16 +134,16 @@ class MarketScanner:
             
             self.last_scan = datetime.now()
             
-            logger.info(f"Ã¢Å“â€¦ Scan terminÃƒÂ© en {duration:.1f}s")
-            logger.info(f"   Symboles analysÃƒÂ©s: {len(self.all_symbols)}")
-            logger.info(f"   Symboles qualifiÃƒÂ©s: {len(qualified_symbols)}")
-            logger.info(f"   Top sÃƒÂ©lectionnÃƒÂ©s: {len(self.top_symbols)}")
+            logger.info(f"""| Scan termine en {duration:.1f}s")
+            logger.info(f"   Symboles analyses: {len(self.all_symbols)}")
+            logger.info(f"   Symboles qualifies: {len(qualified_symbols)}")
+            logger.info(f"   Top selectionnes: {len(self.top_symbols)}")
             
         except Exception as e:
             logger.error(f"Erreur pendant le scan: {e}")
     
     def _scan_loop(self):
-        """Boucle de scan pÃƒÂ©riodique"""
+        """Boucle de scan periodique"""
         while self.is_running:
             try:
                 # Attendre l'intervalle
@@ -157,9 +157,9 @@ class MarketScanner:
                 time.sleep(60)  # Attendre 1 minute en cas d'erreur
     
     def _fetch_all_symbols(self):
-        """RÃƒÂ©cupÃƒÂ¨re tous les symboles disponibles"""
+        """Recupere tous les symboles disponibles"""
         try:
-            # RÃƒÂ©cupÃƒÂ©rer les stats 24h pour tous les symboles
+            # Recuperer les stats 24h pour tous les symboles
             all_tickers = self.exchange.get_24h_stats()
             
             # Filtrer les paires USDC uniquement
@@ -189,30 +189,30 @@ class MarketScanner:
             self.all_symbols = self.all_symbols[:self.symbols_to_scan]
             
         except Exception as e:
-            logger.error(f"Erreur rÃƒÂ©cupÃƒÂ©ration symboles: {e}")
+            logger.error(f"Erreur recuperation symboles: {e}")
     
     def _filter_symbols(self) -> List[str]:
         """
-        Filtre les symboles selon les critÃƒÂ¨res
+        Filtre les symboles selon les criteres
         
         Returns:
-            Liste des symboles qualifiÃƒÂ©s
+            Liste des symboles qualifies
         """
         qualified = []
         
         for symbol in self.all_symbols:
             try:
-                # VÃƒÂ©rifier le volume
+                # Verifier le volume
                 volume = self.volume_cache.get(symbol, 0)
                 if volume < self.min_volume_24h:
                     continue
                 
-                # RÃƒÂ©cupÃƒÂ©rer les donnÃƒÂ©es supplÃƒÂ©mentaires
+                # Recuperer les donnees supplementaires
                 ticker = self.exchange.get_symbol_ticker(symbol)
                 if not ticker:
                     continue
                 
-                # VÃƒÂ©rifier le spread
+                # Verifier le spread
                 if ticker['ask'] > 0 and ticker['bid'] > 0:
                     spread = (ticker['ask'] - ticker['bid']) / ticker['bid']
                     if spread > self.max_spread:
@@ -220,26 +220,26 @@ class MarketScanner:
                 else:
                     continue
                 
-                # RÃƒÂ©cupÃƒÂ©rer les klines pour calculer la volatilitÃƒÂ©
+                # Recuperer les klines pour calculer la volatilite
                 df = self.exchange.get_klines(symbol, '1h', limit=24)
                 if df.empty:
                     continue
                 
-                # Calculer la volatilitÃƒÂ© (ATR / prix)
+                # Calculer la volatilite (ATR / prix)
                 high = df['high'].values
                 low = df['low'].values
                 close = df['close'].values
                 
-                # ATR simplifiÃƒÂ© sur 24h
+                # ATR simplifie sur 24h
                 ranges = high - low
                 atr = np.mean(ranges)
                 volatility = atr / np.mean(close) if np.mean(close) > 0 else 0
                 
-                # VÃƒÂ©rifier la volatilitÃƒÂ©
+                # Verifier la volatilite
                 if volatility < self.min_volatility or volatility > self.max_volatility:
                     continue
                 
-                # Stocker les donnÃƒÂ©es
+                # Stocker les donnees
                 self.volatility_cache[symbol] = volatility
                 self.symbol_data[symbol] = {
                     'price': ticker['price'],
@@ -247,7 +247,7 @@ class MarketScanner:
                     'spread': spread,
                     'volatility': volatility,
                     'change_24h': ticker.get('change_24h', 0),
-                    'df': df  # Garder pour analyse ultÃƒÂ©rieure
+                    'df': df  # Garder pour analyse ulterieure
                 }
                 
                 qualified.append(symbol)
@@ -263,7 +263,7 @@ class MarketScanner:
         Calcule un score pour chaque symbole
         
         Args:
-            symbols: Liste des symboles ÃƒÂ  scorer
+            symbols: Liste des symboles  scorer
         """
         self.symbol_scores = {}
         
@@ -286,7 +286,7 @@ class MarketScanner:
                 else:
                     score += 10
                 
-                # 2. Score de volatilitÃƒÂ© (0-25 points)
+                # 2. Score de volatilite (0-25 points)
                 volatility = data['volatility']
                 if 0.02 < volatility < 0.06:  # Sweet spot
                     score += 25
@@ -306,7 +306,7 @@ class MarketScanner:
                 else:
                     score += 5
                 
-                # 4. Score de liquiditÃƒÂ©/spread (0-15 points)
+                # 4. Score de liquidite/spread (0-15 points)
                 spread = data['spread']
                 if spread < 0.0005:
                     score += 15
@@ -324,7 +324,7 @@ class MarketScanner:
                 if self._is_trending(data['df']):
                     score += 5
                 
-                # Malus si trop corrÃƒÂ©lÃƒÂ© ÃƒÂ  BTC (ÃƒÂ  implÃƒÂ©menter)
+                # Malus si trop correle  BTC ( implementer)
                 # ...
                 
                 self.symbol_scores[symbol] = score
@@ -335,7 +335,7 @@ class MarketScanner:
     
     def _calculate_technical_score(self, df: pd.DataFrame) -> float:
         """
-        Calcule un score technique basÃƒÂ© sur les indicateurs
+        Calcule un score technique base sur les indicateurs
         
         Args:
             df: DataFrame avec OHLCV
@@ -356,7 +356,7 @@ class MarketScanner:
             if 40 < rsi < 60:  # Zone neutre, bon pour trading
                 score += 2
             
-            # Distance ÃƒÂ  la moyenne mobile
+            # Distance  la moyenne mobile
             sma_20 = np.mean(close[-20:])
             distance = abs(close[-1] - sma_20) / sma_20
             if distance < 0.02:  # Proche de la MA
@@ -400,11 +400,11 @@ class MarketScanner:
     
     def _is_trending(self, df: pd.DataFrame, threshold: float = 0.6) -> bool:
         """
-        DÃƒÂ©termine si un symbole est en tendance
+        Determine si un symbole est en tendance
         
         Args:
             df: DataFrame avec OHLCV
-            threshold: RÃ‚Â² minimum pour considÃƒÂ©rer une tendance
+            threshold: R minimum pour considerer une tendance
             
         Returns:
             True si en tendance
@@ -416,7 +416,7 @@ class MarketScanner:
             close = df['close'].values[-20:]
             x = np.arange(len(close))
             
-            # RÃƒÂ©gression linÃƒÂ©aire
+            # Regression lineaire
             coeffs = np.polyfit(x, close, 1)
             y_pred = np.polyval(coeffs, x)
             
@@ -435,7 +435,7 @@ class MarketScanner:
             return False
     
     def _select_top_symbols(self):
-        """SÃƒÂ©lectionne les top N symboles"""
+        """Selectionne les top N symboles"""
         # Trier par score
         sorted_symbols = sorted(
             self.symbol_scores.items(),
@@ -447,7 +447,7 @@ class MarketScanner:
         self.top_symbols = [symbol for symbol, score in sorted_symbols[:self.symbols_to_trade]]
         
         # Log les top 10
-        logger.info("Ã°Å¸Ââ€  Top 10 symboles:")
+        logger.info("" Top 10 symboles:")
         for i, (symbol, score) in enumerate(sorted_symbols[:10]):
             data = self.symbol_data.get(symbol, {})
             logger.info(f"   {i+1}. {symbol}: Score={score:.0f}, "
@@ -455,12 +455,12 @@ class MarketScanner:
                        f"Volat={data.get('volatility', 0)*100:.1f}%")
     
     def _calculate_correlations(self):
-        """Calcule la matrice de corrÃƒÂ©lation entre les top symboles"""
+        """Calcule la matrice de correlation entre les top symboles"""
         if len(self.top_symbols) < 2:
             return
         
         try:
-            # Collecter les prix de clÃƒÂ´ture
+            # Collecter les prix de clture
             price_data = {}
             min_length = float('inf')
             
@@ -478,11 +478,11 @@ class MarketScanner:
             for symbol in price_data:
                 price_data[symbol] = price_data[symbol][-min_length:]
             
-            # CrÃƒÂ©er DataFrame et calculer corrÃƒÂ©lations
+            # Creer DataFrame et calculer correlations
             df_prices = pd.DataFrame(price_data)
             self.correlation_matrix = df_prices.corr()
             
-            # Identifier les paires trÃƒÂ¨s corrÃƒÂ©lÃƒÂ©es
+            # Identifier les paires tres correlees
             high_corr_pairs = []
             for i in range(len(self.correlation_matrix)):
                 for j in range(i+1, len(self.correlation_matrix)):
@@ -493,19 +493,19 @@ class MarketScanner:
                         high_corr_pairs.append((symbol1, symbol2, corr))
             
             if high_corr_pairs:
-                logger.warning(Ã¢Å¡Â Ã¯Â¸Â Paires fortement corrÃƒÂ©lÃƒÂ©es dÃƒÂ©tectÃƒÂ©es:")
+                logger.warning( Paires fortement correlees detectees:")
                 for s1, s2, corr in high_corr_pairs[:5]:
                     logger.warning(f"   {s1} <-> {s2}: {corr:.2f}")
             
         except Exception as e:
-            logger.error(f"Erreur calcul corrÃƒÂ©lations: {e}")
+            logger.error(f"Erreur calcul correlations: {e}")
     
     def get_top_symbols(self, n: Optional[int] = None) -> List[str]:
         """
         Retourne les top symboles
         
         Args:
-            n: Nombre de symboles (dÃƒÂ©faut: tous)
+            n: Nombre de symboles (defaut: tous)
             
         Returns:
             Liste des top symboles
@@ -516,38 +516,38 @@ class MarketScanner:
     
     def get_symbol_data(self, symbol: str) -> Optional[Dict]:
         """
-        Retourne les donnÃƒÂ©es d'un symbole
+        Retourne les donnees d'un symbole
         
         Args:
             symbol: Le symbole
             
         Returns:
-            Dict avec les donnÃƒÂ©es ou None
+            Dict avec les donnees ou None
         """
         return self.symbol_data.get(symbol)
     
     def is_symbol_qualified(self, symbol: str) -> bool:
         """
-        VÃƒÂ©rifie si un symbole est qualifiÃƒÂ© pour le trading
+        Verifie si un symbole est qualifie pour le trading
         
         Args:
-            symbol: Le symbole ÃƒÂ  vÃƒÂ©rifier
+            symbol: Le symbole  verifier
             
         Returns:
-            True si qualifiÃƒÂ©
+            True si qualifie
         """
         return symbol in self.top_symbols
     
     def get_correlation(self, symbol1: str, symbol2: str) -> Optional[float]:
         """
-        Retourne la corrÃƒÂ©lation entre deux symboles
+        Retourne la correlation entre deux symboles
         
         Args:
             symbol1: Premier symbole
-            symbol2: DeuxiÃƒÂ¨me symbole
+            symbol2: Deuxieme symbole
             
         Returns:
-            CorrÃƒÂ©lation ou None
+            Correlation ou None
         """
         if self.correlation_matrix is None:
             return None
@@ -558,17 +558,17 @@ class MarketScanner:
         return None
     
     def force_rescan(self):
-        """Force un nouveau scan immÃƒÂ©diatement"""
-        logger.info("Rescan forcÃƒÂ© demandÃƒÂ©")
+        """Force un nouveau scan immediatement"""
+        logger.info("Rescan force demande")
         self.perform_scan()
     
     def add_to_blacklist(self, symbol: str):
-        """Ajoute un symbole ÃƒÂ  la blacklist"""
+        """Ajoute un symbole  la blacklist"""
         if symbol not in self.blacklist:
             self.blacklist.append(symbol)
-            logger.info(f"Symbole {symbol} ajoutÃƒÂ© ÃƒÂ  la blacklist")
+            logger.info(f"Symbole {symbol} ajoute  la blacklist")
             
-            # Retirer des top symbols si prÃƒÂ©sent
+            # Retirer des top symbols si present
             if symbol in self.top_symbols:
                 self.top_symbols.remove(symbol)
     
@@ -576,7 +576,7 @@ class MarketScanner:
         """Retire un symbole de la blacklist"""
         if symbol in self.blacklist:
             self.blacklist.remove(symbol)
-            logger.info(f"Symbole {symbol} retirÃƒÂ© de la blacklist")
+            logger.info(f"Symbole {symbol} retire de la blacklist")
     
     def get_scan_stats(self) -> Dict:
         """Retourne les statistiques de scan"""
@@ -601,7 +601,7 @@ if __name__ == "__main__":
     # Mock exchange pour tests
     class MockExchange:
         def get_24h_stats(self, symbol=None):
-            # Simuler des donnÃƒÂ©es
+            # Simuler des donnees
             symbols = [
                 'BTCUSDC', 'ETHUSDC', 'BNBUSDC', 'ADAUSDC', 'DOGEUSDC',
                 'XRPUSDC', 'DOTUSDC', 'UNIUSDC', 'LTCUSDC', 'LINKUSDC',
@@ -635,7 +635,7 @@ if __name__ == "__main__":
             }
         
         def get_klines(self, symbol, interval, limit):
-            # GÃƒÂ©nÃƒÂ©rer des donnÃƒÂ©es OHLCV fake
+            # Generer des donnees OHLCV fake
             size = limit
             close = 100 + np.cumsum(np.random.randn(size) * 0.5)
             
@@ -659,7 +659,7 @@ if __name__ == "__main__":
         'scan_interval': 300
     }
     
-    # CrÃƒÂ©er et tester le scanner
+    # Creer et tester le scanner
     exchange = MockExchange()
     scanner = MarketScanner(exchange, config)
     
@@ -668,36 +668,36 @@ if __name__ == "__main__":
     print("=" * 60)
     
     # Test 1: Scan initial
-    print("\nÃ°Å¸â€œÅ  Test 1: Scan initial")
+    print("\n" Test 1: Scan initial")
     scanner.perform_scan()
     
-    # Afficher les rÃƒÂ©sultats
-    print(f"\nTop symboles sÃƒÂ©lectionnÃƒÂ©s: {scanner.get_top_symbols()}")
+    # Afficher les resultats
+    print(f"\nTop symboles selectionnes: {scanner.get_top_symbols()}")
     
-    # Test 2: DonnÃƒÂ©es d'un symbole
-    print("\nÃ°Å¸â€œÅ  Test 2: DonnÃƒÂ©es symbole")
+    # Test 2: Donnees d'un symbole
+    print("\n" Test 2: Donnees symbole")
     if scanner.top_symbols:
         symbol = scanner.top_symbols[0]
         data = scanner.get_symbol_data(symbol)
         if data:
-            print(f"DonnÃƒÂ©es pour {symbol}:")
+            print(f"Donnees pour {symbol}:")
             print(f"  Prix: ${data['price']:.2f}")
             print(f"  Volume: ${data['volume']/1e6:.1f}M")
-            print(f"  VolatilitÃƒÂ©: {data['volatility']*100:.1f}%")
+            print(f"  Volatilite: {data['volatility']*100:.1f}%")
             print(f"  Spread: {data['spread']*100:.3f}%")
     
     # Test 3: Statistiques
-    print("\nÃ°Å¸â€œÅ  Test 3: Statistiques de scan")
+    print("\n" Test 3: Statistiques de scan")
     stats = scanner.get_scan_stats()
     for key, value in stats.items():
         print(f"  {key}: {value}")
     
     # Test 4: Blacklist
-    print("\nÃ°Å¸â€œÅ  Test 4: Blacklist")
+    print("\n" Test 4: Blacklist")
     if scanner.top_symbols:
         symbol = scanner.top_symbols[0]
-        print(f"Ajout de {symbol} ÃƒÂ  la blacklist")
+        print(f"Ajout de {symbol}  la blacklist")
         scanner.add_to_blacklist(symbol)
-        print(f"Top symbols aprÃƒÂ¨s blacklist: {scanner.get_top_symbols()}")
+        print(f"Top symbols apres blacklist: {scanner.get_top_symbols()}")
     
-    print("\nÃ¢Å“â€¦ Tests terminÃƒÂ©s!")
+    print("\n""| Tests termines!")
