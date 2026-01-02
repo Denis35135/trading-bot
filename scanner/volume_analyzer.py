@@ -1,6 +1,6 @@
 """
 Volume Analyzer
-Analyse le volume des trades pour dÃƒÂ©tecter l'intÃƒÂ©rÃƒÂªt institutionnel et retail
+Analyse le volume des trades pour detecter l'interet institutionnel et retail
 """
 
 import numpy as np
@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 
 class VolumeAnalyzer:
     """
-    Analyseur de volume avancÃƒÂ©
+    Analyseur de volume avance
     
     Analyses:
-    - Volume Profile (support/resistance basÃƒÂ©s sur volume)
-    - DÃƒÂ©tection de volumes anormaux (spikes)
+    - Volume Profile (support/resistance bases sur volume)
+    - Detection de volumes anormaux (spikes)
     - Volume Trend (accumulation/distribution)
     - Buy vs Sell pressure
     - Large trades detection
@@ -52,21 +52,21 @@ else:
         self.config = default_config
         self.volume_data = {}  # {symbol: metrics}
         
-        logger.info("Ã°Å¸â€œÅ  Volume Analyzer initialisÃƒÂ©")
+        logger.info("" Volume Analyzer initialise")
     
     def analyze_symbol(self, symbol: str, df: pd.DataFrame) -> Dict:
         """
-        Analyse complÃƒÂ¨te du volume d'un symbole
+        Analyse complete du volume d'un symbole
         
         Args:
             symbol: Le symbole
             df: DataFrame OHLCV
             
         Returns:
-            Dict avec mÃƒÂ©triques de volume
+            Dict avec metriques de volume
         """
         if len(df) < self.config['volume_ma_period']:
-            logger.warning(f"Pas assez de donnÃƒÂ©es pour {symbol}")
+            logger.warning(f"Pas assez de donnees pour {symbol}")
             return {}
         
         try:
@@ -100,7 +100,7 @@ else:
             if 'buy_volume' in df.columns and 'sell_volume' in df.columns:
                 metrics['buy_sell_ratio'] = df['buy_volume'].sum() / df['sell_volume'].sum() if df['sell_volume'].sum() > 0 else 1
             else:
-                # Estimation basÃƒÂ©e sur le prix
+                # Estimation basee sur le prix
                 up_volume = df[df['close'] > df['open']]['volume'].sum()
                 down_volume = df[df['close'] <= df['open']]['volume'].sum()
                 metrics['buy_sell_ratio'] = up_volume / down_volume if down_volume > 0 else 1
@@ -132,7 +132,7 @@ else:
     
     def _calculate_volume_trend(self, df: pd.DataFrame) -> str:
         """
-        DÃƒÂ©termine la tendance du volume (increasing/decreasing/stable)
+        Determine la tendance du volume (increasing/decreasing/stable)
         
         Args:
             df: DataFrame
@@ -152,7 +152,7 @@ else:
     
     def _detect_volume_spikes(self, df: pd.DataFrame, volume_ma: pd.Series) -> List[Dict]:
         """
-        DÃƒÂ©tecte les spikes de volume
+        Detecte les spikes de volume
         
         Args:
             df: DataFrame
@@ -206,7 +206,7 @@ else:
             Dict avec POC (Point of Control) et VAH/VAL
         """
         try:
-            # DÃƒÂ©finir les bins de prix
+            # Definir les bins de prix
             price_range = df['close'].max() - df['close'].min()
             bin_size = price_range / n_bins
             
@@ -229,7 +229,7 @@ else:
             total_volume = sum(bins.values())
             target_volume = total_volume * 0.7
             
-            # Trier les bins par volume dÃƒÂ©croissant
+            # Trier les bins par volume decroissant
             sorted_bins = sorted(bins.items(), key=lambda x: x[1], reverse=True)
             
             cumulative = 0
@@ -256,7 +256,7 @@ else:
     
     def _detect_large_trades(self, df: pd.DataFrame, volume_ma: pd.Series) -> List[Dict]:
         """
-        DÃƒÂ©tecte les large trades (volume institutionnel)
+        Detecte les large trades (volume institutionnel)
         
         Args:
             df: DataFrame
@@ -290,7 +290,7 @@ else:
             df: DataFrame
             
         Returns:
-            Momentum (-1 ÃƒÂ  1)
+            Momentum (-1  1)
         """
         vol_10 = df['volume'].tail(10).mean()
         vol_20 = df['volume'].tail(20).mean()
@@ -305,7 +305,7 @@ else:
     
     def _detect_distribution_accumulation(self, df: pd.DataFrame) -> str:
         """
-        DÃƒÂ©tecte si on est en phase de distribution ou accumulation
+        Detecte si on est en phase de distribution ou accumulation
         
         Args:
             df: DataFrame
@@ -331,10 +331,10 @@ else:
     
     def _calculate_volume_score(self, metrics: Dict) -> float:
         """
-        Calcule un score de qualitÃƒÂ© du volume (0-100)
+        Calcule un score de qualite du volume (0-100)
         
         Args:
-            metrics: MÃƒÂ©triques calculÃƒÂ©es
+            metrics: Metriques calculees
             
         Returns:
             Score
@@ -361,7 +361,7 @@ else:
         
         # 3. Buy/Sell ratio (0-25)
         bs_ratio = metrics.get('buy_sell_ratio', 1)
-        if 0.8 < bs_ratio < 1.2:  # Ãƒâ€°quilibrÃƒÂ©
+        if 0.8 < bs_ratio < 1.2:  # "quilibre
             score += 15
         elif bs_ratio > 1.2:  # Acheteurs dominants
             score += 25
@@ -381,16 +381,16 @@ else:
     
     def get_volume_summary(self, symbol: str) -> Dict:
         """
-        Retourne un rÃƒÂ©sumÃƒÂ© du volume pour un symbole
+        Retourne un resume du volume pour un symbole
         
         Args:
             symbol: Le symbole
             
         Returns:
-            Dict avec rÃƒÂ©sumÃƒÂ©
+            Dict avec resume
         """
         if symbol not in self.volume_data:
-            return {'error': 'Symbole non analysÃƒÂ©'}
+            return {'error': 'Symbole non analyse'}
         
         metrics = self.volume_data[symbol]
         
@@ -437,7 +437,7 @@ else:
     
     def get_high_volume_symbols(self, min_ratio: float = 1.5) -> List[str]:
         """
-        Retourne les symboles avec volume ÃƒÂ©levÃƒÂ©
+        Retourne les symboles avec volume eleve
         
         Args:
             min_ratio: Ratio minimum
@@ -500,17 +500,17 @@ else:
 if __name__ == "__main__":
     """Test du Volume Analyzer"""
     
-    # DonnÃƒÂ©es de test
+    # Donnees de test
     dates = pd.date_range(start='2024-01-01', periods=100, freq='5min')
     
-    # CrÃƒÂ©er des donnÃƒÂ©es avec diffÃƒÂ©rents patterns de volume
+    # Creer des donnees avec differents patterns de volume
     test_data = {
         'HIGH_VOL': pd.DataFrame({
             'open': 100 + np.random.randn(100) * 0.5,
             'high': 101 + np.random.randn(100) * 0.5,
             'low': 99 + np.random.randn(100) * 0.5,
             'close': 100 + np.random.randn(100) * 0.5,
-            'volume': np.random.randint(8000, 15000, 100)  # Volume ÃƒÂ©levÃƒÂ©
+            'volume': np.random.randint(8000, 15000, 100)  # Volume eleve
         }, index=dates),
         'LOW_VOL': pd.DataFrame({
             'open': 100 + np.random.randn(100) * 0.5,
@@ -526,7 +526,7 @@ if __name__ == "__main__":
             'close': 100 + np.random.randn(100) * 0.5,
             'volume': np.concatenate([
                 np.random.randint(3000, 5000, 95),
-                np.random.randint(15000, 20000, 5)  # Spike ÃƒÂ  la fin
+                np.random.randint(15000, 20000, 5)  # Spike  la fin
             ])
         }, index=dates)
     }
