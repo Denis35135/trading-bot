@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Script d'entraÃƒÂ®nement des modÃƒÂ¨les ML
-EntraÃƒÂ®ne les 3 modÃƒÂ¨les (RandomForest, XGBoost, LogisticRegression)
+Script d'entranement des modeles ML
+Entrane les 3 modeles (RandomForest, XGBoost, LogisticRegression)
 """
 
 import os
@@ -15,7 +15,7 @@ import argparse
 from datetime import datetime
 import joblib
 
-# Ajouter le rÃƒÂ©pertoire parent au path
+# Ajouter le repertoire parent au path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
@@ -25,7 +25,7 @@ try:
     from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report
     from xgboost import XGBClassifier
 except ImportError as e:
-    print(f"Ã¢ÂÅ’ Erreur import: {e}")
+    print(f"' Erreur import: {e}")
     print("   Installez: pip install scikit-learn xgboost")
     sys.exit(1)
 
@@ -38,12 +38,12 @@ logger = logging.getLogger(__name__)
 
 class MLModelTrainer:
     """
-    EntraÃƒÂ®neur de modÃƒÂ¨les ML pour le trading
+    Entraneur de modeles ML pour le trading
     
-    EntraÃƒÂ®ne 3 modÃƒÂ¨les:
-    - RandomForest: bon ÃƒÂ©quilibre performance/vitesse
-    - XGBoost: meilleure prÃƒÂ©cision
-    - LogisticRegression: rapide et interprÃƒÂ©table
+    Entrane 3 modeles:
+    - RandomForest: bon equilibre performance/vitesse
+    - XGBoost: meilleure precision
+    - LogisticRegression: rapide et interpretable
     """
     
     def __init__(self):
@@ -51,7 +51,7 @@ class MLModelTrainer:
         self.models_dir = Path('data/models')
         self.models_dir.mkdir(parents=True, exist_ok=True)
         
-        # DÃƒÂ©finir les modÃƒÂ¨les
+        # Definir les modeles
         self.models = {
             'rf': RandomForestClassifier(
                 n_estimators=100,
@@ -77,13 +77,13 @@ class MLModelTrainer:
             )
         }
         
-        logger.info("Ã°Å¸Â¤â€“ ML Model Trainer initialisÃƒÂ©")
-        logger.info(f"   ModÃƒÂ¨les: {', '.join(self.models.keys())}")
+        logger.info(""" ML Model Trainer initialise")
+        logger.info(f"   Modeles: {', '.join(self.models.keys())}")
         logger.info(f"   Dossier: {self.models_dir}")
     
     def prepare_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        PrÃƒÂ©pare les 30 features pour le ML
+        Prepare les 30 features pour le ML
         
         Args:
             df: DataFrame OHLCV
@@ -91,7 +91,7 @@ class MLModelTrainer:
         Returns:
             DataFrame avec features
         """
-        logger.info("Ã°Å¸â€Â§ PrÃƒÂ©paration des features...")
+        logger.info("" Preparation des features...")
         
         df = df.copy()
         
@@ -166,29 +166,29 @@ class MLModelTrainer:
         df['volatility_ma'] = df['volatility'].rolling(50).mean()
         df['volatility_regime'] = df['volatility'] / (df['volatility_ma'] + 1e-10)
         
-        logger.info(f"   Ã¢Å“â€¦ {len(df.columns)} colonnes crÃƒÂ©ÃƒÂ©es")
+        logger.info(f"   ""| {len(df.columns)} colonnes creees")
         
         return df
     
     def create_labels(self, df: pd.DataFrame, forward_window: int = 10, threshold: float = 0.005) -> pd.Series:
         """
-        CrÃƒÂ©e les labels pour l'entraÃƒÂ®nement
+        Cree les labels pour l'entranement
         
         Args:
             df: DataFrame avec prix
-            forward_window: FenÃƒÂªtre de prÃƒÂ©diction (candles)
-            threshold: Seuil de mouvement (0.5% par dÃƒÂ©faut)
+            forward_window: Fenetre de prediction (candles)
+            threshold: Seuil de mouvement (0.5% par defaut)
             
         Returns:
             Series de labels (0=SELL, 1=BUY, 2=HOLD)
         """
-        logger.info(f"Ã°Å¸ÂÂ·Ã¯Â¸Â  CrÃƒÂ©ation des labels (forward={forward_window}, threshold={threshold})")
+        logger.info(f"  Creation des labels (forward={forward_window}, threshold={threshold})")
         
         # Calculer le rendement futur
         future_returns = df['close'].shift(-forward_window) / df['close'] - 1
         
-        # CrÃƒÂ©er les labels
-        labels = pd.Series(2, index=df.index)  # 2 = HOLD par dÃƒÂ©faut
+        # Creer les labels
+        labels = pd.Series(2, index=df.index)  # 2 = HOLD par defaut
         labels[future_returns > threshold] = 1  # BUY
         labels[future_returns < -threshold] = 0  # SELL
         
@@ -205,7 +205,7 @@ class MLModelTrainer:
     
     def train_models(self, X: pd.DataFrame, y: pd.Series, test_size: float = 0.2) -> dict:
         """
-        EntraÃƒÂ®ne tous les modÃƒÂ¨les
+        Entrane tous les modeles
         
         Args:
             X: Features
@@ -213,9 +213,9 @@ class MLModelTrainer:
             test_size: Proportion de test
             
         Returns:
-            Dict avec rÃƒÂ©sultats
+            Dict avec resultats
         """
-        logger.info("Ã°Å¸Å¡â‚¬ DÃƒÂ©but de l'entraÃƒÂ®nement...")
+        logger.info(" Debut de l'entranement...")
         
         # Split train/test
         X_train, X_test, y_train, y_test = train_test_split(
@@ -228,17 +228,17 @@ class MLModelTrainer:
         results = {}
         
         for name, model in self.models.items():
-            logger.info(f"\nÃ°Å¸â€œÅ  EntraÃƒÂ®nement {name.upper()}...")
+            logger.info(f"\n" Entranement {name.upper()}...")
             
             try:
-                # EntraÃƒÂ®nement
+                # Entranement
                 model.fit(X_train, y_train)
                 
-                # PrÃƒÂ©dictions
+                # Predictions
                 y_pred_train = model.predict(X_train)
                 y_pred_test = model.predict(X_test)
                 
-                # MÃƒÂ©triques
+                # Metriques
                 train_acc = accuracy_score(y_train, y_pred_train)
                 test_acc = accuracy_score(y_test, y_pred_test)
                 
@@ -253,7 +253,7 @@ class MLModelTrainer:
                 logger.info("\n" + classification_report(y_test, y_pred_test, 
                                                         target_names=['SELL', 'BUY', 'HOLD']))
                 
-                # Sauvegarder le modÃƒÂ¨le
+                # Sauvegarder le modele
                 self._save_model(model, name)
                 
                 results[name] = {
@@ -264,47 +264,47 @@ class MLModelTrainer:
                     'model': model
                 }
                 
-                logger.info(f"   Ã¢Å“â€¦ {name.upper()} entraÃƒÂ®nÃƒÂ© et sauvegardÃƒÂ©")
+                logger.info(f"   ""| {name.upper()} entrane et sauvegarde")
                 
             except Exception as e:
-                logger.error(f"   Ã¢ÂÅ’ Erreur entraÃƒÂ®nement {name}: {e}")
+                logger.error(f"   ' Erreur entranement {name}: {e}")
                 results[name] = {'error': str(e)}
         
         return results
     
     def _save_model(self, model, name: str):
         """
-        Sauvegarde un modÃƒÂ¨le
+        Sauvegarde un modele
         
         Args:
-            model: Le modÃƒÂ¨le entraÃƒÂ®nÃƒÂ©
-            name: Nom du modÃƒÂ¨le
+            model: Le modele entrane
+            name: Nom du modele
         """
         filepath = self.models_dir / f"{name}_model.joblib"
         joblib.dump(model, filepath)
         
         size_mb = filepath.stat().st_size / (1024 * 1024)
-        logger.info(f"   Ã°Å¸â€™Â¾ SauvegardÃƒÂ©: {filepath.name} ({size_mb:.2f} MB)")
+        logger.info(f"   ' Sauvegarde: {filepath.name} ({size_mb:.2f} MB)")
     
     def load_model(self, name: str):
         """
-        Charge un modÃƒÂ¨le sauvegardÃƒÂ©
+        Charge un modele sauvegarde
         
         Args:
-            name: Nom du modÃƒÂ¨le
+            name: Nom du modele
             
         Returns:
-            ModÃƒÂ¨le chargÃƒÂ© ou None
+            Modele charge ou None
         """
         filepath = self.models_dir / f"{name}_model.joblib"
         
         if not filepath.exists():
-            logger.warning(f"ModÃƒÂ¨le {name} non trouvÃƒÂ©: {filepath}")
+            logger.warning(f"Modele {name} non trouve: {filepath}")
             return None
         
         try:
             model = joblib.load(filepath)
-            logger.info(f"Ã¢Å“â€¦ ModÃƒÂ¨le {name} chargÃƒÂ©")
+            logger.info(f"""| Modele {name} charge")
             return model
         except Exception as e:
             logger.error(f"Erreur chargement {name}: {e}")
@@ -312,10 +312,10 @@ class MLModelTrainer:
     
     def list_saved_models(self) -> List[dict]:
         """
-        Liste les modÃƒÂ¨les sauvegardÃƒÂ©s
+        Liste les modeles sauvegardes
         
         Returns:
-            Liste des modÃƒÂ¨les
+            Liste des modeles
         """
         models = []
         
@@ -332,57 +332,57 @@ class MLModelTrainer:
 
 
 def main():
-    """Point d'entrÃƒÂ©e du script"""
-    parser = argparse.ArgumentParser(description='EntraÃƒÂ®nement des modÃƒÂ¨les ML')
+    """Point d'entree du script"""
+    parser = argparse.ArgumentParser(description='Entranement des modeles ML')
     parser.add_argument('--data', required=True,
-                       help='Fichier CSV avec donnÃƒÂ©es historiques')
+                       help='Fichier CSV avec donnees historiques')
     parser.add_argument('--forward-window', type=int, default=10,
-                       help='FenÃƒÂªtre de prÃƒÂ©diction en candles (dÃƒÂ©faut: 10)')
+                       help='Fenetre de prediction en candles (defaut: 10)')
     parser.add_argument('--threshold', type=float, default=0.005,
-                       help='Seuil de mouvement pour labels (dÃƒÂ©faut: 0.005)')
+                       help='Seuil de mouvement pour labels (defaut: 0.005)')
     parser.add_argument('--test-size', type=float, default=0.2,
-                       help='Proportion de test (dÃƒÂ©faut: 0.2)')
+                       help='Proportion de test (defaut: 0.2)')
     parser.add_argument('--list', action='store_true',
-                       help='Liste les modÃƒÂ¨les sauvegardÃƒÂ©s')
+                       help='Liste les modeles sauvegardes')
     
     args = parser.parse_args()
     
     trainer = MLModelTrainer()
     
     print("\n" + "="*50)
-    print("Ã°Å¸Â¤â€“ ENTRAÃƒÅ½NEMENT DES MODÃƒË†LES ML")
+    print(""" ENTRANEMENT DES MODLES ML")
     print("="*50)
     
     if args.list:
         models = trainer.list_saved_models()
-        print(f"\nÃ°Å¸â€œâ€¹ ModÃƒÂ¨les sauvegardÃƒÂ©s: {len(models)}\n")
+        print(f"\n"" Modeles sauvegardes: {len(models)}\n")
         
         for model in models:
-            print(f"Ã¢â‚¬Â¢ {model['name'].upper()}")
+            print(f"" {model['name'].upper()}")
             print(f"  Taille: {model['size_mb']:.2f} MB")
-            print(f"  ModifiÃƒÂ©: {model['modified'].strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"  Modifie: {model['modified'].strftime('%Y-%m-%d %H:%M:%S')}")
             print()
         
         print("="*50 + "\n")
         sys.exit(0)
     
-    # Charger les donnÃƒÂ©es
-    logger.info(f"Ã°Å¸â€œÂ¥ Chargement des donnÃƒÂ©es: {args.data}")
+    # Charger les donnees
+    logger.info(f"" Chargement des donnees: {args.data}"")
     try:
         df = pd.read_csv(args.data, index_col=0, parse_dates=True)
-        logger.info(f"   Ã¢Å“â€¦ {len(df)} candles chargÃƒÂ©es")
-        logger.info(f"   PÃƒÂ©riode: {df.index[0]} -> {df.index[-1]}")
+        logger.info(f"   ""| {len(df)} candles chargees")
+        logger.info(f"   Periode: {df.index[0]} -> {df.index[-1]}")
     except Exception as e:
-        logger.error(f"Ã¢ÂÅ’ Erreur chargement: {e}")
+        logger.error(f"' Erreur chargement: {e}")
         sys.exit(1)
     
-    # PrÃƒÂ©parer les features
+    # Preparer les features
     df = trainer.prepare_features(df)
     
-    # CrÃƒÂ©er les labels
+    # Creer les labels
     labels = trainer.create_labels(df, args.forward_window, args.threshold)
     
-    # SÃƒÂ©lectionner les features
+    # Selectionner les features
     feature_cols = [
         'price_change_5', 'price_change_15', 'price_change_60',
         'price_position_24h', 'distance_from_vwap',
@@ -395,29 +395,29 @@ def main():
     
     # Garder seulement les colonnes disponibles
     available_features = [col for col in feature_cols if col in df.columns]
-    logger.info(f"\nÃ°Å¸â€œÅ  Features utilisÃƒÂ©es: {len(available_features)}")
+    logger.info(f"\n" Features utilisees: {len(available_features)}"")
     
     X = df[available_features].dropna()
     y = labels.loc[X.index]
     
     logger.info(f"   Samples finaux: {len(X)}")
     
-    # EntraÃƒÂ®ner
+    # Entraner
     results = trainer.train_models(X, y, args.test_size)
     
-    # RÃƒÂ©sumÃƒÂ©
+    # Resume
     print("\n" + "="*50)
-    print("Ã°Å¸â€œÅ  RÃƒâ€°SUMÃƒâ€° DE L'ENTRAÃƒÅ½NEMENT")
+    print("" R"SUM" DE L'ENTRANEMENT")
     print("="*50)
     
     for name, result in results.items():
         if 'error' in result:
-            print(f"\nÃ¢ÂÅ’ {name.upper()}: Ãƒâ€°CHEC")
+            print(f"\n' {name.upper()}: "CHEC")
             print(f"   Erreur: {result['error']}")
         else:
-            print(f"\nÃ¢Å“â€¦ {name.upper()}")
+            print(f"\n""| {name.upper()}")
             print(f"   Test Accuracy: {result['test_accuracy']:.2%}")
-            print(f"   CV Score: {result['cv_mean']:.2%} Ã‚Â± {result['cv_std']:.2%}")
+            print(f"   CV Score: {result['cv_mean']:.2%}  {result['cv_std']:.2%}")
     
     print("\n" + "="*50 + "\n")
 
