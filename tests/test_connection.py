@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Script de test de connexion ÃƒÂ  Binance
-VÃƒÂ©rifie que tout est correctement configurÃƒÂ© avant de lancer le bot
+Script de test de connexion  Binance
+Verifie que tout est correctement configure avant de lancer le bot
 """
 
 import os
@@ -10,18 +10,18 @@ from pathlib import Path
 from datetime import datetime
 import time
 
-# Ajouter le rÃƒÂ©pertoire parent au path
+# Ajouter le repertoire parent au path
 sys.path.insert(0, str(Path(__file__).parent))
 
 def print_header():
-    """Affiche l'en-tÃƒÂªte"""
+    """Affiche l'en-tete"""
     print("\n" + "=" * 60)
-    print("Ã°Å¸Â§Âª TEST DE CONNEXION - THE BOT")
+    print(" TEST DE CONNEXION - THE BOT")
     print("=" * 60 + "\n")
 
 def test_imports():
-    """Test 1: VÃƒÂ©rifier les imports Python"""
-    print("Ã°Å¸â€œÂ¦ Test 1/8: VÃƒÂ©rification des dÃƒÂ©pendances Python...")
+    """Test 1: Verifier les imports Python"""
+    print(""| Test 1/8: Verification des dependances Python...")
     
     required_packages = {
         'pandas': 'pandas',
@@ -39,56 +39,56 @@ def test_imports():
     for package, pip_name in required_packages.items():
         try:
             __import__(package)
-            print(f"   Ã¢Å“â€¦ {pip_name}")
+            print(f"   ""| {pip_name}")
         except ImportError:
-            print(f"   Ã¢ÂÅ’ {pip_name} - MANQUANT")
+            print(f"   ' {pip_name} - MANQUANT")
             missing.append(pip_name)
     
     if missing:
-        print(f"\nÃ¢Å¡Â Ã¯Â¸Â  Packages manquants: {', '.join(missing)}")
-        print(f"Ã°Å¸â€™Â¡ Installez-les avec: pip install {' '.join(missing)}")
+        print(f"\n  Packages manquants: {', '.join(missing)}")
+        print(f"' Installez-les avec: pip install {' '.join(missing)}")
         return False
     
-    print("   Ã¢Å“â€¦ Toutes les dÃƒÂ©pendances sont installÃƒÂ©es\n")
+    print("   ""| Toutes les dependances sont installees\n")
     return True
 
 def test_talib():
-    """Test 2: VÃƒÂ©rifier TA-Lib"""
-    print("Ã°Å¸â€œÅ  Test 2/8: VÃƒÂ©rification de TA-Lib...")
+    """Test 2: Verifier TA-Lib"""
+    print("" Test 2/8: Verification de TA-Lib...")
     
     try:
         import talib
-        print(f"   Ã¢Å“â€¦ TA-Lib version {talib.__version__} installÃƒÂ©")
+        print(f"   ""| TA-Lib version {talib.__version__} installe")
         
         # Test rapide
         import numpy as np
         test_data = np.random.random(100)
         sma = talib.SMA(test_data, timeperiod=14)
-        print("   Ã¢Å“â€¦ TA-Lib fonctionnel\n")
+        print("   ""| TA-Lib fonctionnel\n")
         return True
     except ImportError:
-        print("   Ã¢ÂÅ’ TA-Lib non installÃƒÂ©")
-        print("   Ã°Å¸â€™Â¡ Guide d'installation:")
-        print("      - Windows: TÃƒÂ©lÃƒÂ©charger le wheel depuis")
+        print("   ' TA-Lib non installe")
+        print("   ' Guide d'installation:")
+        print("      - Windows: Telecharger le wheel depuis")
         print("        https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib")
         print("      - macOS: brew install ta-lib && pip install TA-Lib")
         print("      - Linux: Voir docs/INSTALLATION.md\n")
         return False
     except Exception as e:
-        print(f"   Ã¢ÂÅ’ Erreur TA-Lib: {e}\n")
+        print(f"   ' Erreur TA-Lib: {e}\n")
         return False
 
 def test_env_file():
-    """Test 3: VÃƒÂ©rifier le fichier .env"""
-    print("Ã°Å¸â€Â Test 3/8: VÃƒÂ©rification du fichier .env...")
+    """Test 3: Verifier le fichier .env"""
+    print("" Test 3/8: Verification du fichier .env...")
     
     if not os.path.exists('.env'):
-        print("   Ã¢ÂÅ’ Fichier .env non trouvÃƒÂ©")
-        print("   Ã°Å¸â€™Â¡ CrÃƒÂ©ez-le avec: cp .env.example .env")
-        print("   Ã°Å¸â€™Â¡ Puis ÃƒÂ©ditez-le avec vos clÃƒÂ©s API Binance\n")
+        print("   ' Fichier .env non trouve")
+        print("   ' Creez-le avec: cp .env.example .env")
+        print("   ' Puis editez-le avec vos cles API Binance\n")
         return False
     
-    print("   Ã¢Å“â€¦ Fichier .env trouvÃƒÂ©")
+    print("   ""| Fichier .env trouve")
     
     # Charger les variables
     try:
@@ -99,46 +99,46 @@ def test_env_file():
         secret_key = os.getenv('BINANCE_SECRET_KEY')
         
         if not api_key or api_key == 'your_api_key_here':
-            print("   Ã¢Å¡Â Ã¯Â¸Â  BINANCE_API_KEY non configurÃƒÂ©e")
+            print("     BINANCE_API_KEY non configuree")
             return False
         
         if not secret_key or secret_key == 'your_secret_key_here':
-            print("   Ã¢Å¡Â Ã¯Â¸Â  BINANCE_SECRET_KEY non configurÃƒÂ©e")
+            print("     BINANCE_SECRET_KEY non configuree")
             return False
         
-        print(f"   Ã¢Å“â€¦ API Key configurÃƒÂ©e (commence par: {api_key[:8]}...)")
-        print(f"   Ã¢Å“â€¦ Secret Key configurÃƒÂ©e\n")
+        print(f"   ""| API Key configuree (commence par: {api_key[:8]}...)")
+        print(f"   ""| Secret Key configuree\n")
         return True
         
     except Exception as e:
-        print(f"   Ã¢ÂÅ’ Erreur lecture .env: {e}\n")
+        print(f"   ' Erreur lecture .env: {e}\n")
         return False
 
 def test_config_file():
-    """Test 4: VÃƒÂ©rifier le fichier config.py"""
-    print("Ã¢Å¡â„¢Ã¯Â¸Â  Test 4/8: VÃƒÂ©rification du fichier config.py...")
+    """Test 4: Verifier le fichier config.py"""
+    print("  Test 4/8: Verification du fichier config.py...")
     
     if not os.path.exists('config.py'):
-        print("   Ã¢ÂÅ’ Fichier config.py non trouvÃƒÂ©")
-        print("   Ã°Å¸â€™Â¡ CrÃƒÂ©ez-le avec: cp config.example.py config.py\n")
+        print("   ' Fichier config.py non trouve")
+        print("   ' Creez-le avec: cp config.example.py config.py\n")
         return False
     
     try:
         from config import Config
         config = Config()
         
-        print("   Ã¢Å“â€¦ config.py chargÃƒÂ© avec succÃƒÂ¨s")
-        print(f"   Ã¢Å“â€¦ Capital initial: ${config.INITIAL_CAPITAL:,.2f}")
-        print(f"   Ã¢Å“â€¦ Risk per trade: {config.RISK_PER_TRADE:.1%}")
-        print(f"   Ã¢Å“â€¦ Max drawdown: {config.MAX_DRAWDOWN:.1%}\n")
+        print("   ""| config.py charge avec succes")
+        print(f"   ""| Capital initial: ${config.INITIAL_CAPITAL:,.2f}")
+        print(f"   ""| Risk per trade: {config.RISK_PER_TRADE:.1%}")
+        print(f"   ""| Max drawdown: {config.MAX_DRAWDOWN:.1%}\n")
         return True
     except Exception as e:
-        print(f"   Ã¢ÂÅ’ Erreur config.py: {e}\n")
+        print(f"   ' Erreur config.py: {e}\n")
         return False
 
 def test_binance_connection():
-    """Test 5: Tester la connexion ÃƒÂ  Binance"""
-    print("Ã°Å¸Å’Â Test 5/8: Connexion ÃƒÂ  Binance...")
+    """Test 5: Tester la connexion  Binance"""
+    print("' Test 5/8: Connexion  Binance...")
     
     try:
         from dotenv import load_dotenv
@@ -150,61 +150,61 @@ def test_binance_connection():
         secret_key = os.getenv('BINANCE_SECRET_KEY')
         testnet = os.getenv('TESTNET', 'True').lower() == 'true'
         
-        # CrÃƒÂ©er le client
+        # Creer le client
         if testnet:
-            print("   Ã°Å¸â€Â§ Mode: TESTNET")
+            print("   " Mode: TESTNET")
             client = Client(api_key, secret_key, testnet=True)
         else:
-            print("   Ã°Å¸â€Â§ Mode: PRODUCTION")
+            print("   " Mode: PRODUCTION")
             client = Client(api_key, secret_key)
         
         # Test 1: Ping
-        print("   Ã°Å¸â€œÂ¡ Test ping...", end=" ")
+        print("   " Test ping...", end=" ")
         client.ping()
-        print("Ã¢Å“â€¦")
+        print("""|")
         
         # Test 2: Server time
-        print("   Ã°Å¸â€¢Â Test server time...", end=" ")
+        print("   " Test server time...", end=" ")
         server_time = client.get_server_time()
-        print(f"Ã¢Å“â€¦ ({datetime.fromtimestamp(server_time['serverTime']/1000).strftime('%H:%M:%S')})")
+        print(f"""| ({datetime.fromtimestamp(server_time['serverTime']/1000).strftime('%H:%M:%S')})")
         
         # Test 3: Account info
-        print("   Ã°Å¸â€˜Â¤ Test account info...", end=" ")
+        print("   " Test account info...", end=" ")
         account = client.get_account()
-        print("Ã¢Å“â€¦")
+        print("""|")
         
         # Test 4: Balances
-        print("   Ã°Å¸â€™Â° Test balances...", end=" ")
+        print("   ' Test balances...", end=" ")
         balances = {b['asset']: float(b['free']) 
                    for b in account['balances'] 
                    if float(b['free']) > 0}
-        print("Ã¢Å“â€¦")
+        print("""|")
         
         if balances:
-            print("\n   Ã°Å¸â€™Âµ Soldes disponibles:")
+            print("\n   ' Soldes disponibles:")
             for asset, amount in list(balances.items())[:5]:  # Top 5
-                print(f"      Ã¢â‚¬Â¢ {asset}: {amount:,.4f}")
+                print(f"      " {asset}: {amount:,.4f}")
         else:
-            print("   Ã¢Å¡Â Ã¯Â¸Â  Aucun solde (normal pour testnet)")
+            print("     Aucun solde (normal pour testnet)")
         
         # Test 5: Ticker price
-        print("\n   Ã°Å¸â€œÅ  Test ticker price...", end=" ")
+        print("\n   " Test ticker price...", end=" ")
         ticker = client.get_symbol_ticker(symbol="BTCUSDC")
         btc_price = float(ticker['price'])
-        print(f"Ã¢Å“â€¦ (BTC = ${btc_price:,.2f})")
+        print(f"""| (BTC = ${btc_price:,.2f})")
         
         # Test 6: Klines
-        print("   Ã°Å¸â€œË† Test donnÃƒÂ©es historiques...", end=" ")
+        print("   " Test donnees historiques...", end=" ")
         klines = client.get_klines(symbol="BTCUSDC", interval="5m", limit=10)
-        print(f"Ã¢Å“â€¦ ({len(klines)} bougies rÃƒÂ©cupÃƒÂ©rÃƒÂ©es)")
+        print(f"""| ({len(klines)} bougies recuperees)")
         
-        print("\n   Ã¢Å“â€¦ Connexion Binance opÃƒÂ©rationnelle!\n")
+        print("\n   ""| Connexion Binance operationnelle!\n")
         return True
         
     except Exception as e:
-        print(f"\n   Ã¢ÂÅ’ Erreur connexion Binance: {e}")
-        print("\n   Ã°Å¸â€Â§ VÃƒÂ©rifiez:")
-        print("      1. Vos clÃƒÂ©s API dans .env")
+        print(f"\n   ' Erreur connexion Binance: {e}")
+        print("\n   " Verifiez:")
+        print("      1. Vos cles API dans .env")
         print("      2. Les permissions de l'API sur Binance")
         print("      3. Votre connexion internet")
         print("      4. Le mode TESTNET/PRODUCTION\n")
@@ -212,31 +212,31 @@ def test_binance_connection():
 
 def test_redis():
     """Test 6: Tester Redis (optionnel)"""
-    print("Ã°Å¸â€Â´ Test 6/8: Connexion Redis (optionnel)...")
+    print("" Test 6/8: Connexion Redis (optionnel)...")
     
     try:
         import redis
         r = redis.Redis(host='localhost', port=6379, decode_responses=True)
         r.ping()
-        print("   Ã¢Å“â€¦ Redis connectÃƒÂ© et opÃƒÂ©rationnel")
+        print("   ""| Redis connecte et operationnel")
         
-        # Test lecture/ÃƒÂ©criture
+        # Test lecture/ecriture
         r.setex("test_key", 5, "test_value")
         value = r.get("test_key")
         if value == "test_value":
-            print("   Ã¢Å“â€¦ Redis lecture/ÃƒÂ©criture OK\n")
+            print("   ""| Redis lecture/ecriture OK\n")
             return True
         
     except Exception as e:
-        print("   Ã¢Å¡Â Ã¯Â¸Â  Redis non disponible (optionnel)")
+        print("     Redis non disponible (optionnel)")
         print(f"      Raison: {e}")
-        print("   Ã°Å¸â€™Â¡ Le bot peut fonctionner sans Redis,")
-        print("      mais les performances seront rÃƒÂ©duites\n")
+        print("   ' Le bot peut fonctionner sans Redis,")
+        print("      mais les performances seront reduites\n")
         return None  # None = optionnel
 
 def test_directory_structure():
-    """Test 7: VÃƒÂ©rifier la structure des dossiers"""
-    print("Ã°Å¸â€œÂ Test 7/8: VÃƒÂ©rification de la structure...")
+    """Test 7: Verifier la structure des dossiers"""
+    print("" Test 7/8: Verification de la structure...")
     
     required_dirs = [
         'strategies',
@@ -260,13 +260,13 @@ def test_directory_structure():
     for directory in required_dirs:
         path = Path(directory)
         if path.exists():
-            print(f"   Ã¢Å“â€¦ {directory}/")
+            print(f"   ""| {directory}/")
         else:
-            print(f"   Ã¢Å¡Â Ã¯Â¸Â  {directory}/ - MANQUANT")
+            print(f"     {directory}/ - MANQUANT")
             missing.append(directory)
     
     if missing:
-        print(f"\n   Ã°Å¸â€™Â¡ CrÃƒÂ©ez les dossiers manquants:")
+        print(f"\n   ' Creez les dossiers manquants:")
         for d in missing:
             print(f"      mkdir -p {d}")
     
@@ -274,8 +274,8 @@ def test_directory_structure():
     return len(missing) == 0
 
 def test_system_resources():
-    """Test 8: VÃƒÂ©rifier les ressources systÃƒÂ¨me"""
-    print("Ã°Å¸â€™Â» Test 8/8: VÃƒÂ©rification des ressources systÃƒÂ¨me...")
+    """Test 8: Verifier les ressources systeme"""
+    print("' Test 8/8: Verification des ressources systeme...")
     
     try:
         import psutil
@@ -283,59 +283,59 @@ def test_system_resources():
         # CPU
         cpu_count = psutil.cpu_count()
         cpu_percent = psutil.cpu_percent(interval=1)
-        print(f"   Ã°Å¸â€Â· CPU: {cpu_count} cores ({cpu_percent}% utilisÃƒÂ©s)")
+        print(f"   " CPU: {cpu_count} cores ({cpu_percent}% utilises)")
         
         if cpu_count < 4:
-            print("   Ã¢Å¡Â Ã¯Â¸Â  Minimum 4 cores recommandÃƒÂ©")
+            print("     Minimum 4 cores recommande")
         else:
-            print("   Ã¢Å“â€¦ CPU suffisant")
+            print("   ""| CPU suffisant")
         
         # RAM
         ram = psutil.virtual_memory()
         ram_gb = ram.total / (1024**3)
         ram_available_gb = ram.available / (1024**3)
-        print(f"   Ã°Å¸â€Â· RAM: {ram_gb:.1f} GB total ({ram_available_gb:.1f} GB disponible)")
+        print(f"   " RAM: {ram_gb:.1f} GB total ({ram_available_gb:.1f} GB disponible)")
         
         if ram_gb < 8:
-            print("   Ã¢ÂÅ’ Minimum 8 GB requis")
+            print("   ' Minimum 8 GB requis")
             return False
         elif ram_gb < 16:
-            print("   Ã¢Å¡Â Ã¯Â¸Â  16 GB recommandÃƒÂ© pour performances optimales")
+            print("     16 GB recommande pour performances optimales")
         else:
-            print("   Ã¢Å“â€¦ RAM suffisante")
+            print("   ""| RAM suffisante")
         
         # Disk
         disk = psutil.disk_usage('/')
         disk_free_gb = disk.free / (1024**3)
-        print(f"   Ã°Å¸â€Â· Disque: {disk_free_gb:.1f} GB disponible")
+        print(f"   " Disque: {disk_free_gb:.1f} GB disponible")
         
         if disk_free_gb < 10:
-            print("   Ã¢Å¡Â Ã¯Â¸Â  Minimum 10 GB recommandÃƒÂ©")
+            print("     Minimum 10 GB recommande")
         else:
-            print("   Ã¢Å“â€¦ Espace disque suffisant")
+            print("   ""| Espace disque suffisant")
         
         print()
         return True
         
     except Exception as e:
-        print(f"   Ã¢Å¡Â Ã¯Â¸Â  Impossible de vÃƒÂ©rifier: {e}\n")
+        print(f"     Impossible de verifier: {e}\n")
         return None
 
 def print_summary(results):
-    """Affiche le rÃƒÂ©sumÃƒÂ© des tests"""
+    """Affiche le resume des tests"""
     print("\n" + "=" * 60)
-    print("Ã°Å¸â€œÅ  RÃƒâ€°SUMÃƒâ€° DES TESTS")
+    print("" R"SUM" DES TESTS")
     print("=" * 60 + "\n")
     
     test_names = [
-        "DÃƒÂ©pendances Python",
+        "Dependances Python",
         "TA-Lib",
         "Fichier .env",
         "Fichier config.py",
         "Connexion Binance",
         "Redis (optionnel)",
         "Structure dossiers",
-        "Ressources systÃƒÂ¨me"
+        "Ressources systeme"
     ]
     
     passed = 0
@@ -344,40 +344,40 @@ def print_summary(results):
     
     for i, (name, result) in enumerate(zip(test_names, results), 1):
         if result is True:
-            print(f"   Ã¢Å“â€¦ Test {i}: {name}")
+            print(f"   ""| Test {i}: {name}")
             passed += 1
         elif result is None:
-            print(f"   Ã¢Å¡Â Ã¯Â¸Â  Test {i}: {name} (optionnel)")
+            print(f"     Test {i}: {name} (optionnel)")
             optional += 1
         else:
-            print(f"   Ã¢ÂÅ’ Test {i}: {name}")
+            print(f"   ' Test {i}: {name}")
             failed += 1
     
-    print(f"\n   Total: {passed} rÃƒÂ©ussis, {failed} ÃƒÂ©chouÃƒÂ©s, {optional} optionnels")
+    print(f"\n   Total: {passed} reussis, {failed} echoues, {optional} optionnels")
     
     print("\n" + "=" * 60)
     
     if failed == 0:
-        print("Ã°Å¸Å½â€° TOUS LES TESTS CRITIQUES SONT RÃƒâ€°USSIS!")
+        print("" TOUS LES TESTS CRITIQUES SONT R"USSIS!")
         print("=" * 60)
-        print("\nÃ¢Å“Â¨ Vous pouvez maintenant lancer The Bot:\n")
-        print("   Mode Paper Trading (recommandÃƒÂ©):")
+        print("\n" Vous pouvez maintenant lancer The Bot:\n")
+        print("   Mode Paper Trading (recommande):")
         print("   $ python main.py --mode paper\n")
-        print("   Mode Live (argent rÃƒÂ©el):")
+        print("   Mode Live (argent reel):")
         print("   $ python main.py --mode live\n")
         return True
     else:
-        print("Ã¢ÂÅ’ CERTAINS TESTS ONT Ãƒâ€°CHOUÃƒâ€°")
+        print("' CERTAINS TESTS ONT "CHOU"")
         print("=" * 60)
-        print("\nÃ¢Å¡Â Ã¯Â¸Â  Corrigez les erreurs avant de lancer le bot.")
-        print("Ã°Å¸â€œâ€“ Consultez docs/INSTALLATION.md pour plus d'aide.\n")
+        print("\n  Corrigez les erreurs avant de lancer le bot.")
+        print("""" Consultez docs/INSTALLATION.md pour plus d'aide.\n")
         return False
 
 def main():
     """Fonction principale"""
     print_header()
     
-    # ExÃƒÂ©cuter tous les tests
+    # Executer tous les tests
     results = [
         test_imports(),
         test_talib(),
@@ -389,7 +389,7 @@ def main():
         test_system_resources()
     ]
     
-    # Afficher le rÃƒÂ©sumÃƒÂ©
+    # Afficher le resume
     success = print_summary(results)
     
     # Code de sortie
