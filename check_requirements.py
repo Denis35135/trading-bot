@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-✅ Requirements Checker
-Vérifie que toutes les dépendances Python sont installées
+ Requirements Checker
+Verifie que toutes les dependances Python sont installees
 """
 
 import sys
@@ -24,7 +24,7 @@ REQUIRED_PACKAGES = [
     ('psutil', '5.9.0'),
 ]
 
-# Packages optionnels (recommandés mais pas obligatoires)
+# Packages optionnels (recommandes mais pas obligatoires)
 OPTIONAL_PACKAGES = [
     ('numba', '0.55.0'),
     ('matplotlib', '3.5.0'),
@@ -34,18 +34,18 @@ OPTIONAL_PACKAGES = [
 
 
 def check_python_version() -> Tuple[bool, str]:
-    """Vérifie la version de Python (3.9+ requis)"""
+    """Verifie la version de Python (3.9+ requis)"""
     version = sys.version_info
     
     if version.major == 3 and version.minor >= 9:
-        return True, f"✅ Python {version.major}.{version.minor}.{version.micro}"
+        return True, f" Python {version.major}.{version.minor}.{version.micro}"
     else:
-        return False, f"❌ Python {version.major}.{version.minor}.{version.micro} (3.9+ requis)"
+        return False, f" Python {version.major}.{version.minor}.{version.micro} (3.9+ requis)"
 
 
 def check_package(package_name: str, min_version: str = None) -> Tuple[bool, str]:
     """
-    Vérifie si un package est installé
+    Verifie si un package est installe
     
     Args:
         package_name: Nom du package
@@ -71,19 +71,19 @@ def check_package(package_name: str, min_version: str = None) -> Tuple[bool, str
         else:
             package_obj = __import__(package_name)
         
-        # Récupère la version
+        # Recupere la version
         version = 'unknown'
         if hasattr(package_obj, '__version__'):
             version = package_obj.__version__
         elif hasattr(package_obj, 'VERSION'):
             version = package_obj.VERSION
             
-        return True, f"✅ {package_name} ({version})"
+        return True, f" {package_name} ({version})"
         
     except ImportError:
-        return False, f"❌ {package_name} - NON INSTALLÉ"
+        return False, f" {package_name} - NON INSTALLE"
     except Exception as e:
-        return False, f"⚠️  {package_name} - Erreur: {e}"
+        return False, f"  {package_name} - Erreur: {e}"
 
 
 def install_package(package_name: str) -> bool:
@@ -94,7 +94,7 @@ def install_package(package_name: str) -> bool:
         package_name: Nom du package
         
     Returns:
-        True si installation réussie
+        True si installation reussie
     """
     try:
         print(f"Installation de {package_name}...")
@@ -104,17 +104,17 @@ def install_package(package_name: str) -> bool:
             'pip', 
             'install', 
             package_name,
-            '--break-system-packages'  # Pour éviter erreur sur certains systèmes
+            '--break-system-packages'  # Pour eviter erreur sur certains systemes
         ])
         return True
     except Exception as e:
-        print(f"❌ Erreur installation {package_name}: {e}")
+        print(f" Erreur installation {package_name}: {e}")
         return False
 
 
 def check_all_requirements(auto_install: bool = False) -> Tuple[bool, List[str]]:
     """
-    Vérifie toutes les dépendances
+    Verifie toutes les dependances
     
     Args:
         auto_install: Si True, installe automatiquement les packages manquants
@@ -123,7 +123,7 @@ def check_all_requirements(auto_install: bool = False) -> Tuple[bool, List[str]]
         (all_ok, list_of_issues)
     """
     print("="*60)
-    print("🔍 VÉRIFICATION DES DÉPENDANCES")
+    print(" VERIFICATION DES DEPENDANCES")
     print("="*60 + "\n")
     
     issues = []
@@ -135,7 +135,7 @@ def check_all_requirements(auto_install: bool = False) -> Tuple[bool, List[str]]
     if not py_ok:
         issues.append(py_msg)
         
-    print("\n📦 Packages requis:")
+    print("\n Packages requis:")
     print("-"*60)
     
     # Check packages requis
@@ -147,16 +147,16 @@ def check_all_requirements(auto_install: bool = False) -> Tuple[bool, List[str]]
             issues.append(f"{package} manquant")
             missing_packages.append(package)
             
-    # Auto-install si demandé
+    # Auto-install si demande
     if auto_install and missing_packages:
-        print("\n🔧 Installation automatique des packages manquants...")
+        print("\n Installation automatique des packages manquants...")
         for package in missing_packages:
             if install_package(package):
-                print(f"✅ {package} installé")
+                print(f" {package} installe")
             else:
-                print(f"❌ Échec installation {package}")
+                print(f" Echec installation {package}")
                 
-    print("\n📦 Packages optionnels:")
+    print("\n Packages optionnels:")
     print("-"*60)
     
     # Check packages optionnels
@@ -164,21 +164,21 @@ def check_all_requirements(auto_install: bool = False) -> Tuple[bool, List[str]]
         is_installed, msg = check_package(package, min_version)
         print(msg)
         
-    # Résumé
+    # Resume
     print("\n" + "="*60)
     if not issues:
-        print("✅ TOUTES LES DÉPENDANCES SONT INSTALLÉES")
+        print(" TOUTES LES DEPENDANCES SONT INSTALLEES")
         print("="*60 + "\n")
         return True, []
     else:
-        print(f"⚠️  {len(issues)} PROBLÈME(S) DÉTECTÉ(S)")
+        print(f"  {len(issues)} PROBLME(S) DETECTE(S)")
         print("="*60)
         for issue in issues:
-            print(f"  • {issue}")
+            print(f"  * {issue}")
         print()
         
         if missing_packages:
-            print("💡 Pour installer les packages manquants:")
+            print(" Pour installer les packages manquants:")
             print(f"   pip install {' '.join(missing_packages)} --break-system-packages")
             print()
             
@@ -186,8 +186,8 @@ def check_all_requirements(auto_install: bool = False) -> Tuple[bool, List[str]]
 
 
 def generate_requirements_txt():
-    """Génère le fichier requirements.txt"""
-    print("📝 Génération de requirements.txt...")
+    """Genere le fichier requirements.txt"""
+    print(" Generation de requirements.txt...")
     
     requirements = [
         "# Requirements pour AUTOBOT ULTIMATE",
@@ -201,22 +201,22 @@ def generate_requirements_txt():
         
     requirements.extend([
         "",
-        "# Packages optionnels (recommandés)",
+        "# Packages optionnels (recommandes)",
     ])
     
     for package, version in OPTIONAL_PACKAGES:
         requirements.append(f"# {package}>={version}  # Optionnel")
         
-    # Écrit le fichier
+    # Ecrit le fichier
     with open('requirements.txt', 'w') as f:
         f.write('\n'.join(requirements))
         
-    print("✅ requirements.txt généré")
+    print(" requirements.txt genere")
 
 
 def check_system_requirements():
-    """Vérifie les prérequis système"""
-    print("\n🖥️  PRÉREQUIS SYSTÈME")
+    """Verifie les prerequis systeme"""
+    print("\n  PREREQUIS SYSTME")
     print("-"*60)
     
     import platform
@@ -230,20 +230,20 @@ def check_system_requirements():
     print(f"CPU: {cpu_count} cores")
     
     if cpu_count < 4:
-        print("  ⚠️  Recommandé: 4+ cores")
+        print("    Recommande: 4+ cores")
     else:
-        print("  ✅ OK")
+        print("   OK")
         
     # RAM
     ram_gb = psutil.virtual_memory().total / 1024 / 1024 / 1024
     print(f"RAM: {ram_gb:.1f} GB")
     
     if ram_gb < 8:
-        print("  ⚠️  Recommandé: 8+ GB")
+        print("    Recommande: 8+ GB")
     elif ram_gb < 16:
-        print("  ⚠️  Idéal: 16+ GB")
+        print("    Ideal: 16+ GB")
     else:
-        print("  ✅ OK")
+        print("   OK")
         
     # Disque
     disk = psutil.disk_usage('/')
@@ -251,22 +251,22 @@ def check_system_requirements():
     print(f"Disque: {disk_free_gb:.1f} GB libres")
     
     if disk_free_gb < 5:
-        print("  ⚠️  Recommandé: 5+ GB libres")
+        print("    Recommande: 5+ GB libres")
     else:
-        print("  ✅ OK")
+        print("   OK")
 
 
 def main():
-    """Point d'entrée principal"""
+    """Point d'entree principal"""
     import argparse
     
-    parser = argparse.ArgumentParser(description='Vérifie les dépendances du bot')
+    parser = argparse.ArgumentParser(description='Verifie les dependances du bot')
     parser.add_argument('--install', action='store_true', 
                        help='Installe automatiquement les packages manquants')
     parser.add_argument('--generate', action='store_true',
-                       help='Génère requirements.txt')
+                       help='Genere requirements.txt')
     parser.add_argument('--system', action='store_true',
-                       help='Vérifie les prérequis système')
+                       help='Verifie les prerequis systeme')
     
     args = parser.parse_args()
     
@@ -277,7 +277,7 @@ def main():
     if args.system:
         check_system_requirements()
         
-    # Vérifie les dépendances
+    # Verifie les dependances
     all_ok, issues = check_all_requirements(auto_install=args.install)
     
     return 0 if all_ok else 1
