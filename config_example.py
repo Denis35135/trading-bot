@@ -1,6 +1,6 @@
 """
 Configuration Template pour The Bot
-Copiez ce fichier en config.py et ajustez les paramÃƒÂ¨tres
+Copiez ce fichier en config.py et ajustez les parametres
 """
 
 import os
@@ -31,7 +31,7 @@ class Config:
     # Perte maximale par jour (5% = 0.05)
     MAX_DAILY_LOSS = 0.05
     
-    # Drawdown maximum avant arrÃƒÂªt (8% = 0.08)
+    # Drawdown maximum avant arret (8% = 0.08)
     MAX_DRAWDOWN = 0.08
     
     # Taille minimale d'ordre (minimum Binance)
@@ -41,7 +41,7 @@ class Config:
     MAX_POSITION_SIZE = 0.25
     
     # ===================================================================
-    # STRATÃƒâ€°GIES
+    # STRAT"GIES
     # ===================================================================
     ACTIVE_STRATEGIES = [
         {
@@ -85,10 +85,10 @@ class Config:
     # MARKET SCANNER
     # ===================================================================
     
-    # Nombre de symboles ÃƒÂ  scanner
+    # Nombre de symboles  scanner
     SYMBOLS_TO_SCAN = 100
     
-    # Nombre de symboles ÃƒÂ  trader
+    # Nombre de symboles  trader
     SYMBOLS_TO_TRADE = 20
     
     # Intervalle de scan (secondes)
@@ -100,12 +100,12 @@ class Config:
     # Spread maximum (%)
     MAX_SPREAD_PERCENT = 0.002  # 0.2%
     
-    # Range de volatilitÃƒÂ© acceptable (%)
+    # Range de volatilite acceptable (%)
     VOLATILITY_RANGE = (0.02, 0.08)  # 2% - 8%
     
     # Blacklist de symboles
     BLACKLISTED_SYMBOLS = [
-        # Ajoutez les symboles ÃƒÂ  ignorer
+        # Ajoutez les symboles  ignorer
         # 'LUNAUSDC',  # Exemple
     ]
     
@@ -116,19 +116,19 @@ class Config:
     ]
     
     # ===================================================================
-    # EXÃƒâ€°CUTION DES ORDRES
+    # EX"CUTION DES ORDRES
     # ===================================================================
     
-    # TolÃƒÂ©rance au slippage (0.2% = 0.002)
+    # Tolerance au slippage (0.2% = 0.002)
     SLIPPAGE_TOLERANCE = 0.002
     
     # Timeout pour les ordres (ms)
     ORDER_TIMEOUT = 5000  # 5 secondes
     
-    # Nombre de tentatives en cas d'ÃƒÂ©chec
+    # Nombre de tentatives en cas d'echec
     RETRY_ATTEMPTS = 3
     
-    # DÃƒÂ©lai entre les tentatives (secondes)
+    # Delai entre les tentatives (secondes)
     RETRY_DELAY = 1
     
     # ===================================================================
@@ -141,10 +141,10 @@ class Config:
     # Nombre de features
     FEATURE_COUNT = 30
     
-    # FrÃƒÂ©quence de rÃƒÂ©entraÃƒÂ®nement (secondes)
+    # Frequence de reentranement (secondes)
     RETRAIN_FREQUENCY = 86400  # 24h
     
-    # Taille minimale du dataset pour entraÃƒÂ®nement
+    # Taille minimale du dataset pour entranement
     MIN_TRAINING_SAMPLES = 10000
     
     # ===================================================================
@@ -156,7 +156,7 @@ class Config:
         'warning': {
             'drawdown': 0.03,  # 3%
             'daily_loss': 0.03,  # 3%
-            'action': 'reduce_positions'  # RÃƒÂ©duire de 50%
+            'action': 'reduce_positions'  # Reduire de 50%
         },
         'critical': {
             'drawdown': 0.05,  # 5%
@@ -180,7 +180,7 @@ class Config:
     # Taille du buffer de ticks
     TICK_BUFFER_SIZE = 5000
     
-    # MÃƒÂ©moire maximum (MB)
+    # Memoire maximum (MB)
     MAX_MEMORY_MB = 2000  # 2GB
     
     # Utiliser Redis pour le cache
@@ -189,7 +189,7 @@ class Config:
     REDIS_PORT = 6379
     REDIS_DB = 0
     
-    # DurÃƒÂ©e du cache (secondes)
+    # Duree du cache (secondes)
     CACHE_TTL = 60
     
     # ===================================================================
@@ -263,7 +263,7 @@ class Config:
     ADX_THRESHOLD = 25
     
     # ===================================================================
-    # BASE DE DONNÃƒâ€°ES (optionnel)
+    # BASE DE DONN"ES (optionnel)
     # ===================================================================
     
     # PostgreSQL
@@ -284,11 +284,11 @@ class Config:
     # Frais de trading (%)
     BACKTEST_COMMISSION = 0.001  # 0.1%
     
-    # Slippage simulÃƒÂ© (%)
+    # Slippage simule (%)
     BACKTEST_SLIPPAGE = 0.0005  # 0.05%
     
     # ===================================================================
-    # AVANCÃƒâ€°
+    # AVANC"
     # ===================================================================
     
     # Activer le mode debug (plus de logs)
@@ -297,16 +297,16 @@ class Config:
     # Sauvegarder tous les signaux (pour analyse)
     SAVE_ALL_SIGNALS = True
     
-    # Intervalle de sauvegarde des mÃƒÂ©triques (secondes)
+    # Intervalle de sauvegarde des metriques (secondes)
     METRICS_SAVE_INTERVAL = 60
     
     # Activer le profiling de performance
     ENABLE_PROFILING = False
     
-    # Limiter le nombre de positions simultanÃƒÂ©es
+    # Limiter le nombre de positions simultanees
     MAX_CONCURRENT_POSITIONS = 20
     
-    # Temps minimum entre deux trades sur le mÃƒÂªme symbole (secondes)
+    # Temps minimum entre deux trades sur le meme symbole (secondes)
     MIN_TIME_BETWEEN_TRADES = 60  # 1 minute
     
     # ===================================================================
@@ -318,30 +318,30 @@ class Config:
         """Valide la configuration"""
         errors = []
         
-        # VÃƒÂ©rifier les clÃƒÂ©s API
+        # Verifier les cles API
         if cls.BINANCE_API_KEY == 'your_api_key_here':
-            errors.append("BINANCE_API_KEY non configurÃƒÂ©e")
+            errors.append("BINANCE_API_KEY non configuree")
         
         if cls.BINANCE_SECRET_KEY == 'your_secret_key_here':
-            errors.append("BINANCE_SECRET_KEY non configurÃƒÂ©e")
+            errors.append("BINANCE_SECRET_KEY non configuree")
         
-        # VÃƒÂ©rifier le capital
+        # Verifier le capital
         if cls.INITIAL_CAPITAL < 100:
             errors.append("INITIAL_CAPITAL trop faible (minimum 100 USDC)")
         
-        # VÃƒÂ©rifier les allocations de stratÃƒÂ©gies
+        # Verifier les allocations de strategies
         total_allocation = sum(s['allocation'] for s in cls.ACTIVE_STRATEGIES if s['enabled'])
         if abs(total_allocation - 1.0) > 0.01:
-            errors.append(f"Total allocation stratÃƒÂ©gies doit ÃƒÂªtre 1.0 (actuellement: {total_allocation})")
+            errors.append(f"Total allocation strategies doit etre 1.0 (actuellement: {total_allocation})")
         
-        # VÃƒÂ©rifier les risques
+        # Verifier les risques
         if cls.RISK_PER_TRADE > 0.05:
-            errors.append("RISK_PER_TRADE trop ÃƒÂ©levÃƒÂ© (maximum 5%)")
+            errors.append("RISK_PER_TRADE trop eleve (maximum 5%)")
         
         if cls.MAX_DRAWDOWN > 0.15:
-            errors.append("MAX_DRAWDOWN trop ÃƒÂ©levÃƒÂ© (maximum 15%)")
+            errors.append("MAX_DRAWDOWN trop eleve (maximum 15%)")
         
-        # VÃƒÂ©rifier Redis si activÃƒÂ©
+        # Verifier Redis si active
         if cls.USE_REDIS:
             try:
                 import redis
@@ -356,33 +356,33 @@ class Config:
     def print_config(cls):
         """Affiche la configuration actuelle"""
         print("\n" + "="*60)
-        print("Ã¢Å¡â„¢Ã¯Â¸Â  CONFIGURATION THE BOT")
+        print("  CONFIGURATION THE BOT")
         print("="*60 + "\n")
         
-        print("Ã°Å¸â€œÅ  CAPITAL & RISQUE")
+        print("" CAPITAL & RISQUE")
         print(f"   Capital Initial:    ${cls.INITIAL_CAPITAL:,.2f}")
         print(f"   Risk/Trade:         {cls.RISK_PER_TRADE:.1%}")
         print(f"   Max Daily Loss:     {cls.MAX_DAILY_LOSS:.1%}")
         print(f"   Max Drawdown:       {cls.MAX_DRAWDOWN:.1%}")
         
-        print("\nÃ°Å¸Å½Â¯ STRATÃƒâ€°GIES ACTIVES")
+        print("\n STRAT"GIES ACTIVES")
         for strategy in cls.ACTIVE_STRATEGIES:
             if strategy['enabled']:
                 print(f"   {strategy['name']:15} {strategy['allocation']:5.1%} "
                       f"(confidence: {strategy['min_confidence']:.0%})")
         
-        print("\nÃ°Å¸â€œË† MARKET SCANNER")
-        print(f"   Symboles scannÃƒÂ©s:   {cls.SYMBOLS_TO_SCAN}")
-        print(f"   Symboles tradÃƒÂ©s:    {cls.SYMBOLS_TO_TRADE}")
+        print("\n" MARKET SCANNER")
+        print(f"   Symboles scannes:   {cls.SYMBOLS_TO_SCAN}")
+        print(f"   Symboles trades:    {cls.SYMBOLS_TO_TRADE}")
         print(f"   Volume min 24h:     ${cls.MIN_VOLUME_24H:,.0f}")
         print(f"   Spread max:         {cls.MAX_SPREAD_PERCENT:.2%}")
         
-        print("\nÃ°Å¸â€™Â» PERFORMANCE")
+        print("\n' PERFORMANCE")
         print(f"   Max Threads:        {cls.MAX_THREADS}")
         print(f"   Max Memory:         {cls.MAX_MEMORY_MB} MB")
-        print(f"   Redis:              {'Ã¢Å“â€¦ ActivÃƒÂ©' if cls.USE_REDIS else 'Ã¢ÂÅ’ DÃƒÂ©sactivÃƒÂ©'}")
+        print(f"   Redis:              {'""| Active' if cls.USE_REDIS else '' Desactive'}")
         
-        print("\nÃ°Å¸â€â€ NOTIFICATIONS")
+        print("\n"" NOTIFICATIONS")
         notifications = []
         if cls.TELEGRAM_ENABLED:
             notifications.append("Telegram")
@@ -400,7 +400,7 @@ class Config:
 
 
 # ===================================================================
-# CONFIGURATIONS PRÃƒâ€°DÃƒâ€°FINIES
+# CONFIGURATIONS PR"D"FINIES
 # ===================================================================
 
 class ConservativeConfig(Config):
@@ -455,7 +455,7 @@ class ScalpingOnlyConfig(Config):
 
 def load_config(config_name: str = 'default'):
     """
-    Charge une configuration spÃƒÂ©cifique
+    Charge une configuration specifique
     
     Args:
         config_name: 'default', 'conservative', 'aggressive', 'scalping'
@@ -475,17 +475,17 @@ def load_config(config_name: str = 'default'):
     # Valider la configuration
     errors = config_class.validate()
     if errors:
-        print("\nÃ¢ÂÅ’ ERREURS DE CONFIGURATION:")
+        print("\n' ERREURS DE CONFIGURATION:")
         for error in errors:
-            print(f"   Ã¢â‚¬Â¢ {error}")
-        print("\nÃ°Å¸â€™Â¡ Corrigez ces erreurs avant de continuer\n")
+            print(f"   " {error}")
+        print("\n' Corrigez ces erreurs avant de continuer\n")
         return None
     
     return config_class
 
 
 def get_config_summary():
-    """Retourne un rÃƒÂ©sumÃƒÂ© de la configuration"""
+    """Retourne un resume de la configuration"""
     return {
         'capital': Config.INITIAL_CAPITAL,
         'risk_per_trade': Config.RISK_PER_TRADE,
@@ -501,21 +501,21 @@ def get_config_summary():
 # ===================================================================
 
 if __name__ == "__main__":
-    print("\nÃ°Å¸Â§Âª Test de la configuration\n")
+    print("\n Test de la configuration\n")
     
-    # Charger la config par dÃƒÂ©faut
+    # Charger la config par defaut
     config = load_config('default')
     
     if config:
         # Afficher la configuration
         config.print_config()
         
-        # Afficher le rÃƒÂ©sumÃƒÂ©
+        # Afficher le resume
         summary = get_config_summary()
-        print("Ã°Å¸â€œâ€¹ RÃƒâ€°SUMÃƒâ€°:")
+        print(""" R"SUM":")
         for key, value in summary.items():
             print(f"   {key}: {value}")
         
-        print("\nÃ¢Å“â€¦ Configuration valide!\n")
+        print("\n""| Configuration valide!\n")
     else:
-        print("\nÃ¢ÂÅ’ Configuration invalide\n")
+        print("\n' Configuration invalide\n")
