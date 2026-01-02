@@ -1,6 +1,6 @@
 """
 Cache Manager pour The Bot
-Gestion du cache Redis et optimisation mÃƒÂ©moire
+Gestion du cache Redis et optimisation memoire
 """
 
 import redis
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class CacheManager:
     """
     Gestionnaire de cache avec Redis
-    Ãƒâ€°vite les recalculs et optimise les performances
+    "vite les recalculs et optimise les performances
     """
     
     def __init__(self, config: Dict):
@@ -31,7 +31,7 @@ class CacheManager:
             config: Configuration du cache
         """
         self.config = config
-        self.max_memory = getattr(config, 'MAX_MEMORY_MB', 2000)  # 2GB par dÃƒÂ©faut
+        self.max_memory = getattr(config, 'MAX_MEMORY_MB', 2000)  # 2GB par defaut
         
         # Connexion Redis
         try:
@@ -46,17 +46,17 @@ class CacheManager:
             # Test connexion
             self.cache.ping()
             self.redis_available = True
-            logger.info("Ã¢Å“â€¦ Cache Redis connectÃƒÂ©")
+            logger.info("""| Cache Redis connecte")
         except Exception as e:
-            logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â Redis non disponible, cache dÃƒÂ©sactivÃƒÂ©: {e}")
+            logger.warning(f" Redis non disponible, cache desactive: {e}")
             self.redis_available = False
             self.cache = None
         
-        # Cache en mÃƒÂ©moire de secours
+        # Cache en memoire de secours
         self.memory_cache = {}
         self.cache_timestamps = {}
         
-        # Buffer de donnÃƒÂ©es
+        # Buffer de donnees
         self.price_buffer = {}
         self.indicator_buffer = {}
         
@@ -68,15 +68,15 @@ class CacheManager:
             'evictions': 0
         }
         
-        logger.info("Cache Manager initialisÃƒÂ©")
+        logger.info("Cache Manager initialise")
     
     def get(self, key: str, default: Any = None) -> Any:
         """
-        RÃƒÂ©cupÃƒÂ¨re une valeur du cache
+        Recupere une valeur du cache
         
         Args:
-            key: ClÃƒÂ© du cache
-            default: Valeur par dÃƒÂ©faut si non trouvÃƒÂ©
+            key: Cle du cache
+            default: Valeur par defaut si non trouve
             
         Returns:
             Valeur du cache ou default
@@ -89,15 +89,15 @@ class CacheManager:
                     self.stats['hits'] += 1
                     return pickle.loads(value)
             
-            # Sinon, cache mÃƒÂ©moire
+            # Sinon, cache memoire
             if key in self.memory_cache:
-                # VÃƒÂ©rifier expiration
+                # Verifier expiration
                 if key in self.cache_timestamps:
                     if time.time() < self.cache_timestamps[key]:
                         self.stats['hits'] += 1
                         return self.memory_cache[key]
                     else:
-                        # ExpirÃƒÂ©
+                        # Expire
                         del self.memory_cache[key]
                         del self.cache_timestamps[key]
             
@@ -113,9 +113,9 @@ class CacheManager:
         Stocke une valeur dans le cache
         
         Args:
-            key: ClÃƒÂ© du cache
-            value: Valeur ÃƒÂ  stocker
-            ttl: DurÃƒÂ©e de vie en secondes (60s par dÃƒÂ©faut)
+            key: Cle du cache
+            value: Valeur  stocker
+            ttl: Duree de vie en secondes (60s par defaut)
         """
         try:
             # Redis
@@ -123,17 +123,17 @@ class CacheManager:
                 serialized = pickle.dumps(value)
                 self.cache.setex(key, ttl, serialized)
             
-            # Cache mÃƒÂ©moire aussi
+            # Cache memoire aussi
             self.memory_cache[key] = value
             self.cache_timestamps[key] = time.time() + ttl
             
             self.stats['sets'] += 1
             
-            # VÃƒÂ©rifier utilisation mÃƒÂ©moire
+            # Verifier utilisation memoire
             self._check_memory()
             
         except Exception as e:
-            logger.error(f"Erreur ÃƒÂ©criture cache {key}: {e}")
+            logger.error(f"Erreur ecriture cache {key}: {e}")
     
     def cache_indicators(self, symbol: str, timeframe: str, indicators: Dict, ttl: int = 60):
         """
@@ -143,14 +143,14 @@ class CacheManager:
             symbol: Symbole (ex: BTCUSDT)
             timeframe: Timeframe (ex: 5m)
             indicators: Dictionnaire des indicateurs
-            ttl: DurÃƒÂ©e de vie (60s par dÃƒÂ©faut)
+            ttl: Duree de vie (60s par defaut)
         """
         key = f"indicators:{symbol}:{timeframe}"
         self.set(key, indicators, ttl)
     
     def get_indicators(self, symbol: str, timeframe: str) -> Optional[Dict]:
         """
-        RÃƒÂ©cupÃƒÂ¨re les indicateurs du cache
+        Recupere les indicateurs du cache
         
         Args:
             symbol: Symbole
@@ -164,50 +164,50 @@ class CacheManager:
     
     def cache_market_data(self, symbol: str, data: Dict, ttl: int = 10):
         """
-        Cache les donnÃƒÂ©es de marchÃƒÂ©
+        Cache les donnees de marche
         
         Args:
             symbol: Symbole
-            data: DonnÃƒÂ©es (prix, volume, etc.)
-            ttl: DurÃƒÂ©e de vie (10s par dÃƒÂ©faut pour donnÃƒÂ©es temps rÃƒÂ©el)
+            data: Donnees (prix, volume, etc.)
+            ttl: Duree de vie (10s par defaut pour donnees temps reel)
         """
         key = f"market:{symbol}"
         self.set(key, data, ttl)
     
     def get_market_data(self, symbol: str) -> Optional[Dict]:
         """
-        RÃƒÂ©cupÃƒÂ¨re les donnÃƒÂ©es de marchÃƒÂ© du cache
+        Recupere les donnees de marche du cache
         
         Args:
             symbol: Symbole
             
         Returns:
-            DonnÃƒÂ©es de marchÃƒÂ© ou None
+            Donnees de marche ou None
         """
         key = f"market:{symbol}"
         return self.get(key)
     
     def cache_ml_prediction(self, symbol: str, prediction: Dict, ttl: int = 300):
         """
-        Cache les prÃƒÂ©dictions ML
+        Cache les predictions ML
         
         Args:
             symbol: Symbole
-            prediction: PrÃƒÂ©diction ML
-            ttl: DurÃƒÂ©e de vie (5min par dÃƒÂ©faut)
+            prediction: Prediction ML
+            ttl: Duree de vie (5min par defaut)
         """
         key = f"ml:prediction:{symbol}"
         self.set(key, prediction, ttl)
     
     def get_ml_prediction(self, symbol: str) -> Optional[Dict]:
         """
-        RÃƒÂ©cupÃƒÂ¨re la prÃƒÂ©diction ML du cache
+        Recupere la prediction ML du cache
         
         Args:
             symbol: Symbole
             
         Returns:
-            PrÃƒÂ©diction ou None
+            Prediction ou None
         """
         key = f"ml:prediction:{symbol}"
         return self.get(key)
@@ -235,14 +235,14 @@ class CacheManager:
     
     def get_price_buffer(self, symbol: str, max_items: int = 1000) -> List[Dict]:
         """
-        RÃƒÂ©cupÃƒÂ¨re le buffer de prix
+        Recupere le buffer de prix
         
         Args:
             symbol: Symbole
             max_items: Nombre max d'items
             
         Returns:
-            Liste des prix rÃƒÂ©cents
+            Liste des prix recents
         """
         if symbol not in self.price_buffer:
             return []
@@ -254,7 +254,7 @@ class CacheManager:
         Nettoie tout le cache d'un symbole
         
         Args:
-            symbol: Symbole ÃƒÂ  nettoyer
+            symbol: Symbole  nettoyer
         """
         patterns = [
             f"indicators:{symbol}:*",
@@ -271,7 +271,7 @@ class CacheManager:
             except Exception as e:
                 logger.error(f"Erreur nettoyage cache {pattern}: {e}")
         
-        # Nettoyer buffer mÃƒÂ©moire
+        # Nettoyer buffer memoire
         if symbol in self.price_buffer:
             del self.price_buffer[symbol]
         if symbol in self.indicator_buffer:
@@ -279,31 +279,31 @@ class CacheManager:
     
     def _check_memory(self):
         """
-        VÃƒÂ©rifie l'utilisation mÃƒÂ©moire et nettoie si nÃƒÂ©cessaire
+        Verifie l'utilisation memoire et nettoie si necessaire
         """
         try:
             process = psutil.Process()
             memory_mb = process.memory_info().rss / 1024 / 1024
             
             if memory_mb > self.max_memory:
-                logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â MÃƒÂ©moire ÃƒÂ©levÃƒÂ©e: {memory_mb:.0f}MB > {self.max_memory}MB")
+                logger.warning(f" Memoire elevee: {memory_mb:.0f}MB > {self.max_memory}MB")
                 self.cleanup()
             
         except Exception as e:
-            logger.error(f"Erreur vÃƒÂ©rification mÃƒÂ©moire: {e}")
+            logger.error(f"Erreur verification memoire: {e}")
     
     def cleanup(self):
         """
-        Nettoie les anciennes donnÃƒÂ©es pour libÃƒÂ©rer de la mÃƒÂ©moire
+        Nettoie les anciennes donnees pour liberer de la memoire
         """
-        logger.info("Ã°Å¸Â§Â¹ Nettoyage mÃƒÂ©moire en cours...")
+        logger.info(" Nettoyage memoire en cours...")
         
         # Nettoyer buffers (garder seulement 1000 derniers)
         for symbol in list(self.price_buffer.keys()):
             if len(self.price_buffer[symbol]) > 1000:
                 self.price_buffer[symbol] = self.price_buffer[symbol][-1000:]
         
-        # Nettoyer cache mÃƒÂ©moire expirÃƒÂ©
+        # Nettoyer cache memoire expire
         current_time = time.time()
         expired_keys = [
             key for key, timestamp in self.cache_timestamps.items()
@@ -319,10 +319,10 @@ class CacheManager:
         # Force garbage collection
         gc.collect()
         
-        # VÃƒÂ©rifier nouvelle utilisation
+        # Verifier nouvelle utilisation
         process = psutil.Process()
         memory_mb = process.memory_info().rss / 1024 / 1024
-        logger.info(f"Ã¢Å“â€¦ Nettoyage terminÃƒÂ© - MÃƒÂ©moire: {memory_mb:.0f}MB")
+        logger.info(f"""| Nettoyage termine - Memoire: {memory_mb:.0f}MB")
     
     def get_stats(self) -> Dict:
         """
@@ -335,7 +335,7 @@ class CacheManager:
         if self.stats['hits'] + self.stats['misses'] > 0:
             hit_rate = self.stats['hits'] / (self.stats['hits'] + self.stats['misses'])
         
-        # MÃƒÂ©moire actuelle
+        # Memoire actuelle
         process = psutil.Process()
         memory_mb = process.memory_info().rss / 1024 / 1024
         
@@ -363,7 +363,7 @@ class CacheManager:
             self.price_buffer.clear()
             self.indicator_buffer.clear()
             
-            logger.info("Ã°Å¸Â§Â¹ Cache entiÃƒÂ¨rement nettoyÃƒÂ©")
+            logger.info(" Cache entierement nettoye")
             
         except Exception as e:
             logger.error(f"Erreur nettoyage complet: {e}")
@@ -373,18 +373,18 @@ class CacheManager:
         try:
             if self.redis_available and self.cache:
                 self.cache.close()
-            logger.info("Cache Manager fermÃƒÂ©")
+            logger.info("Cache Manager ferme")
         except Exception as e:
             logger.error(f"Erreur fermeture cache: {e}")
 
 
 def cached(ttl: int = 60, key_prefix: str = ""):
     """
-    DÃƒÂ©corateur pour mettre en cache les rÃƒÂ©sultats de fonctions
+    Decorateur pour mettre en cache les resultats de fonctions
     
     Args:
-        ttl: DurÃƒÂ©e de vie du cache
-        key_prefix: PrÃƒÂ©fixe de la clÃƒÂ©
+        ttl: Duree de vie du cache
+        key_prefix: Prefixe de la cle
         
     Usage:
         @cached(ttl=60, key_prefix="strategy")
@@ -395,10 +395,10 @@ def cached(ttl: int = 60, key_prefix: str = ""):
     def decorator(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
-            # Construire clÃƒÂ© de cache
+            # Construire cle de cache
             cache_key = f"{key_prefix}:{func.__name__}:{str(args)}:{str(kwargs)}"
             
-            # Essayer de rÃƒÂ©cupÃƒÂ©rer du cache
+            # Essayer de recuperer du cache
             if hasattr(self, 'cache_manager'):
                 cached_result = self.cache_manager.get(cache_key)
                 if cached_result is not None:
@@ -418,7 +418,7 @@ def cached(ttl: int = 60, key_prefix: str = ""):
 
 class MemoryManager:
     """
-    Gestionnaire de mÃƒÂ©moire pour ÃƒÂ©viter les memory leaks
+    Gestionnaire de memoire pour eviter les memory leaks
     """
     
     def __init__(self, max_memory: int = 2000):
@@ -426,45 +426,45 @@ class MemoryManager:
         Initialise le memory manager
         
         Args:
-            max_memory: MÃƒÂ©moire max en MB
+            max_memory: Memoire max en MB
         """
         self.max_memory = max_memory
         self.last_cleanup = time.time()
         self.cleanup_interval = 300  # 5 minutes
         
-        logger.info(f"Memory Manager initialisÃƒÂ© (max: {max_memory}MB)")
+        logger.info(f"Memory Manager initialise (max: {max_memory}MB)")
     
     def check_memory(self) -> bool:
         """
-        VÃƒÂ©rifie si la mÃƒÂ©moire dÃƒÂ©passe la limite
+        Verifie si la memoire depasse la limite
         
         Returns:
-            True si mÃƒÂ©moire OK, False si limite dÃƒÂ©passÃƒÂ©e
+            True si memoire OK, False si limite depassee
         """
         try:
             process = psutil.Process()
             memory_mb = process.memory_info().rss / 1024 / 1024
             
             if memory_mb > self.max_memory:
-                logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â Limite mÃƒÂ©moire dÃƒÂ©passÃƒÂ©e: {memory_mb:.0f}MB > {self.max_memory}MB")
+                logger.warning(f" Limite memoire depassee: {memory_mb:.0f}MB > {self.max_memory}MB")
                 return False
             
             return True
             
         except Exception as e:
-            logger.error(f"Erreur vÃƒÂ©rification mÃƒÂ©moire: {e}")
+            logger.error(f"Erreur verification memoire: {e}")
             return True
     
     def auto_cleanup_if_needed(self, cleanup_func):
         """
-        Nettoie automatiquement si nÃƒÂ©cessaire
+        Nettoie automatiquement si necessaire
         
         Args:
-            cleanup_func: Fonction de nettoyage ÃƒÂ  appeler
+            cleanup_func: Fonction de nettoyage  appeler
         """
         current_time = time.time()
         
-        # VÃƒÂ©rifier si cleanup nÃƒÂ©cessaire
+        # Verifier si cleanup necessaire
         if not self.check_memory() or (current_time - self.last_cleanup > self.cleanup_interval):
             cleanup_func()
             self.last_cleanup = current_time
@@ -472,7 +472,7 @@ class MemoryManager:
     
     def get_memory_info(self) -> Dict:
         """
-        Retourne les infos mÃƒÂ©moire
+        Retourne les infos memoire
         
         Returns:
             Dictionnaire avec les infos
@@ -490,5 +490,5 @@ class MemoryManager:
             }
             
         except Exception as e:
-            logger.error(f"Erreur rÃƒÂ©cupÃƒÂ©ration info mÃƒÂ©moire: {e}")
+            logger.error(f"Erreur recuperation info memoire: {e}")
             return {}
