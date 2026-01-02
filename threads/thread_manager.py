@@ -1,6 +1,6 @@
 """
 Thread Manager pour The Bot
-Gestion optimisÃƒÂ©e des threads pour exÃƒÂ©cution parallÃƒÂ¨le
+Gestion optimisee des threads pour execution parallele
 """
 
 import threading
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class ThreadPriority(Enum):
-    """PrioritÃƒÂ©s des threads"""
+    """Priorites des threads"""
     CRITICAL = 1  # Market data, execution
     HIGH = 2      # Risk monitoring
     NORMAL = 3    # Strategy, analysis
@@ -32,7 +32,7 @@ class ThreadStatus(Enum):
 
 
 class ManagedThread:
-    """Classe reprÃƒÂ©sentant un thread gÃƒÂ©rÃƒÂ©"""
+    """Classe representant un thread gere"""
     
     def __init__(self, 
                  name: str,
@@ -41,14 +41,14 @@ class ManagedThread:
                  daemon: bool = True,
                  restart_on_error: bool = True):
         """
-        CrÃƒÂ©e un thread gÃƒÂ©rÃƒÂ©
+        Cree un thread gere
         
         Args:
             name: Nom du thread
-            target: Fonction ÃƒÂ  exÃƒÂ©cuter
-            priority: PrioritÃƒÂ© du thread
+            target: Fonction a executer
+            priority: Priorite du thread
             daemon: Thread daemon ou non
-            restart_on_error: RedÃƒÂ©marrer en cas d'erreur
+            restart_on_error: Redemarrer en cas d'erreur
         """
         self.name = name
         self.target = target
@@ -56,7 +56,7 @@ class ManagedThread:
         self.daemon = daemon
         self.restart_on_error = restart_on_error
         
-        # Ãƒâ€°tat
+        # Etat
         self.thread = None
         self.status = ThreadStatus.IDLE
         self.start_time = None
@@ -64,7 +64,7 @@ class ManagedThread:
         self.last_error = None
         self.restart_count = 0
         
-        # ContrÃƒÂ´le
+        # Controle
         self.should_run = threading.Event()
         self.is_running = threading.Event()
 
@@ -73,11 +73,11 @@ class ThreadManager:
     """
     Gestionnaire central des threads
     
-    ResponsabilitÃƒÂ©s:
-    - CrÃƒÂ©er et dÃƒÂ©marrer les threads
-    - Monitorer leur santÃƒÂ©
-    - RedÃƒÂ©marrer en cas d'erreur
-    - GÃƒÂ©rer les prioritÃƒÂ©s
+    Responsabilites:
+    - Creer et demarrer les threads
+    - Monitorer leur sante
+    - Redemarrer en cas d'erreur
+    - Gerer les priorites
     - Optimiser l'utilisation CPU
     """
     
@@ -97,10 +97,10 @@ class ThreadManager:
         self.monitor_interval = getattr(config, 'MONITOR_INTERVAL', 5)
         self.max_restart_attempts = getattr(config, 'MAX_RESTART_ATTEMPTS', 3)
         
-        # Threads gÃƒÂ©rÃƒÂ©s
+        # Threads geres
         self.threads = {}
         
-        # Ãƒâ€°tat
+        # Etat
         self.is_running = False
         self.monitor_thread = None
         
@@ -117,10 +117,10 @@ class ThreadManager:
         # Initialiser les threads
         self._initialize_threads()
         
-        logger.info(f"Thread Manager initialisÃƒÂ© avec {self.max_threads} threads max")
+        logger.info(f"Thread Manager initialise avec {self.max_threads} threads max")
     
     def _initialize_threads(self):
-        """Initialise tous les threads nÃƒÂ©cessaires"""
+        """Initialise tous les threads necessaires"""
         
         # Thread 1: Market Data Collection (CRITICAL)
         self.register_thread(
@@ -165,13 +165,13 @@ class ThreadManager:
         
         Args:
             name: Nom du thread
-            target: Fonction ÃƒÂ  exÃƒÂ©cuter
-            priority: PrioritÃƒÂ©
+            target: Fonction a executer
+            priority: Priorite
             daemon: Thread daemon
-            restart_on_error: RedÃƒÂ©marrer si erreur
+            restart_on_error: Redemarrer si erreur
         """
         if name in self.threads:
-            logger.warning(f"Thread {name} dÃƒÂ©jÃƒÂ  enregistrÃƒÂ©")
+            logger.warning(f"Thread {name} deja enregistre")
             return
         
         managed_thread = ManagedThread(
@@ -185,18 +185,18 @@ class ThreadManager:
         self.threads[name] = managed_thread
         self.stats['threads_created'] += 1
         
-        logger.info(f"Thread '{name}' enregistrÃƒÂ© (prioritÃƒÂ©: {priority.name})")
+        logger.info(f"Thread '{name}' enregistre (priorite: {priority.name})")
     
     def start_all(self):
-        """DÃƒÂ©marre tous les threads"""
+        """Demarre tous les threads"""
         if self.is_running:
-            logger.warning("Thread Manager dÃƒÂ©jÃƒÂ  en cours")
+            logger.warning("Thread Manager deja en cours")
             return
         
         self.is_running = True
         self.start_time = datetime.now()
         
-        # DÃƒÂ©marrer les threads par ordre de prioritÃƒÂ©
+        # Demarrer les threads par ordre de priorite
         sorted_threads = sorted(
             self.threads.values(),
             key=lambda t: t.priority.value
@@ -204,52 +204,52 @@ class ThreadManager:
         
         for managed_thread in sorted_threads:
             self._start_thread(managed_thread)
-            time.sleep(0.1)  # Petit dÃƒÂ©lai entre dÃƒÂ©marrages
+            time.sleep(0.1)  # Petit delai entre demarrages
         
-        # DÃƒÂ©marrer le monitor
+        # Demarrer le monitor
         self.monitor_thread = threading.Thread(
             target=self._monitor_loop,
             daemon=True
         )
         self.monitor_thread.start()
         
-        logger.info(f"Ã¢Å“â€¦ {len(self.threads)} threads dÃƒÂ©marrÃƒÂ©s")
+        logger.info(f"[OK] {len(self.threads)} threads demarres")
     
     def stop_all(self):
-        """ArrÃƒÂªte tous les threads"""
-        logger.info("ArrÃƒÂªt de tous les threads...")
+        """Arrete tous les threads"""
+        logger.info("Arret de tous les threads...")
         
         self.is_running = False
         
-        # Signaler l'arrÃƒÂªt ÃƒÂ  tous les threads
+        # Signaler l'arret a tous les threads
         for managed_thread in self.threads.values():
             managed_thread.should_run.clear()
         
-        # Attendre l'arrÃƒÂªt (avec timeout)
+        # Attendre l'arret (avec timeout)
         timeout = 5
         for managed_thread in self.threads.values():
             if managed_thread.thread and managed_thread.thread.is_alive():
-                logger.info(f"Attente arrÃƒÂªt thread '{managed_thread.name}'...")
+                logger.info(f"Attente arret thread '{managed_thread.name}'...")
                 managed_thread.thread.join(timeout=timeout)
                 
                 if managed_thread.thread.is_alive():
-                    logger.warning(f"Thread '{managed_thread.name}' ne s'est pas arrÃƒÂªtÃƒÂ© proprement")
+                    logger.warning(f"Thread '{managed_thread.name}' ne s'est pas arrete proprement")
         
-        # ArrÃƒÂªter le monitor
+        # Arreter le monitor
         if self.monitor_thread:
             self.monitor_thread.join(timeout=2)
         
-        logger.info("Tous les threads arrÃƒÂªtÃƒÂ©s")
+        logger.info("Tous les threads arretes")
     
     def _start_thread(self, managed_thread: ManagedThread):
         """
-        DÃƒÂ©marre un thread individuel
+        Demarre un thread individuel
         
         Args:
-            managed_thread: Le thread ÃƒÂ  dÃƒÂ©marrer
+            managed_thread: Le thread a demarrer
         """
         try:
-            # Wrapper pour gÃƒÂ©rer les erreurs
+            # Wrapper pour gerer les erreurs
             def thread_wrapper():
                 managed_thread.is_running.set()
                 managed_thread.status = ThreadStatus.RUNNING
@@ -267,7 +267,7 @@ class ThreadManager:
                     if not self.is_running:
                         managed_thread.status = ThreadStatus.STOPPED
             
-            # CrÃƒÂ©er et dÃƒÂ©marrer le thread
+            # Creer et demarrer le thread
             managed_thread.should_run.set()
             managed_thread.thread = threading.Thread(
                 target=thread_wrapper,
@@ -277,10 +277,10 @@ class ThreadManager:
             managed_thread.thread.start()
             managed_thread.start_time = datetime.now()
             
-            logger.info(f"Thread '{managed_thread.name}' dÃƒÂ©marrÃƒÂ©")
+            logger.info(f"Thread '{managed_thread.name}' demarre")
             
         except Exception as e:
-            logger.error(f"Erreur dÃƒÂ©marrage thread '{managed_thread.name}': {e}")
+            logger.error(f"Erreur demarrage thread '{managed_thread.name}': {e}")
     
     def _monitor_loop(self):
         """Boucle de monitoring des threads"""
@@ -290,11 +290,11 @@ class ThreadManager:
                 for name, managed_thread in self.threads.items():
                     self._check_thread_health(managed_thread)
                 
-                # Mise ÃƒÂ  jour stats
+                # Mise a jour stats
                 if self.start_time:
                     self.stats['uptime_seconds'] = (datetime.now() - self.start_time).seconds
                 
-                # Log pÃƒÂ©riodique
+                # Log periodique
                 if self.stats['uptime_seconds'] % 60 == 0:  # Toutes les minutes
                     self._log_status()
                 
@@ -306,30 +306,30 @@ class ThreadManager:
     
     def _check_thread_health(self, managed_thread: ManagedThread):
         """
-        VÃƒÂ©rifie la santÃƒÂ© d'un thread
+        Verifie la sante d'un thread
         
         Args:
-            managed_thread: Thread ÃƒÂ  vÃƒÂ©rifier
+            managed_thread: Thread a verifier
         """
-        # Thread devrait ÃƒÂªtre en cours mais ne l'est pas
+        # Thread devrait etre en cours mais ne l'est pas
         if managed_thread.should_run.is_set() and not managed_thread.is_running.is_set():
             
-            # Si le thread est en erreur et doit redÃƒÂ©marrer
+            # Si le thread est en erreur et doit redemarrer
             if managed_thread.status == ThreadStatus.ERROR and managed_thread.restart_on_error:
                 if managed_thread.restart_count < self.max_restart_attempts:
-                    logger.warning(f"RedÃƒÂ©marrage thread '{managed_thread.name}' "
+                    logger.warning(f"Redemarrage thread '{managed_thread.name}' "
                                  f"(tentative {managed_thread.restart_count + 1})")
                     
-                    # Attendre un peu avant redÃƒÂ©marrage
+                    # Attendre un peu avant redemarrage
                     time.sleep(2 ** managed_thread.restart_count)  # Backoff exponentiel
                     
-                    # RedÃƒÂ©marrer
+                    # Redemarrer
                     self._start_thread(managed_thread)
                     managed_thread.restart_count += 1
                     self.stats['threads_restarted'] += 1
                 else:
                     logger.error(f"Thread '{managed_thread.name}' - "
-                               f"max tentatives de redÃƒÂ©marrage atteintes")
+                               f"max tentatives de redemarrage atteintes")
     
     def _log_status(self):
         """Log le statut des threads"""
@@ -341,12 +341,12 @@ class ThreadManager:
                    f"Restarts: {self.stats['threads_restarted']}")
     
     # =============================================================
-    # THREADS MÃƒâ€°TIER
+    # THREADS METIER
     # =============================================================
     
     def _market_data_thread(self):
-        """Thread de collecte des donnÃƒÂ©es de marchÃƒÂ©"""
-        logger.info("Market Data Thread dÃƒÂ©marrÃƒÂ©")
+        """Thread de collecte des donnees de marche"""
+        logger.info("Market Data Thread demarre")
         
         managed_thread = self.threads.get('market_data')
         if not managed_thread:
@@ -354,24 +354,24 @@ class ThreadManager:
         
         while managed_thread.should_run.is_set() and self.bot.is_running:
             try:
-                # RÃƒÂ©cupÃƒÂ©rer les symboles ÃƒÂ  surveiller
+                # Recuperer les symboles a surveiller
                 if hasattr(self.bot, 'scanner') and self.bot.scanner:
                     symbols = self.bot.scanner.get_top_symbols()
                 else:
-                    symbols = ['BTCUSDC', 'ETHUSDC']  # DÃƒÂ©faut
+                    symbols = ['BTCUSDC', 'ETHUSDC']  # Defaut
                 
-                # Collecter les donnÃƒÂ©es pour chaque symbole
+                # Collecter les donnees pour chaque symbole
                 for symbol in symbols:
                     if not managed_thread.should_run.is_set():
                         break
                     
-                    # RÃƒÂ©cupÃƒÂ©rer les donnÃƒÂ©es
+                    # Recuperer les donnees
                     ticker = self.bot.exchange.get_symbol_ticker(symbol)
                     if ticker:
-                        # RÃƒÂ©cupÃƒÂ©rer l'orderbook
+                        # Recuperer l'orderbook
                         orderbook = self.bot.exchange.get_orderbook(symbol, limit=20)
                         
-                        # RÃƒÂ©cupÃƒÂ©rer les klines
+                        # Recuperer les klines
                         df = self.bot.exchange.get_klines(symbol, '5m', limit=100)
                         
                         if not df.empty:
@@ -380,7 +380,7 @@ class ThreadManager:
                             indicators = TechnicalIndicators()
                             df = indicators.calculate_all(df)
                             
-                            # PrÃƒÂ©parer les donnÃƒÂ©es
+                            # Preparer les donnees
                             market_data = {
                                 'df': df,
                                 'ticker': ticker,
@@ -400,11 +400,11 @@ class ThreadManager:
                 logger.error(f"Erreur market data thread: {e}")
                 time.sleep(5)
         
-        logger.info("Market Data Thread arrÃƒÂªtÃƒÂ©")
+        logger.info("Market Data Thread arrete")
     
     def _strategy_thread(self):
-        """Thread de traitement des stratÃƒÂ©gies"""
-        logger.info("Strategy Thread dÃƒÂ©marrÃƒÂ©")
+        """Thread de traitement des strategies"""
+        logger.info("Strategy Thread demarre")
         
         managed_thread = self.threads.get('strategy')
         if not managed_thread:
@@ -413,14 +413,14 @@ class ThreadManager:
         while managed_thread.should_run.is_set() and self.bot.is_running:
             try:
                 # Le strategy manager a son propre processing loop
-                # Ce thread surveille juste son ÃƒÂ©tat
+                # Ce thread surveille juste son etat
                 
                 if hasattr(self.bot, 'strategy_manager'):
                     status = self.bot.strategy_manager.get_status()
                     
-                    # Log pÃƒÂ©riodique
+                    # Log periodique
                     if int(time.time()) % 30 == 0:  # Toutes les 30 secondes
-                        logger.debug(f"StratÃƒÂ©gies actives: {status['active_strategies']}, "
+                        logger.debug(f"Strategies actives: {status['active_strategies']}, "
                                    f"Positions: {status['open_positions']}")
                 
                 time.sleep(5)
@@ -429,11 +429,11 @@ class ThreadManager:
                 logger.error(f"Erreur strategy thread: {e}")
                 time.sleep(10)
         
-        logger.info("Strategy Thread arrÃƒÂªtÃƒÂ©")
+        logger.info("Strategy Thread arrete")
     
     def _risk_monitor_thread(self):
         """Thread de surveillance des risques"""
-        logger.info("Risk Monitor Thread dÃƒÂ©marrÃƒÂ©")
+        logger.info("Risk Monitor Thread demarre")
         
         managed_thread = self.threads.get('risk_monitor')
         if not managed_thread:
@@ -442,25 +442,25 @@ class ThreadManager:
         while managed_thread.should_run.is_set() and self.bot.is_running:
             try:
                 if hasattr(self.bot, 'risk_monitor'):
-                    # RÃƒÂ©cupÃƒÂ©rer les positions actuelles
+                    # Recuperer les positions actuelles
                     positions = {}
                     if hasattr(self.bot, 'strategy_manager'):
                         positions = self.bot.strategy_manager.positions
                     
-                    # Mettre ÃƒÂ  jour le risk monitor
+                    # Mettre a jour le risk monitor
                     report = self.bot.risk_monitor.update(
                         current_capital=self.bot.capital,
                         positions=positions
                     )
                     
-                    # RÃƒÂ©agir selon le niveau de risque
+                    # Reagir selon le niveau de risque
                     if report['risk_level'] == 'EMERGENCY':
-                        logger.critical("Ã°Å¸Å¡Â¨ NIVEAU D'URGENCE - Fermeture de toutes les positions!")
+                        logger.critical("[EMERGENCY] NIVEAU D'URGENCE - Fermeture de toutes les positions!")
                         if hasattr(self.bot, 'strategy_manager'):
                             self.bot.strategy_manager.close_all_positions('emergency')
                     
                     elif report['risk_level'] == 'CRITICAL':
-                        logger.error("Ã¢ÂÅ’ Niveau critique - Trading suspendu")
+                        logger.error("[CRITICAL] Niveau critique - Trading suspendu")
                         if hasattr(self.bot, 'strategy_manager'):
                             self.bot.strategy_manager.disable_trading()
                 
@@ -471,11 +471,11 @@ class ThreadManager:
                 logger.error(f"Erreur risk monitor thread: {e}")
                 time.sleep(10)
         
-        logger.info("Risk Monitor Thread arrÃƒÂªtÃƒÂ©")
+        logger.info("Risk Monitor Thread arrete")
     
     def _performance_thread(self):
         """Thread de tracking de performance"""
-        logger.info("Performance Thread dÃƒÂ©marrÃƒÂ©")
+        logger.info("Performance Thread demarre")
         
         managed_thread = self.threads.get('performance')
         if not managed_thread:
@@ -483,24 +483,24 @@ class ThreadManager:
         
         while managed_thread.should_run.is_set() and self.bot.is_running:
             try:
-                # Collecter les mÃƒÂ©triques
+                # Collecter les metriques
                 metrics = {
                     'timestamp': datetime.now(),
                     'capital': self.bot.capital
                 }
                 
-                # MÃƒÂ©triques du strategy manager
+                # Metriques du strategy manager
                 if hasattr(self.bot, 'strategy_manager'):
                     status = self.bot.strategy_manager.get_status()
                     metrics['positions'] = status['open_positions']
                     metrics['performance'] = status['performance']
                 
-                # MÃƒÂ©triques du risk monitor
+                # Metriques du risk monitor
                 if hasattr(self.bot, 'risk_monitor'):
                     metrics['risk_level'] = self.bot.risk_monitor.current_risk_level.value
                     metrics['drawdown'] = self.bot.risk_monitor.current_drawdown
                 
-                # MÃƒÂ©triques d'exÃƒÂ©cution
+                # Metriques d'execution
                 if hasattr(self.bot, 'order_manager'):
                     metrics['orders'] = self.bot.order_manager.get_stats()
                 
@@ -508,7 +508,7 @@ class ThreadManager:
                 if int(time.time()) % 60 == 0:  # Chaque minute
                     self._log_performance(metrics)
                 
-                # Mise ÃƒÂ  jour du dashboard si disponible
+                # Mise a jour du dashboard si disponible
                 if hasattr(self.bot, 'dashboard'):
                     self.bot.dashboard.update()
                 
@@ -518,10 +518,10 @@ class ThreadManager:
                 logger.error(f"Erreur performance thread: {e}")
                 time.sleep(30)
         
-        logger.info("Performance Thread arrÃƒÂªtÃƒÂ©")
+        logger.info("Performance Thread arrete")
     
     def _log_performance(self, metrics: Dict):
-        """Log les mÃƒÂ©triques de performance"""
+        """Log les metriques de performance"""
         perf_msg = f"\n{'='*60}\n"
         perf_msg += f"PERFORMANCE UPDATE - {metrics['timestamp'].strftime('%H:%M:%S')}\n"
         perf_msg += f"{'='*60}\n"
@@ -592,7 +592,7 @@ if __name__ == "__main__":
     # Mock bot pour test
     class MockBot:
         def __init__(self):
-            self.running = True
+            self.is_running = True
             self.capital = 1000
             self.exchange = None
             self.scanner = None
@@ -607,7 +607,7 @@ if __name__ == "__main__":
         'max_restart_attempts': 3
     }
     
-    # CrÃƒÂ©er le bot et le manager
+    # Creer le bot et le manager
     bot = MockBot()
     manager = ThreadManager(config, bot)
     
@@ -615,15 +615,15 @@ if __name__ == "__main__":
     print("TEST THREAD MANAGER")
     print("=" * 60)
     
-    # DÃƒÂ©marrer
-    print("\nÃ¢â€“Â¶Ã¯Â¸Â DÃƒÂ©marrage des threads...")
+    # Demarrer
+    print("\nDemarrage des threads...")
     manager.start_all()
     
     # Attendre un peu
     time.sleep(5)
     
     # Afficher le statut
-    print("\nÃ°Å¸â€œÅ  Statut des threads:")
+    print("\nStatut des threads:")
     status = manager.get_all_status()
     print(f"Threads actifs: {status['active_threads']}/{status['thread_count']}")
     print(f"CPU: {status['system']['cpu_percent']:.1f}%")
@@ -638,9 +638,9 @@ if __name__ == "__main__":
     # Attendre encore
     time.sleep(5)
     
-    # ArrÃƒÂªter
-    print("\nÃ¢ÂÂ¹Ã¯Â¸Â ArrÃƒÂªt des threads...")
-    bot.running = False
+    # Arreter
+    print("\nArret des threads...")
+    bot.is_running = False
     manager.stop_all()
     
-    print("\nÃ¢Å“â€¦ Test terminÃƒÂ©!")
+    print("\n[OK] Test termine!")
