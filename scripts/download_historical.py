@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Script de tÃƒÂ©lÃƒÂ©chargement de donnÃƒÂ©es historiques
-TÃƒÂ©lÃƒÂ©charge les donnÃƒÂ©es OHLCV de Binance pour backtesting et training ML
+Script de telechargement de donnees historiques
+Telecharge les donnees OHLCV de Binance pour backtesting et training ML
 """
 
 import os
@@ -14,14 +14,14 @@ import time
 import argparse
 from typing import List
 
-# Ajouter le rÃƒÂ©pertoire parent au path
+# Ajouter le repertoire parent au path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
     from binance.client import Client
     from binance.exceptions import BinanceAPIException
 except ImportError:
-    print("Ã¢ÂÅ’ Erreur: python-binance non installÃƒÂ©")
+    print("' Erreur: python-binance non installe")
     print("   Installez avec: pip install python-binance")
     sys.exit(1)
 
@@ -34,10 +34,10 @@ logger = logging.getLogger(__name__)
 
 class HistoricalDataDownloader:
     """
-    TÃƒÂ©lÃƒÂ©chargeur de donnÃƒÂ©es historiques Binance
+    Telechargeur de donnees historiques Binance
     
-    FonctionnalitÃƒÂ©s:
-    - TÃƒÂ©lÃƒÂ©chargement multi-symboles
+    Fonctionnalites:
+    - Telechargement multi-symboles
     - Plusieurs timeframes
     - Sauvegarde en CSV et Parquet
     - Gestion de la limite de rate API
@@ -49,7 +49,7 @@ class HistoricalDataDownloader:
         Initialise le downloader
         
         Args:
-            api_key: ClÃƒÂ© API Binance (optionnel pour donnÃƒÂ©es publiques)
+            api_key: Cle API Binance (optionnel pour donnees publiques)
             api_secret: Secret API Binance
         """
         self.client = Client(api_key, api_secret)
@@ -58,10 +58,10 @@ class HistoricalDataDownloader:
         
         # Limites API Binance
         self.max_klines_per_request = 1000
-        self.request_delay = 0.5  # 500ms entre requÃƒÂªtes
+        self.request_delay = 0.5  # 500ms entre requetes
         
-        logger.info("Ã°Å¸â€œÂ¥ Historical Data Downloader initialisÃƒÂ©")
-        logger.info(f"   Dossier donnÃƒÂ©es: {self.data_dir}")
+        logger.info("" Historical Data Downloader initialise")
+        logger.info(f"   Dossier donnees: {self.data_dir}")
     
     def download_symbol_data(
         self,
@@ -72,33 +72,33 @@ class HistoricalDataDownloader:
         save_format: str = 'csv'
     ) -> pd.DataFrame:
         """
-        TÃƒÂ©lÃƒÂ©charge les donnÃƒÂ©es historiques pour un symbole
+        Telecharge les donnees historiques pour un symbole
         
         Args:
             symbol: Symbole (ex: BTCUSDC)
             interval: Intervalle (1m, 5m, 15m, 1h, 4h, 1d)
-            start_date: Date de dÃƒÂ©but (YYYY-MM-DD)
-            end_date: Date de fin (YYYY-MM-DD), dÃƒÂ©faut: aujourd'hui
+            start_date: Date de debut (YYYY-MM-DD)
+            end_date: Date de fin (YYYY-MM-DD), defaut: aujourd'hui
             save_format: Format de sauvegarde (csv ou parquet)
             
         Returns:
-            DataFrame avec les donnÃƒÂ©es
+            DataFrame avec les donnees
         """
         try:
-            logger.info(f"Ã°Å¸â€œÂ¥ TÃƒÂ©lÃƒÂ©chargement {symbol} - {interval}")
-            logger.info(f"   PÃƒÂ©riode: {start_date} -> {end_date or 'aujourd\'hui'}")
+            logger.info(f"" Telechargement {symbol} - {interval}")
+            logger.info(f"   Periode: {start_date} -> {end_date or 'aujourd\'hui'}")
             
             # Convertir les dates
             start_ts = self._date_to_timestamp(start_date)
             end_ts = self._date_to_timestamp(end_date) if end_date else int(time.time() * 1000)
             
-            # TÃƒÂ©lÃƒÂ©charger les donnÃƒÂ©es par chunks
+            # Telecharger les donnees par chunks
             all_klines = []
             current_ts = start_ts
             
             while current_ts < end_ts:
                 try:
-                    # RequÃƒÂªte API
+                    # Requete API
                     klines = self.client.get_klines(
                         symbol=symbol,
                         interval=interval,
@@ -112,7 +112,7 @@ class HistoricalDataDownloader:
                     
                     all_klines.extend(klines)
                     
-                    # Mettre ÃƒÂ  jour le timestamp
+                    # Mettre  jour le timestamp
                     current_ts = klines[-1][0] + 1
                     
                     # Afficher la progression
@@ -120,7 +120,7 @@ class HistoricalDataDownloader:
                     logger.info(f"   Progress: {current_date.strftime('%Y-%m-%d')} "
                               f"({len(all_klines)} candles)")
                     
-                    # DÃƒÂ©lai pour respecter les limites API
+                    # Delai pour respecter les limites API
                     time.sleep(self.request_delay)
                     
                 except BinanceAPIException as e:
@@ -132,7 +132,7 @@ class HistoricalDataDownloader:
                     continue
             
             if not all_klines:
-                logger.warning(f"   Aucune donnÃƒÂ©e trouvÃƒÂ©e pour {symbol}")
+                logger.warning(f"   Aucune donnee trouvee pour {symbol}")
                 return None
             
             # Convertir en DataFrame
@@ -141,13 +141,13 @@ class HistoricalDataDownloader:
             # Sauvegarder
             self._save_data(df, symbol, interval, save_format)
             
-            logger.info(f"   Ã¢Å“â€¦ TÃƒÂ©lÃƒÂ©chargÃƒÂ©: {len(df)} candles")
-            logger.info(f"   PÃƒÂ©riode: {df.index[0]} -> {df.index[-1]}")
+            logger.info(f"   ""| Telecharge: {len(df)} candles")
+            logger.info(f"   Periode: {df.index[0]} -> {df.index[-1]}")
             
             return df
             
         except Exception as e:
-            logger.error(f"Ã¢ÂÅ’ Erreur tÃƒÂ©lÃƒÂ©chargement {symbol}: {e}")
+            logger.error(f"' Erreur telechargement {symbol}: {e}")
             return None
     
     def download_multiple_symbols(
@@ -159,19 +159,19 @@ class HistoricalDataDownloader:
         save_format: str = 'csv'
     ) -> dict:
         """
-        TÃƒÂ©lÃƒÂ©charge les donnÃƒÂ©es pour plusieurs symboles
+        Telecharge les donnees pour plusieurs symboles
         
         Args:
             symbols: Liste des symboles
             interval: Intervalle
-            start_date: Date de dÃƒÂ©but
+            start_date: Date de debut
             end_date: Date de fin
             save_format: Format de sauvegarde
             
         Returns:
             Dict {symbol: DataFrame}
         """
-        logger.info(f"Ã°Å¸â€œÂ¥ TÃƒÂ©lÃƒÂ©chargement de {len(symbols)} symboles")
+        logger.info(f"" Telechargement de {len(symbols)} symboles")
         
         results = {}
         failed = []
@@ -191,11 +191,11 @@ class HistoricalDataDownloader:
             # Pause entre symboles
             time.sleep(1)
         
-        logger.info(f"\nÃ¢Å“â€¦ TerminÃƒÂ©!")
-        logger.info(f"   RÃƒÂ©ussis: {len(results)}/{len(symbols)}")
+        logger.info(f"\n""| Termine!")
+        logger.info(f"   Reussis: {len(results)}/{len(symbols)}")
         
         if failed:
-            logger.warning(f"   Ãƒâ€°checs: {', '.join(failed)}")
+            logger.warning(f"   "checs: {', '.join(failed)}")
         
         return results
     
@@ -209,23 +209,23 @@ class HistoricalDataDownloader:
         quote_asset: str = 'USDC'
     ) -> dict:
         """
-        TÃƒÂ©lÃƒÂ©charge les N meilleurs symboles par volume
+        Telecharge les N meilleurs symboles par volume
         
         Args:
             n: Nombre de symboles
             interval: Intervalle
-            start_date: Date de dÃƒÂ©but
+            start_date: Date de debut
             end_date: Date de fin
             save_format: Format
             quote_asset: Asset de quote (USDC, USDT, BTC)
             
         Returns:
-            Dict des donnÃƒÂ©es tÃƒÂ©lÃƒÂ©chargÃƒÂ©es
+            Dict des donnees telechargees
         """
-        logger.info(f"Ã°Å¸â€Â Recherche des top {n} symboles {quote_asset}")
+        logger.info(f"" Recherche des top {n} symboles {quote_asset}")
         
         try:
-            # RÃƒÂ©cupÃƒÂ©rer les stats 24h
+            # Recuperer les stats 24h
             tickers = self.client.get_ticker()
             
             # Filtrer par quote asset
@@ -246,13 +246,13 @@ class HistoricalDataDownloader:
             
             logger.info(f"   Top {n}: {', '.join(top_symbols[:5])}...")
             
-            # TÃƒÂ©lÃƒÂ©charger
+            # Telecharger
             return self.download_multiple_symbols(
                 top_symbols, interval, start_date, end_date, save_format
             )
             
         except Exception as e:
-            logger.error(f"Ã¢ÂÅ’ Erreur rÃƒÂ©cupÃƒÂ©ration top symboles: {e}")
+            logger.error(f"' Erreur recuperation top symboles: {e}")
             return {}
     
     def _klines_to_dataframe(self, klines: List) -> pd.DataFrame:
@@ -285,10 +285,10 @@ class HistoricalDataDownloader:
     
     def _save_data(self, df: pd.DataFrame, symbol: str, interval: str, format: str):
         """
-        Sauvegarde les donnÃƒÂ©es
+        Sauvegarde les donnees
         
         Args:
-            df: DataFrame ÃƒÂ  sauvegarder
+            df: DataFrame  sauvegarder
             symbol: Symbole
             interval: Intervalle
             format: Format (csv ou parquet)
@@ -308,10 +308,10 @@ class HistoricalDataDownloader:
                 df.to_csv(filepath)
             
             size_mb = filepath.stat().st_size / (1024 * 1024)
-            logger.info(f"   Ã°Å¸â€™Â¾ SauvegardÃƒÂ©: {filepath.name} ({size_mb:.2f} MB)")
+            logger.info(f"   ' Sauvegarde: {filepath.name} ({size_mb:.2f} MB)")
             
         except Exception as e:
-            logger.error(f"   Ã¢Å“â€” Erreur sauvegarde: {e}")
+            logger.error(f"   """ Erreur sauvegarde: {e}")
     
     def _date_to_timestamp(self, date_str: str) -> int:
         """
@@ -328,7 +328,7 @@ class HistoricalDataDownloader:
     
     def list_downloaded_data(self) -> List[dict]:
         """
-        Liste les donnÃƒÂ©es tÃƒÂ©lÃƒÂ©chargÃƒÂ©es
+        Liste les donnees telechargees
         
         Returns:
             Liste des fichiers disponibles
@@ -350,7 +350,7 @@ class HistoricalDataDownloader:
     
     def load_data(self, symbol: str, interval: str) -> pd.DataFrame:
         """
-        Charge des donnÃƒÂ©es sauvegardÃƒÂ©es
+        Charge des donnees sauvegardees
         
         Args:
             symbol: Symbole
@@ -371,29 +371,29 @@ class HistoricalDataDownloader:
                 else:
                     continue
                 
-                logger.info(f"Ã¢Å“â€¦ ChargÃƒÂ©: {file.name}")
+                logger.info(f"""| Charge: {file.name}")
                 return df
                 
             except Exception as e:
                 logger.error(f"Erreur chargement {file.name}: {e}")
         
-        logger.warning(f"Aucune donnÃƒÂ©e trouvÃƒÂ©e pour {symbol} {interval}")
+        logger.warning(f"Aucune donnee trouvee pour {symbol} {interval}")
         return None
 
 
 def main():
-    """Point d'entrÃƒÂ©e du script"""
-    parser = argparse.ArgumentParser(description='TÃƒÂ©lÃƒÂ©chargement donnÃƒÂ©es historiques')
+    """Point d'entree du script"""
+    parser = argparse.ArgumentParser(description='Telechargement donnees historiques')
     parser.add_argument('--symbols', nargs='+', help='Liste des symboles')
-    parser.add_argument('--top', type=int, help='TÃƒÂ©lÃƒÂ©charger les top N symboles')
+    parser.add_argument('--top', type=int, help='Telecharger les top N symboles')
     parser.add_argument('--interval', default='5m', 
                        choices=['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '12h', '1d'],
-                       help='Intervalle (dÃƒÂ©faut: 5m)')
-    parser.add_argument('--start', required=True, help='Date de dÃƒÂ©but (YYYY-MM-DD)')
+                       help='Intervalle (defaut: 5m)')
+    parser.add_argument('--start', required=True, help='Date de debut (YYYY-MM-DD)')
     parser.add_argument('--end', help='Date de fin (YYYY-MM-DD)')
     parser.add_argument('--format', choices=['csv', 'parquet'], default='csv',
                        help='Format de sauvegarde')
-    parser.add_argument('--list', action='store_true', help='Liste les donnÃƒÂ©es tÃƒÂ©lÃƒÂ©chargÃƒÂ©es')
+    parser.add_argument('--list', action='store_true', help='Liste les donnees telechargees')
     
     args = parser.parse_args()
     
@@ -404,17 +404,17 @@ def main():
     downloader = HistoricalDataDownloader(api_key, api_secret)
     
     print("\n" + "="*50)
-    print("Ã°Å¸â€œÂ¥ TÃƒâ€°LÃƒâ€°CHARGEMENT DONNÃƒâ€°ES HISTORIQUES")
+    print("" T"L"CHARGEMENT DONN"ES HISTORIQUES")
     print("="*50)
     
     if args.list:
         files = downloader.list_downloaded_data()
-        print(f"\nÃ°Å¸â€œâ€¹ DonnÃƒÂ©es disponibles: {len(files)} fichier(s)\n")
+        print(f"\n"" Donnees disponibles: {len(files)} fichier(s)\n")
         
         for i, file in enumerate(files, 1):
             print(f"{i}. {file['name']}")
             print(f"   Taille: {file['size_mb']:.2f} MB")
-            print(f"   ModifiÃƒÂ©: {file['modified'].strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"   Modifie: {file['modified'].strftime('%Y-%m-%d %H:%M:%S')}")
             print()
         
     elif args.symbols:
@@ -436,7 +436,7 @@ def main():
         )
         
     else:
-        print("Ã¢ÂÅ’ Erreur: SpÃƒÂ©cifiez --symbols, --top ou --list")
+        print("' Erreur: Specifiez --symbols, --top ou --list")
         sys.exit(1)
     
     print("\n" + "="*50 + "\n")
