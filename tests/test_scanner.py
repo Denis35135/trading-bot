@@ -1,5 +1,5 @@
 # =============================================================================
-# test_scanner.py - Tests pour le scanner de marchÃƒÂ©
+# test_scanner.py - Tests pour le scanner de marche
 # =============================================================================
 
 class TestMarketScanner:
@@ -73,7 +73,7 @@ class TestMarketScanner:
         assert 'BTCUSDT' not in scanner.blacklisted_symbols
     
     def test_volatility_filter(self):
-        """Test filtre de volatilitÃƒÂ©"""
+        """Test filtre de volatilite"""
         from scanner.market_scanner import MarketScanner
         
         config = {
@@ -81,13 +81,13 @@ class TestMarketScanner:
         }
         scanner = MarketScanner(None, config)
         
-        # VolatilitÃƒÂ© trop faible
+        # Volatilite trop faible
         assert not scanner._check_volatility({'volatility': 0.005})
         
-        # VolatilitÃƒÂ© OK
+        # Volatilite OK
         assert scanner._check_volatility({'volatility': 0.03})
         
-        # VolatilitÃƒÂ© trop ÃƒÂ©levÃƒÂ©e
+        # Volatilite trop elevee
         assert not scanner._check_volatility({'volatility': 0.15})
 
 
