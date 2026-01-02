@@ -55,7 +55,7 @@ extras_require['all'] = list(set(
 ))
 
 setup(
-    # MÃƒÂ©tadonnÃƒÂ©es
+    # Metadonnees
     name='the-bot',
     version='1.0.0',
     description='Bot de Trading Algorithmique Haute Performance pour Cryptomonnaies',
@@ -73,7 +73,7 @@ setup(
     # Python version
     python_requires='>=3.9',
     
-    # DÃƒÂ©pendances
+    # Dependances
     install_requires=requirements,
     extras_require=extras_require,
     
