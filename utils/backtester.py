@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Backtester pour The Bot
-Test les stratÃƒÂ©gies sur donnÃƒÂ©es historiques avec simulation rÃƒÂ©aliste
+Test les strategies sur donnees historiques avec simulation realiste
 """
 
 import pandas as pd
@@ -33,15 +33,15 @@ class BacktestConfig:
     max_drawdown: float = 0.08  # 8% drawdown max
     use_stop_loss: bool = True
     use_take_profit: bool = True
-    pyramiding: bool = False  # Permet positions multiples mÃƒÂªme symbole
-    realistic_fills: bool = True  # Simule fills rÃƒÂ©alistes
+    pyramiding: bool = False  # Permet positions multiples meme symbole
+    realistic_fills: bool = True  # Simule fills realistes
     save_results: bool = True
     plot_results: bool = True
 
 
 @dataclass
 class Trade:
-    """ReprÃƒÂ©sente un trade"""
+    """Represente un trade"""
     symbol: str
     entry_time: datetime
     exit_time: Optional[datetime]
@@ -59,13 +59,13 @@ class Trade:
 
 class Backtester:
     """
-    Backtester principal avec simulation rÃƒÂ©aliste
+    Backtester principal avec simulation realiste
     
     Features:
-    - Multi-stratÃƒÂ©gie
-    - Gestion rÃƒÂ©aliste des commissions et slippage
-    - Risk management intÃƒÂ©grÃƒÂ©
-    - MÃƒÂ©triques complÃƒÂ¨tes
+    - Multi-strategie
+    - Gestion realiste des commissions et slippage
+    - Risk management integre
+    - Metriques completes
     - Visualisations
     """
     
@@ -78,7 +78,7 @@ class Backtester:
         """
         self.config = config or BacktestConfig()
         
-        # Ãƒâ€°tat du portfolio
+        # "tat du portfolio
         self.initial_capital = self.config.initial_capital
         self.capital = self.initial_capital
         self.cash = self.initial_capital
@@ -94,7 +94,7 @@ class Backtester:
         self.drawdown_curve = []
         self.signals_history = []
         
-        # MÃƒÂ©triques
+        # Metriques
         self.metrics = {
             'total_trades': 0,
             'winning_trades': 0,
@@ -120,7 +120,7 @@ class Backtester:
             'kelly_criterion': 0
         }
         
-        logger.info(f"Backtester initialisÃƒÂ© - Capital: ${self.initial_capital:,.2f}")
+        logger.info(f"Backtester initialise - Capital: ${self.initial_capital:,.2f}")
     
     def run(self, 
             data: pd.DataFrame, 
@@ -130,45 +130,45 @@ class Backtester:
         Lance le backtest
         
         Args:
-            data: DataFrame avec donnÃƒÂ©es OHLCV
-            strategy: Instance de stratÃƒÂ©gie ÃƒÂ  tester
-            symbols: Liste des symboles ÃƒÂ  trader (None = tous)
+            data: DataFrame avec donnees OHLCV
+            strategy: Instance de strategie  tester
+            symbols: Liste des symboles  trader (None = tous)
             
         Returns:
-            Dictionnaire avec rÃƒÂ©sultats et mÃƒÂ©triques
+            Dictionnaire avec resultats et metriques
         """
-        logger.info(f"DÃƒÂ©but backtest: {self.config.start_date} -> {self.config.end_date}")
+        logger.info(f"Debut backtest: {self.config.start_date} -> {self.config.end_date}")
         
-        # Filtrer les donnÃƒÂ©es par date
+        # Filtrer les donnees par date
         data = self._filter_data(data)
         
         if symbols:
             data = data[data['symbol'].isin(symbols)]
         
-        # Reset ÃƒÂ©tat
+        # Reset etat
         self._reset_state()
         
         # Progress bar
         total_bars = len(data)
         pbar = tqdm(total=total_bars, desc="Backtesting")
         
-        # ItÃƒÂ©rer sur chaque barre
+        # Iterer sur chaque barre
         for timestamp, bar_data in data.groupby('timestamp'):
             # Update positions avec nouveaux prix
             self._update_open_positions(bar_data)
             
-            # VÃƒÂ©rifier stop loss / take profit
+            # Verifier stop loss / take profit
             if self.config.use_stop_loss or self.config.use_take_profit:
                 self._check_exit_conditions(bar_data)
             
-            # GÃƒÂ©nÃƒÂ©rer signaux avec la stratÃƒÂ©gie
+            # Generer signaux avec la strategie
             signals = self._generate_signals(strategy, bar_data)
             
-            # ExÃƒÂ©cuter les signaux
+            # Executer les signaux
             for signal in signals:
                 self._process_signal(signal, bar_data)
             
-            # Enregistrer l'ÃƒÂ©tat
+            # Enregistrer l'etat
             self._record_state(timestamp)
             
             # Check drawdown limit
@@ -183,26 +183,26 @@ class Backtester:
         # Fermer positions restantes
         self._close_all_positions(data.iloc[-1])
         
-        # Calculer mÃƒÂ©triques finales
+        # Calculer metriques finales
         self._calculate_metrics()
         
-        # GÃƒÂ©nÃƒÂ©rer rapport
+        # Generer rapport
         results = self._generate_results()
         
-        # Sauvegarder si demandÃƒÂ©
+        # Sauvegarder si demande
         if self.config.save_results:
             self._save_results(results)
         
-        # Plots si demandÃƒÂ©
+        # Plots si demande
         if self.config.plot_results:
             self._plot_results()
         
-        logger.info(f"Backtest terminÃƒÂ© - Return: {self.metrics['total_return']:.2%}")
+        logger.info(f"Backtest termine - Return: {self.metrics['total_return']:.2%}")
         
         return results
     
     def _reset_state(self):
-        """Reset l'ÃƒÂ©tat pour un nouveau backtest"""
+        """Reset l'etat pour un nouveau backtest"""
         self.capital = self.initial_capital
         self.cash = self.initial_capital
         self.peak_capital = self.initial_capital
@@ -214,7 +214,7 @@ class Backtester:
         self.signals_history = []
     
     def _filter_data(self, data: pd.DataFrame) -> pd.DataFrame:
-        """Filtre les donnÃƒÂ©es par date"""
+        """Filtre les donnees par date"""
         start = pd.to_datetime(self.config.start_date)
         end = pd.to_datetime(self.config.end_date)
         
@@ -223,11 +223,11 @@ class Backtester:
     
     def _generate_signals(self, strategy, bar_data: pd.DataFrame) -> List[Dict]:
         """
-        GÃƒÂ©nÃƒÂ¨re les signaux de la stratÃƒÂ©gie
+        Genere les signaux de la strategie
         
         Args:
-            strategy: Instance de stratÃƒÂ©gie
-            bar_data: DonnÃƒÂ©es de la barre courante
+            strategy: Instance de strategie
+            bar_data: Donnees de la barre courante
             
         Returns:
             Liste des signaux
@@ -237,14 +237,14 @@ class Backtester:
         for symbol in bar_data['symbol'].unique():
             symbol_data = bar_data[bar_data['symbol'] == symbol]
             
-            # PrÃƒÂ©parer donnÃƒÂ©es pour stratÃƒÂ©gie
+            # Preparer donnees pour strategie
             data_dict = {
                 'symbol': symbol,
                 'df': symbol_data,
                 'orderbook': self._simulate_orderbook(symbol_data)
             }
             
-            # Analyser avec la stratÃƒÂ©gie
+            # Analyser avec la strategie
             signal = strategy.analyze(data_dict)
             
             if signal and signal.get('confidence', 0) >= strategy.min_confidence:
@@ -258,17 +258,17 @@ class Backtester:
         Traite un signal de trading
         
         Args:
-            signal: Le signal ÃƒÂ  traiter
-            bar_data: DonnÃƒÂ©es de marchÃƒÂ© actuelles
+            signal: Le signal  traiter
+            bar_data: Donnees de marche actuelles
         """
         symbol = signal['symbol']
         side = signal['side']
         
-        # VÃƒÂ©rifier si on a dÃƒÂ©jÃƒÂ  une position
+        # Verifier si on a dej une position
         if not self.config.pyramiding and symbol in self.open_positions:
             return
         
-        # VÃƒÂ©rifier nombre max de positions
+        # Verifier nombre max de positions
         if len(self.open_positions) >= self.config.max_positions:
             return
         
@@ -279,7 +279,7 @@ class Backtester:
             # Pas assez de cash
             return
         
-        # CrÃƒÂ©er le trade
+        # Creer le trade
         trade = self._open_trade(symbol, side, signal['price'], position_size, signal)
         
         if trade:
@@ -294,7 +294,7 @@ class Backtester:
             signal: Signal avec infos de trade
             
         Returns:
-            Taille de position en unitÃƒÂ©s
+            Taille de position en unites
         """
         # Risque en dollars
         risk_amount = self.capital * self.config.risk_per_trade
@@ -312,7 +312,7 @@ class Backtester:
         position_value = risk_amount / stop_distance
         position_size = position_value / entry_price
         
-        # Limiter ÃƒÂ  25% du capital
+        # Limiter  25% du capital
         max_position = self.capital * 0.25 / entry_price
         position_size = min(position_size, max_position)
         
@@ -324,14 +324,14 @@ class Backtester:
         Ouvre un nouveau trade
         
         Args:
-            symbol: Symbole ÃƒÂ  trader
+            symbol: Symbole  trader
             side: Direction (LONG/SHORT)
-            price: Prix d'entrÃƒÂ©e
-            quantity: QuantitÃƒÂ©
+            price: Prix d'entree
+            quantity: Quantite
             signal: Signal original
             
         Returns:
-            Trade crÃƒÂ©ÃƒÂ© ou None
+            Trade cree ou None
         """
         # Appliquer slippage
         if self.config.realistic_fills:
@@ -344,12 +344,12 @@ class Backtester:
         trade_value = price * quantity
         commission = trade_value * self.config.commission
         
-        # VÃƒÂ©rifier le cash disponible
+        # Verifier le cash disponible
         total_cost = trade_value + commission
         if total_cost > self.cash:
             return None
         
-        # CrÃƒÂ©er le trade
+        # Creer le trade
         trade = Trade(
             symbol=symbol,
             entry_time=datetime.now(),
@@ -366,7 +366,7 @@ class Backtester:
             }
         )
         
-        # Mettre ÃƒÂ  jour le cash
+        # Mettre  jour le cash
         self.cash -= total_cost
         
         logger.debug(f"Trade ouvert: {symbol} {side} @ {price:.4f} x {quantity:.6f}")
@@ -378,7 +378,7 @@ class Backtester:
         Ferme un trade
         
         Args:
-            trade: Trade ÃƒÂ  fermer
+            trade: Trade  fermer
             exit_price: Prix de sortie
             exit_reason: Raison de sortie
         """
@@ -408,7 +408,7 @@ class Backtester:
         # P&L en pourcentage
         trade.pnl_percent = trade.pnl / (trade.entry_price * trade.quantity)
         
-        # Mettre ÃƒÂ  jour cash
+        # Mettre  jour cash
         self.cash += (exit_price * trade.quantity - exit_commission)
         
         # Enregistrer
@@ -418,15 +418,15 @@ class Backtester:
         if trade.symbol in self.open_positions:
             del self.open_positions[trade.symbol]
         
-        logger.debug(f"Trade fermÃƒÂ©: {trade.symbol} @ {exit_price:.4f} | PnL: {trade.pnl_percent:.2%}")
+        logger.debug(f"Trade ferme: {trade.symbol} @ {exit_price:.4f} | PnL: {trade.pnl_percent:.2%}")
     
     def _update_open_positions(self, bar_data: pd.DataFrame):
-        """Met ÃƒÂ  jour la valeur des positions ouvertes"""
+        """Met  jour la valeur des positions ouvertes"""
         for symbol, trade in self.open_positions.items():
             if symbol in bar_data['symbol'].values:
                 current_price = bar_data[bar_data['symbol'] == symbol]['close'].iloc[0]
                 
-                # Calculer P&L non rÃƒÂ©alisÃƒÂ©
+                # Calculer P&L non realise
                 if trade.side == 'BUY':
                     unrealized_pnl = (current_price - trade.entry_price) * trade.quantity
                 else:
@@ -435,14 +435,14 @@ class Backtester:
                 trade.metadata['unrealized_pnl'] = unrealized_pnl
     
     def _check_exit_conditions(self, bar_data: pd.DataFrame):
-        """VÃƒÂ©rifie les conditions de sortie (SL/TP)"""
+        """Verifie les conditions de sortie (SL/TP)"""
         for symbol, trade in list(self.open_positions.items()):
             if symbol not in bar_data['symbol'].values:
                 continue
             
             bar = bar_data[bar_data['symbol'] == symbol].iloc[0]
             
-            # RÃƒÂ©cupÃƒÂ©rer SL/TP du metadata
+            # Recuperer SL/TP du metadata
             stop_loss = trade.metadata.get('stop_loss')
             take_profit = trade.metadata.get('take_profit')
             
@@ -485,7 +485,7 @@ class Backtester:
             self._close_trade(trade, exit_price, "end_of_backtest")
     
     def _record_state(self, timestamp):
-        """Enregistre l'ÃƒÂ©tat actuel du portfolio"""
+        """Enregistre l'etat actuel du portfolio"""
         # Calculer valeur totale
         positions_value = sum(
             trade.metadata.get('unrealized_pnl', 0) + trade.entry_price * trade.quantity
@@ -494,7 +494,7 @@ class Backtester:
         
         total_equity = self.cash + positions_value
         
-        # Mettre ÃƒÂ  jour capital
+        # Mettre  jour capital
         self.capital = total_equity
         self.peak_capital = max(self.peak_capital, total_equity)
         
@@ -516,7 +516,7 @@ class Backtester:
         self.drawdown_curve.append(drawdown)
     
     def _check_drawdown_limit(self) -> bool:
-        """VÃƒÂ©rifie si on a atteint le drawdown max"""
+        """Verifie si on a atteint le drawdown max"""
         if not self.drawdown_curve:
             return False
         
@@ -524,9 +524,9 @@ class Backtester:
         return current_dd >= self.config.max_drawdown
     
     def _calculate_metrics(self):
-        """Calcule toutes les mÃƒÂ©triques de performance"""
+        """Calcule toutes les metriques de performance"""
         if not self.closed_trades:
-            logger.warning("Aucun trade fermÃƒÂ© pour calculer les mÃƒÂ©triques")
+            logger.warning("Aucun trade ferme pour calculer les metriques")
             return
         
         # Trades gagnants/perdants
@@ -587,10 +587,10 @@ class Backtester:
         Simule un orderbook basique
         
         Args:
-            data: DonnÃƒÂ©es OHLCV
+            data: Donnees OHLCV
             
         Returns:
-            Orderbook simulÃƒÂ©
+            Orderbook simule
         """
         if data.empty:
             return {}
@@ -606,7 +606,7 @@ class Backtester:
         }
     
     def _generate_results(self) -> Dict:
-        """GÃƒÂ©nÃƒÂ¨re le rapport de rÃƒÂ©sultats"""
+        """Genere le rapport de resultats"""
         return {
             'config': self.config.__dict__,
             'metrics': self.metrics,
@@ -639,17 +639,17 @@ class Backtester:
         }
     
     def _save_results(self, results: Dict):
-        """Sauvegarde les rÃƒÂ©sultats"""
+        """Sauvegarde les resultats"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"backtest_results_{timestamp}.json"
         
         with open(filename, 'w') as f:
             json.dump(results, f, indent=2, default=str)
         
-        logger.info(f"RÃƒÂ©sultats sauvegardÃƒÂ©s dans {filename}")
+        logger.info(f"Resultats sauvegardes dans {filename}")
     
     def _plot_results(self):
-        """GÃƒÂ©nÃƒÂ¨re les graphiques de rÃƒÂ©sultats"""
+        """Genere les graphiques de resultats"""
         if not self.equity_curve:
             return
         
@@ -680,7 +680,7 @@ class Backtester:
             axes[1, 0].axvline(x=0, color='red', linestyle='--', alpha=0.5)
             axes[1, 0].set_title('Distribution des Returns', fontsize=14, fontweight='bold')
             axes[1, 0].set_xlabel('Return (%)')
-            axes[1, 0].set_ylabel('FrÃƒÂ©quence')
+            axes[1, 0].set_ylabel('Frequence')
             axes[1, 0].grid(True, alpha=0.3)
         
         # 4. Win/Loss ratio
@@ -700,7 +700,7 @@ class Backtester:
                           center=0, ax=axes[2, 0], cbar_kws={'label': 'Return (%)'})
                 axes[2, 0].set_title('Returns Mensuels (%)', fontsize=14, fontweight='bold')
         
-        # 6. MÃƒÂ©triques clÃƒÂ©s
+        # 6. Metriques cles
         metrics_text = f"""
         Total Return: {self.metrics['total_return']:.2%}
         Win Rate: {self.metrics['win_rate']:.1%}
@@ -716,7 +716,7 @@ class Backtester:
         axes[2, 1].text(0.1, 0.5, metrics_text, transform=axes[2, 1].transAxes,
                        fontsize=12, verticalalignment='center',
                        bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-        axes[2, 1].set_title('MÃƒÂ©triques ClÃƒÂ©s', fontsize=14, fontweight='bold')
+        axes[2, 1].set_title('Metriques Cles', fontsize=14, fontweight='bold')
         axes[2, 1].axis('off')
         
         plt.tight_layout()
@@ -725,7 +725,7 @@ class Backtester:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"backtest_chart_{timestamp}.png"
         plt.savefig(filename, dpi=100, bbox_inches='tight')
-        logger.info(f"Graphique sauvegardÃƒÂ© dans {filename}")
+        logger.info(f"Graphique sauvegarde dans {filename}")
         
         plt.show()
     
@@ -745,7 +745,7 @@ class Backtester:
         # Reshape pour heatmap
         monthly_returns.index = monthly_returns.index.strftime('%Y-%m')
         
-        # CrÃƒÂ©er matrice annÃƒÂ©e x mois
+        # Creer matrice annee x mois
         years = sorted(set(pd.to_datetime(monthly_returns.index).year))
         months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -759,37 +759,37 @@ class Backtester:
         return matrix.astype(float)
     
     def print_summary(self):
-        """Affiche un rÃƒÂ©sumÃƒÂ© des rÃƒÂ©sultats"""
+        """Affiche un resume des resultats"""
         print("\n" + "="*60)
-        print("Ã°Å¸â€œÅ  RÃƒâ€°SUMÃƒâ€° DU BACKTEST")
+        print("" R"SUM" DU BACKTEST")
         print("="*60)
         
-        print(f"\nÃ°Å¸â€™Â° CAPITAL:")
-        print(f"  Ã¢â‚¬Â¢ Initial: ${self.initial_capital:,.2f}")
-        print(f"  Ã¢â‚¬Â¢ Final: ${self.capital:,.2f}")
-        print(f"  Ã¢â‚¬Â¢ Return: {self.metrics['total_return']:.2%}")
+        print(f"\n' CAPITAL:")
+        print(f"  " Initial: ${self.initial_capital:,.2f}")
+        print(f"  " Final: ${self.capital:,.2f}")
+        print(f"  " Return: {self.metrics['total_return']:.2%}")
         
-        print(f"\nÃ°Å¸â€œË† PERFORMANCE:")
-        print(f"  Ã¢â‚¬Â¢ Total Trades: {self.metrics['total_trades']}")
-        print(f"  Ã¢â‚¬Â¢ Win Rate: {self.metrics['win_rate']:.1%}")
-        print(f"  Ã¢â‚¬Â¢ Profit Factor: {self.metrics['profit_factor']:.2f}")
-        print(f"  Ã¢â‚¬Â¢ Sharpe Ratio: {self.metrics['sharpe_ratio']:.2f}")
+        print(f"\n" PERFORMANCE:")
+        print(f"  " Total Trades: {self.metrics['total_trades']}")
+        print(f"  " Win Rate: {self.metrics['win_rate']:.1%}")
+        print(f"  " Profit Factor: {self.metrics['profit_factor']:.2f}")
+        print(f"  " Sharpe Ratio: {self.metrics['sharpe_ratio']:.2f}")
         
-        print(f"\nÃ°Å¸â€œâ€° RISQUE:")
-        print(f"  Ã¢â‚¬Â¢ Max Drawdown: {self.metrics['max_drawdown']:.2%}")
-        print(f"  Ã¢â‚¬Â¢ Volatility: {self.metrics['volatility']:.2%}")
+        print(f"\n"" RISQUE:")
+        print(f"  " Max Drawdown: {self.metrics['max_drawdown']:.2%}")
+        print(f"  " Volatility: {self.metrics['volatility']:.2%}")
         
-        print(f"\nÃ°Å¸â€™Â¸ COÃƒâ€ºTS:")
-        print(f"  Ã¢â‚¬Â¢ Total Commission: ${self.metrics['total_commission']:.2f}")
+        print(f"\n' CO"TS:")
+        print(f"  " Total Commission: ${self.metrics['total_commission']:.2f}")
         
         if self.metrics['best_trade']:
-            print(f"\nÃ°Å¸Ââ€  MEILLEUR TRADE:")
-            print(f"  Ã¢â‚¬Â¢ Symbol: {self.metrics['best_trade'].symbol}")
-            print(f"  Ã¢â‚¬Â¢ Return: {self.metrics['best_trade'].pnl_percent:.2%}")
+            print(f"\n" MEILLEUR TRADE:")
+            print(f"  " Symbol: {self.metrics['best_trade'].symbol}")
+            print(f"  " Return: {self.metrics['best_trade'].pnl_percent:.2%}")
         
         if self.metrics['worst_trade']:
-            print(f"\nÃ°Å¸â€™â‚¬ PIRE TRADE:")
-            print(f"  Ã¢â‚¬Â¢ Symbol: {self.metrics['worst_trade'].symbol}")
-            print(f"  Ã¢â‚¬Â¢ Return: {self.metrics['worst_trade'].pnl_percent:.2%}")
+            print(f"\n' PIRE TRADE:")
+            print(f"  " Symbol: {self.metrics['worst_trade'].symbol}")
+            print(f"  " Return: {self.metrics['worst_trade'].pnl_percent:.2%}")
         
         print("="*60 + "\n")
