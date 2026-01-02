@@ -1,9 +1,9 @@
 # =============================================================================
-# test_strategies.py - Tests pour les stratÃƒÂ©gies
+# test_strategies.py - Tests pour les strategies
 # =============================================================================
 
 class TestScalpingStrategy:
-    """Tests de la stratÃƒÂ©gie Scalping"""
+    """Tests de la strategie Scalping"""
     
     def test_init(self):
         """Test initialisation"""
@@ -16,14 +16,14 @@ class TestScalpingStrategy:
         assert strategy.is_active == True
     
     def test_signal_generation(self, sample_ohlcv_data):
-        """Test gÃƒÂ©nÃƒÂ©ration de signal"""
+        """Test generation de signal"""
         from strategies.scalping import ScalpingStrategy
         from utils.indicators import TechnicalIndicators
         
         config = {}
         strategy = ScalpingStrategy(config)
         
-        # PrÃƒÂ©parer donnÃƒÂ©es
+        # Preparer donnees
         df = TechnicalIndicators.calculate_all(sample_ohlcv_data)
         market_data = {
             'df': df,
@@ -33,7 +33,7 @@ class TestScalpingStrategy:
         
         signal = strategy.analyze(market_data)
         
-        # Signal peut ÃƒÂªtre None ou valide
+        # Signal peut etre None ou valide
         if signal:
             assert 'type' in signal
             assert 'side' in signal
@@ -55,10 +55,10 @@ class TestScalpingStrategy:
 
 
 class TestMomentumStrategy:
-    """Tests de la stratÃƒÂ©gie Momentum"""
+    """Tests de la strategie Momentum"""
     
     def test_momentum_detection(self, sample_ohlcv_data):
-        """Test dÃƒÂ©tection de momentum"""
+        """Test detection de momentum"""
         from strategies.momentum import MomentumStrategy
         from utils.indicators import TechnicalIndicators
         
@@ -75,10 +75,10 @@ class TestMomentumStrategy:
 
 
 class TestMeanReversionStrategy:
-    """Tests de la stratÃƒÂ©gie Mean Reversion"""
+    """Tests de la strategie Mean Reversion"""
     
     def test_oversold_detection(self, sample_ohlcv_data):
-        """Test dÃƒÂ©tection survendu"""
+        """Test detection survendu"""
         from strategies.mean_reversion import MeanReversionStrategy
         from utils.indicators import TechnicalIndicators
         
