@@ -1,6 +1,6 @@
 """
-ML Strategy - StratÃƒÂ©gie basÃƒÂ©e sur Machine Learning
-Utilise un ensemble de 3 modÃƒÂ¨les optimisÃƒÂ©s pour CPU
+ML Strategy - Strategie basee sur Machine Learning
+Utilise un ensemble de 3 modeles optimises pour CPU
 """
 
 import numpy as np
@@ -23,21 +23,21 @@ logger = logging.getLogger(__name__)
 
 class MLStrategy(BaseStrategy):
     """
-    StratÃƒÂ©gie ML lÃƒÂ©gÃƒÂ¨re mais efficace (5% du capital)
+    Strategie ML legere mais efficace (5% du capital)
     
-    CaractÃƒÂ©ristiques:
-    - 3 modÃƒÂ¨les lÃƒÂ©gers (RF, XGB, LogReg)
+    Caracteristiques:
+    - 3 modeles legers (RF, XGB, LogReg)
     - 30 features seulement
     - Vote majoritaire avec seuil de confiance
-    - RÃƒÂ©entraÃƒÂ®nement automatique quotidien
+    - Reentranement automatique quotidien
     """
     
     def __init__(self, config: Dict = None):
         """
-        Initialise la stratÃƒÂ©gie ML
+        Initialise la strategie ML
         
         Args:
-            config: Configuration de la stratÃƒÂ©gie
+            config: Configuration de la strategie
         """
         default_config = {
             'name': 'ML_Strategy',
@@ -54,7 +54,7 @@ class MLStrategy(BaseStrategy):
         
         super().__init__(default_config)
         
-        # ModÃƒÂ¨les ML
+        # Modeles ML
         self.models = {
             'rf': RandomForestClassifier(
                 n_estimators=100,
@@ -82,12 +82,12 @@ class MLStrategy(BaseStrategy):
         self.last_retrain = None
         self.feature_names = []
         
-        # Charger les modÃƒÂ¨les existants
+        # Charger les modeles existants
         self._load_models()
     
     def analyze(self, data: Dict) -> Optional[Dict]:
         """
-        Analyse avec ML et gÃƒÂ©nÃƒÂ¨re un signal
+        Analyse avec ML et genere un signal
         
         Args:
             data: Dict avec df, orderbook, trades, symbol
@@ -114,12 +114,12 @@ class MLStrategy(BaseStrategy):
             if features is None:
                 return None
             
-            # VÃƒÂ©rifier si les modÃƒÂ¨les sont entraÃƒÂ®nÃƒÂ©s
+            # Verifier si les modeles sont entranes
             if not self.models_trained:
-                logger.warning("ModÃƒÂ¨les ML non entraÃƒÂ®nÃƒÂ©s, signal ignorÃƒÂ©")
+                logger.warning("Modeles ML non entranes, signal ignore")
                 return None
             
-            # PrÃƒÂ©diction avec ensemble voting
+            # Prediction avec ensemble voting
             signal = self._predict_with_ensemble(features, df, symbol)
             
             if signal and self.validate_signal(signal):
@@ -203,7 +203,7 @@ class MLStrategy(BaseStrategy):
             high_14 = df['high'].rolling(14).max()
             df['stoch_k'] = 100 * (df['close'] - low_14) / (high_14 - low_14 + 1e-10)
             
-            # ADX (simplifiÃƒÂ©)
+            # ADX (simplifie)
             df['adx'] = self._calculate_adx_simple(df)
             
             # Market Structure (5 features)
@@ -211,7 +211,7 @@ class MLStrategy(BaseStrategy):
             df['resistance_distance'] = self._calculate_resistance_distance(df)
             
             # Spread (si disponible dans orderbook)
-            df['spread_ratio'] = 0.001  # Valeur par dÃƒÂ©faut
+            df['spread_ratio'] = 0.001  # Valeur par defaut
             
             # Momentum (5 features)
             df['momentum'] = df['close'].pct_change(20)
@@ -232,7 +232,7 @@ class MLStrategy(BaseStrategy):
     
     def _extract_features(self, df: pd.DataFrame) -> Optional[np.ndarray]:
         """
-        Extrait les 30 features pour la prÃƒÂ©diction
+        Extrait les 30 features pour la prediction
         
         Args:
             df: DataFrame avec indicateurs
@@ -252,7 +252,7 @@ class MLStrategy(BaseStrategy):
                 'momentum', 'trend_strength', 'volatility_regime'
             ]
             
-            # Prendre la derniÃƒÂ¨re ligne
+            # Prendre la derniere ligne
             last_row = df.iloc[-1]
             
             # Extraire les features
@@ -276,7 +276,7 @@ class MLStrategy(BaseStrategy):
     
     def _predict_with_ensemble(self, features: np.ndarray, df: pd.DataFrame, symbol: str) -> Optional[Dict]:
         """
-        PrÃƒÂ©diction avec vote majoritaire des 3 modÃƒÂ¨les
+        Prediction avec vote majoritaire des 3 modeles
         
         Args:
             features: Features extraites
@@ -290,7 +290,7 @@ class MLStrategy(BaseStrategy):
             predictions = []
             probabilities = []
             
-            # PrÃƒÂ©diction de chaque modÃƒÂ¨le
+            # Prediction de chaque modele
             for name, model in self.models.items():
                 try:
                     proba = model.predict_proba(features)[0]
@@ -298,16 +298,16 @@ class MLStrategy(BaseStrategy):
                     predictions.append(pred_class)
                     probabilities.append(proba[1])  # Proba de classe 1 (BUY)
                 except Exception as e:
-                    logger.warning(f"Erreur prÃƒÂ©diction modÃƒÂ¨le {name}: {e}")
+                    logger.warning(f"Erreur prediction modele {name}: {e}")
                     continue
             
             if not predictions:
                 return None
             
-            # Moyenne des probabilitÃƒÂ©s
+            # Moyenne des probabilites
             avg_confidence = np.mean(probabilities)
             
-            # DÃƒÂ©terminer le signal
+            # Determiner le signal
             current_price = df['close'].iloc[-1]
             atr = df['atr'].iloc[-1] if 'atr' in df.columns else current_price * 0.01
             
@@ -322,8 +322,8 @@ class MLStrategy(BaseStrategy):
                     'take_profit': current_price + (atr * 3),
                     'reasons': [
                         f'ML Ensemble confiance: {avg_confidence:.2%}',
-                        f'Consensus de {len(predictions)} modÃƒÂ¨les',
-                        f'Features favorables dÃƒÂ©tectÃƒÂ©es'
+                        f'Consensus de {len(predictions)} modeles',
+                        f'Features favorables detectees'
                     ],
                     'metadata': {
                         'strategy': self.name,
@@ -344,8 +344,8 @@ class MLStrategy(BaseStrategy):
                     'take_profit': current_price - (atr * 3),
                     'reasons': [
                         f'ML Ensemble confiance SHORT: {1-avg_confidence:.2%}',
-                        f'Signal baissier dÃƒÂ©tectÃƒÂ©',
-                        f'Consensus nÃƒÂ©gatif'
+                        f'Signal baissier detecte',
+                        f'Consensus negatif'
                     ],
                     'metadata': {
                         'strategy': self.name,
@@ -362,24 +362,24 @@ class MLStrategy(BaseStrategy):
     
     def train_models(self, training_data: pd.DataFrame, labels: np.ndarray):
         """
-        EntraÃƒÂ®ne les 3 modÃƒÂ¨les ML
+        Entrane les 3 modeles ML
         
         Args:
-            training_data: Features d'entraÃƒÂ®nement
+            training_data: Features d'entranement
             labels: Labels (0=SELL, 1=BUY, 2=HOLD)
         """
         try:
-            logger.info("Ã°Å¸Â¤â€“ DÃƒÂ©but entraÃƒÂ®nement modÃƒÂ¨les ML...")
+            logger.info(""" Debut entranement modeles ML...")
             
             # Split train/validation
             X_train, X_val, y_train, y_val = train_test_split(
                 training_data, labels, test_size=0.2, random_state=42
             )
             
-            # EntraÃƒÂ®ner chaque modÃƒÂ¨le
+            # Entraner chaque modele
             for name, model in self.models.items():
                 try:
-                    logger.info(f"EntraÃƒÂ®nement {name}...")
+                    logger.info(f"Entranement {name}...")
                     model.fit(X_train, y_train)
                     
                     # Validation
@@ -387,21 +387,21 @@ class MLStrategy(BaseStrategy):
                     logger.info(f"  {name} accuracy: {score:.2%}")
                     
                 except Exception as e:
-                    logger.error(f"Erreur entraÃƒÂ®nement {name}: {e}")
+                    logger.error(f"Erreur entranement {name}: {e}")
             
             self.models_trained = True
             self.last_retrain = datetime.now()
             
-            # Sauvegarder les modÃƒÂ¨les
+            # Sauvegarder les modeles
             self._save_models()
             
-            logger.info("Ã¢Å“â€¦ EntraÃƒÂ®nement terminÃƒÂ©!")
+            logger.info("""| Entranement termine!")
             
         except Exception as e:
             logger.error(f"Erreur train_models: {e}")
     
     def _save_models(self):
-        """Sauvegarde les modÃƒÂ¨les entraÃƒÂ®nÃƒÂ©s"""
+        """Sauvegarde les modeles entranes"""
         try:
             models_dir = Path(self.config['models_path'])
             models_dir.mkdir(parents=True, exist_ok=True)
@@ -409,22 +409,22 @@ class MLStrategy(BaseStrategy):
             for name, model in self.models.items():
                 filepath = models_dir / f'{name}_model.joblib'
                 joblib.dump(model, filepath)
-                logger.debug(f"ModÃƒÂ¨le {name} sauvegardÃƒÂ©: {filepath}")
+                logger.debug(f"Modele {name} sauvegarde: {filepath}")
             
             # Sauvegarder les feature names
             features_file = models_dir / 'feature_names.joblib'
             joblib.dump(self.feature_names, features_file)
             
         except Exception as e:
-            logger.error(f"Erreur sauvegarde modÃƒÂ¨les: {e}")
+            logger.error(f"Erreur sauvegarde modeles: {e}")
     
     def _load_models(self):
-        """Charge les modÃƒÂ¨les entraÃƒÂ®nÃƒÂ©s"""
+        """Charge les modeles entranes"""
         try:
             models_dir = Path(self.config['models_path'])
             
             if not models_dir.exists():
-                logger.info("Aucun modÃƒÂ¨le sauvegardÃƒÂ© trouvÃƒÂ©")
+                logger.info("Aucun modele sauvegarde trouve")
                 return
             
             loaded_count = 0
@@ -433,7 +433,7 @@ class MLStrategy(BaseStrategy):
                 if filepath.exists():
                     self.models[name] = joblib.load(filepath)
                     loaded_count += 1
-                    logger.debug(f"ModÃƒÂ¨le {name} chargÃƒÂ©")
+                    logger.debug(f"Modele {name} charge")
             
             # Charger les feature names
             features_file = models_dir / 'feature_names.joblib'
@@ -442,19 +442,19 @@ class MLStrategy(BaseStrategy):
             
             if loaded_count == len(self.models):
                 self.models_trained = True
-                logger.info(f"Ã¢Å“â€¦ {loaded_count} modÃƒÂ¨les ML chargÃƒÂ©s")
+                logger.info(f"""| {loaded_count} modeles ML charges")
             else:
-                logger.warning(f"Seulement {loaded_count}/{len(self.models)} modÃƒÂ¨les chargÃƒÂ©s")
+                logger.warning(f"Seulement {loaded_count}/{len(self.models)} modeles charges")
                 
         except Exception as e:
-            logger.error(f"Erreur chargement modÃƒÂ¨les: {e}")
+            logger.error(f"Erreur chargement modeles: {e}")
     
     def should_retrain(self) -> bool:
         """
-        VÃƒÂ©rifie si un rÃƒÂ©entraÃƒÂ®nement est nÃƒÂ©cessaire
+        Verifie si un reentranement est necessaire
         
         Returns:
-            True si rÃƒÂ©entraÃƒÂ®nement nÃƒÂ©cessaire
+            True si reentranement necessaire
         """
         if not self.models_trained:
             return True
@@ -462,19 +462,19 @@ class MLStrategy(BaseStrategy):
         if self.last_retrain is None:
             return True
         
-        # VÃƒÂ©rifier la frÃƒÂ©quence
+        # Verifier la frequence
         time_since_retrain = (datetime.now() - self.last_retrain).total_seconds()
         if time_since_retrain > self.config['retrain_frequency']:
             return True
         
-        # VÃƒÂ©rifier la performance
+        # Verifier la performance
         if self.performance['win_rate'] < 0.55:  # Moins de 55% win rate
-            logger.info("Performance dÃƒÂ©gradÃƒÂ©e, rÃƒÂ©entraÃƒÂ®nement nÃƒÂ©cessaire")
+            logger.info("Performance degradee, reentranement necessaire")
             return True
         
         return False
     
-    # MÃƒÂ©thodes helper pour calculs
+    # Methodes helper pour calculs
     def _calculate_rsi(self, prices: pd.Series, period: int = 14) -> pd.Series:
         """Calcule le RSI"""
         delta = prices.diff()
@@ -484,21 +484,21 @@ class MLStrategy(BaseStrategy):
         return 100 - (100 / (1 + rs))
     
     def _calculate_rsi_divergence(self, df: pd.DataFrame) -> pd.Series:
-        """DÃƒÂ©tecte les divergences RSI (simplifiÃƒÂ©)"""
+        """Detecte les divergences RSI (simplifie)"""
         if 'rsi' not in df.columns:
             return pd.Series(0, index=df.index)
         
         rsi_slope = df['rsi'].diff(5)
         price_slope = df['close'].pct_change(5)
         
-        # Divergence = RSI et prix vont dans des directions opposÃƒÂ©es
+        # Divergence = RSI et prix vont dans des directions opposees
         divergence = np.where(
             (rsi_slope * price_slope) < 0, 1, 0
         )
         return pd.Series(divergence, index=df.index)
     
     def _calculate_adx_simple(self, df: pd.DataFrame, period: int = 14) -> pd.Series:
-        """Calcule un ADX simplifiÃƒÂ©"""
+        """Calcule un ADX simplifie"""
         high_low = df['high'] - df['low']
         high_close = np.abs(df['high'] - df['close'].shift())
         low_close = np.abs(df['low'] - df['close'].shift())
@@ -506,7 +506,7 @@ class MLStrategy(BaseStrategy):
         true_range = ranges.max(axis=1)
         atr = true_range.rolling(period).mean()
         
-        # ADX simplifiÃƒÂ© basÃƒÂ© sur l'ATR
+        # ADX simplifie base sur l'ATR
         adx_simple = (atr / df['close']) * 100
         return adx_simple
     
@@ -517,7 +517,7 @@ class MLStrategy(BaseStrategy):
         return distance
     
     def _calculate_resistance_distance(self, df: pd.DataFrame, window: int = 50) -> pd.Series:
-        """Calcule la distance ÃƒÂ  la rÃƒÂ©sistance la plus proche"""
+        """Calcule la distance  la resistance la plus proche"""
         rolling_high = df['high'].rolling(window).max()
         distance = (rolling_high - df['close']) / df['close']
         return distance
@@ -528,7 +528,7 @@ class MLStrategy(BaseStrategy):
 # =============================================================
 
 if __name__ == "__main__":
-    """Test de la stratÃƒÂ©gie ML"""
+    """Test de la strategie ML"""
     
     # Configuration de test
     config = {
@@ -538,7 +538,7 @@ if __name__ == "__main__":
     
     strategy = MLStrategy(config)
     
-    # DonnÃƒÂ©es de test
+    # Donnees de test
     dates = pd.date_range(start='2024-01-01', periods=500, freq='5min')
     test_df = pd.DataFrame({
         'open': 100 + np.random.randn(500).cumsum(),
@@ -555,10 +555,10 @@ if __name__ == "__main__":
     
     print("Test ML Strategy")
     print("=" * 50)
-    print(f"StratÃƒÂ©gie: {strategy.name}")
+    print(f"Strategie: {strategy.name}")
     print(f"Active: {strategy.is_active}")
-    print(f"ModÃƒÂ¨les entraÃƒÂ®nÃƒÂ©s: {strategy.models_trained}")
+    print(f"Modeles entranes: {strategy.models_trained}")
     
-    # Test d'analyse (sans modÃƒÂ¨les entraÃƒÂ®nÃƒÂ©s)
+    # Test d'analyse (sans modeles entranes)
     signal = strategy.analyze(data)
-    print(f"\nSignal gÃƒÂ©nÃƒÂ©rÃƒÂ©: {signal}")
+    print(f"\nSignal genere: {signal}")
