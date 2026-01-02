@@ -149,10 +149,10 @@ def validate_config():
     
     # Check API keys
     if not BINANCE_API_KEY or BINANCE_API_KEY == 'VOTRE_CLE_API_ICI':
-        errors.append("BINANCE_API_KEY non configurée dans .env")
+        errors.append("BINANCE_API_KEY non configuree dans .env")
     
     if not BINANCE_API_SECRET or BINANCE_API_SECRET == 'VOTRE_SECRET_API_ICI':
-        errors.append("BINANCE_API_SECRET non configurée dans .env")
+        errors.append("BINANCE_API_SECRET non configuree dans .env")
     
     # Check capital
     if INITIAL_CAPITAL < MIN_ORDER_SIZE:
@@ -161,7 +161,7 @@ def validate_config():
     # Check strategies allocation
     total_allocation = sum(s['allocation'] for s in STRATEGIES)
     if abs(total_allocation - 1.0) > 0.01:
-        errors.append(f"Total allocation stratégies = {total_allocation} (devrait être 1.0)")
+        errors.append(f"Total allocation strategies = {total_allocation} (devrait etre 1.0)")
     
     return errors
 
@@ -178,7 +178,7 @@ BACKTEST_DIR = DATA_DIR / 'backtest'
 HISTORICAL_DIR = DATA_DIR / 'historical'
 CONFIGS_DIR = DATA_DIR / 'configs'
 
-# Créer dossiers si nécessaire
+# Creer dossiers si necessaire
 for dir_path in [DATA_DIR, LOGS_DIR, MODELS_DIR, CACHE_DIR, BACKTEST_DIR, HISTORICAL_DIR, CONFIGS_DIR]:
     dir_path.mkdir(parents=True, exist_ok=True)
 
@@ -193,17 +193,17 @@ if __name__ == "__main__":
     print(f"\nMODE: {MODE}")
     print(f"TESTNET: {BINANCE_TESTNET}")
     print(f"CAPITAL: {INITIAL_CAPITAL} USDC")
-    print(f"\nAPI KEY: {'✅ Configurée' if BINANCE_API_KEY and BINANCE_API_KEY != 'VOTRE_CLE_API_ICI' else '❌ Non configurée'}")
-    print(f"API SECRET: {'✅ Configurée' if BINANCE_API_SECRET and BINANCE_API_SECRET != 'VOTRE_SECRET_API_ICI' else '❌ Non configurée'}")
-    print(f"\nSTRATÉGIES:")
+    print(f"\nAPI KEY: {' Configuree' if BINANCE_API_KEY and BINANCE_API_KEY != 'VOTRE_CLE_API_ICI' else ' Non configuree'}")
+    print(f"API SECRET: {' Configuree' if BINANCE_API_SECRET and BINANCE_API_SECRET != 'VOTRE_SECRET_API_ICI' else ' Non configuree'}")
+    print(f"\nSTRATEGIES:")
     for s in STRATEGIES:
         print(f"  - {s['name']}: {s['allocation']*100}%")
     print(f"\nVALIDATION:")
     errors = validate_config()
     if errors:
-        print("❌ ERREURS:")
+        print(" ERREURS:")
         for error in errors:
             print(f"  - {error}")
     else:
-        print("✅ Configuration OK")
+        print(" Configuration OK")
     print("="*60)
