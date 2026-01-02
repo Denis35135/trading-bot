@@ -1,6 +1,6 @@
 """
 Execution Engine pour The Bot
-Moteur d'exÃƒÂ©cution intelligent des ordres
+Moteur d'execution intelligent des ordres
 """
 
 import time
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class ExecutionStatus(Enum):
-    """Statut d'exÃƒÂ©cution"""
+    """Statut d'execution"""
     PENDING = "pending"
     EXECUTING = "executing"
     COMPLETED = "completed"
@@ -24,14 +24,14 @@ class ExecutionStatus(Enum):
 
 class ExecutionEngine:
     """
-    Moteur d'exÃƒÂ©cution intelligent
+    Moteur d'execution intelligent
     
-    ResponsabilitÃƒÂ©s:
-    - ExÃƒÂ©cuter les ordres avec retry intelligent
-    - GÃƒÂ©rer le slippage
+    Responsabilites:
+    - Executer les ordres avec retry intelligent
+    - Gerer le slippage
     - Split des ordres importants
-    - Tracking de l'exÃƒÂ©cution
-    - Circuit breaker si trop d'ÃƒÂ©checs
+    - Tracking de l'execution
+    - Circuit breaker si trop d'echecs
     """
     
     def __init__(self, order_manager, config: Optional[Dict] = None):
@@ -40,12 +40,12 @@ class ExecutionEngine:
         
         Args:
             order_manager: OrderManager pour passer les ordres
-            config: Configuration de l'exÃƒÂ©cution
+            config: Configuration de l'execution
         """
         self.order_manager = order_manager
         self.config = config or {}
         
-        # ParamÃƒÂ¨tres d'exÃƒÂ©cution
+        # Parametres d'execution
         self.max_retries = self.config.get('max_retries', 3)
         self.retry_delay = self.config.get('retry_delay', 1)
         self.max_slippage = self.config.get('max_slippage', 0.002)  # 0.2%
@@ -56,7 +56,7 @@ class ExecutionEngine:
         self.min_split_size = self.config.get('min_split_size', 1000)  # USDC
         self.max_chunk_size = self.config.get('max_chunk_size', 500)  # USDC
         
-        # Ãƒâ€°tat
+        # "tat
         self.active_executions = {}  # {execution_id: execution_data}
         self.execution_history = []
         
@@ -71,10 +71,12 @@ class ExecutionEngine:
             'total_slippage_pct': 0
         }
         
-        logger.info("Ã¢Å“â€¦ Execution Engine initialisÃƒÂ©")
+        logger.info("""| Execution Engine initialise")
     
     def execute(self, 
-               symbol: str,
+    """
+    symbol: str,
+    """
                side: str,
                quantity: float,
                order_type: str = 'MARKET',
@@ -83,20 +85,20 @@ class ExecutionEngine:
                take_profit: Optional[float] = None,
                metadata: Optional[Dict] = None) -> Dict:
         """
-        ExÃƒÂ©cute un ordre avec gestion intelligente
+        Execute un ordre avec gestion intelligente
         
         Args:
-            symbol: Symbole ÃƒÂ  trader
+            symbol: Symbole  trader
             side: BUY ou SELL
-            quantity: QuantitÃƒÂ©
+            quantity: Quantite
             order_type: MARKET ou LIMIT
             price: Prix limite (si LIMIT)
             stop_loss: Prix de stop loss
             take_profit: Prix de take profit
-            metadata: MÃƒÂ©tadonnÃƒÂ©es optionnelles
+            metadata: Metadonnees optionnelles
             
         Returns:
-            Dict avec le rÃƒÂ©sultat de l'exÃƒÂ©cution
+            Dict avec le resultat de l'execution
         """
         execution_id = self._generate_execution_id()
         start_time = time.time()
@@ -120,20 +122,20 @@ class ExecutionEngine:
         self.active_executions[execution_id] = execution
         self.stats['total_executions'] += 1
         
-        logger.info(f"Ã°Å¸Å½Â¯ ExÃƒÂ©cution {execution_id}: {side} {quantity} {symbol}")
+        logger.info(f" Execution {execution_id}: {side} {quantity} {symbol}")
         
         try:
-            # DÃƒÂ©cider si on doit splitter l'ordre
+            # Decider si on doit splitter l'ordre
             if self._should_split_order(quantity, price or 0):
                 result = self._execute_with_splitting(execution)
             else:
                 result = self._execute_single_order(execution)
             
-            # Calculer le temps d'exÃƒÂ©cution
+            # Calculer le temps d'execution
             execution_time = (time.time() - start_time) * 1000  # ms
             result['execution_time_ms'] = execution_time
             
-            # Mettre ÃƒÂ  jour les stats
+            # Mettre  jour les stats
             self._update_stats(result, execution_time)
             
             # Sauvegarder dans l'historique
@@ -141,13 +143,13 @@ class ExecutionEngine:
             execution['end_time'] = datetime.now()
             self.execution_history.append(execution)
             
-            # Retirer des exÃƒÂ©cutions actives
+            # Retirer des executions actives
             del self.active_executions[execution_id]
             
             return result
             
         except Exception as e:
-            logger.error(f"Ã¢ÂÅ’ Erreur exÃƒÂ©cution {execution_id}: {e}")
+            logger.error(f"' Erreur execution {execution_id}: {e}")
             
             execution['status'] = ExecutionStatus.FAILED
             execution['error'] = str(e)
@@ -167,13 +169,13 @@ class ExecutionEngine:
     
     def _execute_single_order(self, execution: Dict) -> Dict:
         """
-        ExÃƒÂ©cute un ordre unique avec retry
+        Execute un ordre unique avec retry
         
         Args:
-            execution: DonnÃƒÂ©es d'exÃƒÂ©cution
+            execution: Donnees d'execution
             
         Returns:
-            RÃƒÂ©sultat de l'exÃƒÂ©cution
+            Resultat de l'execution
         """
         execution['status'] = ExecutionStatus.EXECUTING
         
@@ -192,18 +194,18 @@ class ExecutionEngine:
                 
                 execution['orders'].append(order)
                 
-                # VÃƒÂ©rifier le slippage
+                # Verifier le slippage
                 if execution['price']:
                     actual_price = order.price or execution['price']
                     slippage = abs(actual_price - execution['price']) / execution['price']
                     
                     if slippage > self.max_slippage:
-                        logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â Slippage ÃƒÂ©levÃƒÂ©: {slippage:.2%}")
+                        logger.warning(f" Slippage eleve: {slippage:.2%}")
                 
-                # Ordre placÃƒÂ© avec succÃƒÂ¨s
+                # Ordre place avec succes
                 execution['status'] = ExecutionStatus.COMPLETED
                 
-                logger.info(f"Ã¢Å“â€¦ Ordre exÃƒÂ©cutÃƒÂ©: {order.client_order_id}")
+                logger.info(f"""| Ordre execute: {order.client_order_id}")
                 
                 return {
                     'success': True,
@@ -214,7 +216,7 @@ class ExecutionEngine:
                 }
                 
             except Exception as e:
-                logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â Tentative {attempt} ÃƒÂ©chouÃƒÂ©e: {e}")
+                logger.warning(f" Tentative {attempt} echouee: {e}")
                 execution['retries'] += 1
                 self.stats['total_retries'] += 1
                 
@@ -223,21 +225,21 @@ class ExecutionEngine:
                 else:
                     raise
         
-        # Ãƒâ€°chec aprÃƒÂ¨s tous les essais
+        # "chec apres tous les essais
         execution['status'] = ExecutionStatus.FAILED
-        raise Exception(f"Ãƒâ€°chec aprÃƒÂ¨s {self.max_retries} tentatives")
+        raise Exception(f""chec apres {self.max_retries} tentatives")
     
     def _execute_with_splitting(self, execution: Dict) -> Dict:
         """
-        ExÃƒÂ©cute un ordre en le divisant en plusieurs chunks
+        Execute un ordre en le divisant en plusieurs chunks
         
         Args:
-            execution: DonnÃƒÂ©es d'exÃƒÂ©cution
+            execution: Donnees d'execution
             
         Returns:
-            RÃƒÂ©sultat de l'exÃƒÂ©cution
+            Resultat de l'execution
         """
-        logger.info(f"Ã°Å¸â€œÂ¦ Split de l'ordre en chunks de {self.max_chunk_size} USDC")
+        logger.info(f""| Split de l'ordre en chunks de {self.max_chunk_size} USDC")
         
         execution['status'] = ExecutionStatus.EXECUTING
         
@@ -253,7 +255,7 @@ class ExecutionEngine:
             try:
                 logger.info(f"  Chunk {i+1}/{num_chunks}: {chunk_quantity:.6f}")
                 
-                # CrÃƒÂ©er une mini-exÃƒÂ©cution pour ce chunk
+                # Creer une mini-execution pour ce chunk
                 chunk_execution = execution.copy()
                 chunk_execution['quantity'] = chunk_quantity
                 
@@ -264,15 +266,15 @@ class ExecutionEngine:
                 else:
                     failed_orders.append(result)
                 
-                # Petit dÃƒÂ©lai entre les chunks
+                # Petit delai entre les chunks
                 if i < num_chunks - 1:
                     time.sleep(0.5)
                     
             except Exception as e:
-                logger.error(f"Ã¢ÂÅ’ Ãƒâ€°chec chunk {i+1}: {e}")
+                logger.error(f"' "chec chunk {i+1}: {e}")
                 failed_orders.append({'error': str(e)})
         
-        # DÃƒÂ©terminer le statut final
+        # Determiner le statut final
         if len(completed_orders) == num_chunks:
             execution['status'] = ExecutionStatus.COMPLETED
             status = ExecutionStatus.COMPLETED
@@ -285,7 +287,7 @@ class ExecutionEngine:
         
         execution['orders'] = completed_orders
         
-        logger.info(f"Ã°Å¸â€œÂ¦ Split terminÃƒÂ©: {len(completed_orders)}/{num_chunks} rÃƒÂ©ussis")
+        logger.info(f""| Split termine: {len(completed_orders)}/{num_chunks} reussis")
         
         return {
             'success': len(completed_orders) > 0,
@@ -299,14 +301,14 @@ class ExecutionEngine:
     
     def _should_split_order(self, quantity: float, price: float) -> bool:
         """
-        DÃƒÂ©termine si un ordre doit ÃƒÂªtre divisÃƒÂ©
+        Determine si un ordre doit etre divise
         
         Args:
-            quantity: QuantitÃƒÂ©
+            quantity: Quantite
             price: Prix
             
         Returns:
-            True si l'ordre doit ÃƒÂªtre divisÃƒÂ©
+            True si l'ordre doit etre divise
         """
         if not self.enable_order_splitting:
             return False
@@ -320,21 +322,21 @@ class ExecutionEngine:
     
     def cancel_execution(self, execution_id: str) -> bool:
         """
-        Annule une exÃƒÂ©cution en cours
+        Annule une execution en cours
         
         Args:
-            execution_id: ID de l'exÃƒÂ©cution
+            execution_id: ID de l'execution
             
         Returns:
-            True si annulÃƒÂ©e
+            True si annulee
         """
         if execution_id not in self.active_executions:
-            logger.warning(f"Ã¢Å¡Â Ã¯Â¸Â ExÃƒÂ©cution {execution_id} introuvable")
+            logger.warning(f" Execution {execution_id} introuvable")
             return False
         
         execution = self.active_executions[execution_id]
         
-        # Annuler les ordres placÃƒÂ©s
+        # Annuler les ordres places
         for order in execution['orders']:
             try:
                 self.order_manager.cancel_order(
@@ -352,17 +354,17 @@ class ExecutionEngine:
         
         self.stats['cancelled_executions'] += 1
         
-        logger.info(f"Ã°Å¸Å¡Â« ExÃƒÂ©cution {execution_id} annulÃƒÂ©e")
+        logger.info(f" Execution {execution_id} annulee")
         
         return True
     
     def _generate_execution_id(self) -> str:
-        """GÃƒÂ©nÃƒÂ¨re un ID unique pour l'exÃƒÂ©cution"""
+        """Genere un ID unique pour l'execution"""
         timestamp = int(time.time() * 1000)
         return f"exec_{timestamp}_{self.stats['total_executions']}"
     
     def _update_stats(self, result: Dict, execution_time: float):
-        """Met ÃƒÂ  jour les statistiques"""
+        """Met  jour les statistiques"""
         if result['success']:
             self.stats['successful_executions'] += 1
         else:
@@ -386,7 +388,7 @@ class ExecutionEngine:
         }
     
     def get_execution_history(self, limit: int = 100) -> List[Dict]:
-        """Retourne l'historique des exÃƒÂ©cutions"""
+        """Retourne l'historique des executions"""
         return self.execution_history[-limit:]
 
 
@@ -428,7 +430,7 @@ if __name__ == "__main__":
         def cancel_order(self, symbol, order_id):
             return True
     
-    # CrÃƒÂ©er l'engine
+    # Creer l'engine
     order_mgr = MockOrderManager()
     engine = ExecutionEngine(order_mgr, {
         'max_retries': 2,
@@ -437,7 +439,7 @@ if __name__ == "__main__":
     })
     
     # Test 1: Ordre simple
-    print("1Ã¯Â¸ÂÃ¢Æ’Â£ Test ordre simple:")
+    print("1' Test ordre simple:")
     result = engine.execute(
         symbol='BTCUSDT',
         side='BUY',
@@ -449,11 +451,11 @@ if __name__ == "__main__":
     print(f"   Time: {result.get('execution_time_ms', 0):.2f}ms")
     
     # Test 2: Ordre avec splitting
-    print("\n2Ã¯Â¸ÂÃ¢Æ’Â£ Test ordre avec splitting:")
+    print("\n2' Test ordre avec splitting:")
     result = engine.execute(
         symbol='BTCUSDT',
         side='BUY',
-        quantity=0.02,  # 1000 USDC -> sera splittÃƒÂ©
+        quantity=0.02,  # 1000 USDC -> sera splitte
         price=50000
     )
     print(f"   Success: {result['success']}")
@@ -462,10 +464,10 @@ if __name__ == "__main__":
         print(f"   Chunks: {result['completed_chunks']}/{result['total_chunks']}")
     
     # Stats
-    print("\nÃ°Å¸â€œÅ  Statistiques:")
+    print("\n" Statistiques:")
     status = engine.get_status()
     print(f"   Total: {status['total_executions']}")
     print(f"   Success rate: {status['success_rate']:.1%}")
     print(f"   Avg time: {status['avg_execution_time_ms']:.2f}ms")
     
-    print("\nÃ¢Å“â€¦ Tests terminÃƒÂ©s")
+    print("\n""| Tests termines")
