@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Script d'optimisation des paramÃƒÂ¨tres des stratÃƒÂ©gies
-Utilise l'optimisation bayÃƒÂ©sienne et le backtesting
+Script d'optimisation des parametres des strategies
+Utilise l'optimisation bayesienne et le backtesting
 """
 
 import os
@@ -15,7 +15,7 @@ import argparse
 from datetime import datetime
 import json
 
-# Ajouter le rÃƒÂ©pertoire parent au path
+# Ajouter le repertoire parent au path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
@@ -23,7 +23,7 @@ try:
     from skopt.space import Real, Integer, Categorical
     from skopt.utils import use_named_args
 except ImportError:
-    print("Ã¢ÂÅ’ scikit-optimize non installÃƒÂ©")
+    print("' scikit-optimize non installe")
     print("   Installez avec: pip install scikit-optimize")
     sys.exit(1)
 
@@ -36,13 +36,13 @@ logger = logging.getLogger(__name__)
 
 class ParameterOptimizer:
     """
-    Optimiseur de paramÃƒÂ¨tres pour stratÃƒÂ©gies de trading
+    Optimiseur de parametres pour strategies de trading
     
     Utilise:
-    - Optimisation bayÃƒÂ©sienne (efficace)
-    - Backtesting pour ÃƒÂ©valuer les performances
-    - Cross-validation pour ÃƒÂ©viter l'overfitting
-    - Sauvegarde des meilleurs paramÃƒÂ¨tres
+    - Optimisation bayesienne (efficace)
+    - Backtesting pour evaluer les performances
+    - Cross-validation pour eviter l'overfitting
+    - Sauvegarde des meilleurs parametres
     """
     
     def __init__(self, data: pd.DataFrame):
@@ -58,26 +58,26 @@ class ParameterOptimizer:
         
         self.optimization_history = []
         
-        logger.info("Ã°Å¸â€Â§ Parameter Optimizer initialisÃƒÂ©")
-        logger.info(f"   DonnÃƒÂ©es: {len(data)} candles")
-        logger.info(f"   PÃƒÂ©riode: {data.index[0]} -> {data.index[-1]}")
+        logger.info("" Parameter Optimizer initialise")
+        logger.info(f"   Donnees: {len(data)} candles")
+        logger.info(f"   Periode: {data.index[0]} -> {data.index[-1]}")
     
     def optimize_scalping_strategy(self, n_calls: int = 50) -> Dict:
         """
-        Optimise les paramÃƒÂ¨tres de la stratÃƒÂ©gie Scalping
+        Optimise les parametres de la strategie Scalping
         
         Args:
-            n_calls: Nombre d'itÃƒÂ©rations
+            n_calls: Nombre d'iterations
             
         Returns:
-            Meilleurs paramÃƒÂ¨tres trouvÃƒÂ©s
+            Meilleurs parametres trouves
         """
-        logger.info("Ã°Å¸Å½Â¯ Optimisation Scalping Strategy")
+        logger.info(" Optimisation Scalping Strategy")
         
         # Espace de recherche
         space = [
-            Real(0.0005, 0.003, name='min_profit_pct'),  # 0.05% ÃƒÂ  0.3%
-            Real(0.001, 0.005, name='stop_loss_pct'),    # 0.1% ÃƒÂ  0.5%
+            Real(0.0005, 0.003, name='min_profit_pct'),  # 0.05%  0.3%
+            Real(0.001, 0.005, name='stop_loss_pct'),    # 0.1%  0.5%
             Integer(5, 20, name='rsi_period'),
             Integer(20, 40, name='rsi_overbought'),
             Integer(30, 60, name='rsi_oversold'),
@@ -98,7 +98,7 @@ class ParameterOptimizer:
             verbose=True
         )
         
-        # Meilleurs paramÃƒÂ¨tres
+        # Meilleurs parametres
         best_params = {
             'min_profit_pct': result.x[0],
             'stop_loss_pct': result.x[1],
@@ -111,9 +111,9 @@ class ParameterOptimizer:
         
         best_score = -result.fun
         
-        logger.info(f"Ã¢Å“â€¦ Optimisation terminÃƒÂ©e!")
+        logger.info(f"""| Optimisation terminee!")
         logger.info(f"   Meilleur score: {best_score:.4f}")
-        logger.info(f"   ParamÃƒÂ¨tres: {best_params}")
+        logger.info(f"   Parametres: {best_params}")
         
         # Sauvegarder
         self._save_results('scalping', best_params, best_score)
@@ -122,15 +122,15 @@ class ParameterOptimizer:
     
     def optimize_momentum_strategy(self, n_calls: int = 50) -> Dict:
         """
-        Optimise les paramÃƒÂ¨tres de la stratÃƒÂ©gie Momentum
+        Optimise les parametres de la strategie Momentum
         
         Args:
-            n_calls: Nombre d'itÃƒÂ©rations
+            n_calls: Nombre d'iterations
             
         Returns:
-            Meilleurs paramÃƒÂ¨tres
+            Meilleurs parametres
         """
-        logger.info("Ã°Å¸Å½Â¯ Optimisation Momentum Strategy")
+        logger.info(" Optimisation Momentum Strategy")
         
         space = [
             Integer(10, 30, name='breakout_period'),
@@ -160,22 +160,22 @@ class ParameterOptimizer:
         
         best_score = -result.fun
         
-        logger.info(f"Ã¢Å“â€¦ Meilleur score: {best_score:.4f}")
+        logger.info(f"""| Meilleur score: {best_score:.4f}")
         self._save_results('momentum', best_params, best_score)
         
         return best_params
     
     def optimize_mean_reversion_strategy(self, n_calls: int = 50) -> Dict:
         """
-        Optimise les paramÃƒÂ¨tres de Mean Reversion
+        Optimise les parametres de Mean Reversion
         
         Args:
-            n_calls: Nombre d'itÃƒÂ©rations
+            n_calls: Nombre d'iterations
             
         Returns:
-            Meilleurs paramÃƒÂ¨tres
+            Meilleurs parametres
         """
-        logger.info("Ã°Å¸Å½Â¯ Optimisation Mean Reversion Strategy")
+        logger.info(" Optimisation Mean Reversion Strategy")
         
         space = [
             Integer(15, 30, name='bb_period'),
@@ -205,17 +205,17 @@ class ParameterOptimizer:
         
         best_score = -result.fun
         
-        logger.info(f"Ã¢Å“â€¦ Meilleur score: {best_score:.4f}")
+        logger.info(f"""| Meilleur score: {best_score:.4f}")
         self._save_results('mean_reversion', best_params, best_score)
         
         return best_params
     
     def _backtest_scalping(self, params: Dict) -> float:
         """
-        Backteste la stratÃƒÂ©gie Scalping avec des paramÃƒÂ¨tres
+        Backteste la strategie Scalping avec des parametres
         
         Args:
-            params: ParamÃƒÂ¨tres ÃƒÂ  tester
+            params: Parametres  tester
             
         Returns:
             Score de performance (Sharpe ratio ou profit factor)
@@ -265,7 +265,7 @@ class ParameterOptimizer:
                     rsi = df['rsi'].iloc[i]
                     vol_ratio = df['volume_ratio'].iloc[i]
                     
-                    # Signal scalping: RSI extrÃƒÂªme + volume
+                    # Signal scalping: RSI extreme + volume
                     if rsi < params['rsi_oversold'] and vol_ratio > params['volume_multiplier']:
                         in_position = True
                         entry_price = df['close'].iloc[i]
@@ -296,7 +296,7 @@ class ParameterOptimizer:
             return 0.0
     
     def _backtest_momentum(self, params: Dict) -> float:
-        """Backteste Momentum (simplifiÃƒÂ©)"""
+        """Backteste Momentum (simplifie)"""
         try:
             df = self.data.copy()
             
@@ -324,7 +324,7 @@ class ParameterOptimizer:
             return 0.0
     
     def _backtest_mean_reversion(self, params: Dict) -> float:
-        """Backteste Mean Reversion (simplifiÃƒÂ©)"""
+        """Backteste Mean Reversion (simplifie)"""
         try:
             df = self.data.copy()
             
@@ -355,11 +355,11 @@ class ParameterOptimizer:
     
     def _save_results(self, strategy_name: str, params: Dict, score: float):
         """
-        Sauvegarde les rÃƒÂ©sultats d'optimisation
+        Sauvegarde les resultats d'optimisation
         
         Args:
-            strategy_name: Nom de la stratÃƒÂ©gie
-            params: ParamÃƒÂ¨tres optimisÃƒÂ©s
+            strategy_name: Nom de la strategie
+            params: Parametres optimises
             score: Score obtenu
         """
         try:
@@ -381,69 +381,69 @@ class ParameterOptimizer:
             with open(filepath, 'w') as f:
                 json.dump(result, f, indent=2)
             
-            logger.info(f"   Ã°Å¸â€™Â¾ RÃƒÂ©sultats sauvegardÃƒÂ©s: {filename}")
+            logger.info(f"   ' Resultats sauvegardes: {filename}")
             
         except Exception as e:
-            logger.error(f"Erreur sauvegarde rÃƒÂ©sultats: {e}")
+            logger.error(f"Erreur sauvegarde resultats: {e}")
     
     def load_best_parameters(self, strategy_name: str) -> Dict:
         """
-        Charge les meilleurs paramÃƒÂ¨tres sauvegardÃƒÂ©s
+        Charge les meilleurs parametres sauvegardes
         
         Args:
-            strategy_name: Nom de la stratÃƒÂ©gie
+            strategy_name: Nom de la strategie
             
         Returns:
-            Dict des paramÃƒÂ¨tres ou None
+            Dict des parametres ou None
         """
         pattern = f"{strategy_name}_optimized_*.json"
         files = list(self.results_dir.glob(pattern))
         
         if not files:
-            logger.warning(f"Aucun paramÃƒÂ¨tre trouvÃƒÂ© pour {strategy_name}")
+            logger.warning(f"Aucun parametre trouve pour {strategy_name}")
             return None
         
-        # Prendre le plus rÃƒÂ©cent
+        # Prendre le plus recent
         latest = max(files, key=lambda f: f.stat().st_mtime)
         
         try:
             with open(latest, 'r') as f:
                 result = json.load(f)
             
-            logger.info(f"Ã¢Å“â€¦ ParamÃƒÂ¨tres chargÃƒÂ©s: {latest.name}")
+            logger.info(f"""| Parametres charges: {latest.name}")
             logger.info(f"   Score: {result['score']:.4f}")
             
             return result['parameters']
             
         except Exception as e:
-            logger.error(f"Erreur chargement paramÃƒÂ¨tres: {e}")
+            logger.error(f"Erreur chargement parametres: {e}")
             return None
 
 
 def main():
-    """Point d'entrÃƒÂ©e du script"""
-    parser = argparse.ArgumentParser(description='Optimisation des paramÃƒÂ¨tres')
+    """Point d'entree du script"""
+    parser = argparse.ArgumentParser(description='Optimisation des parametres')
     parser.add_argument('strategy', 
                        choices=['scalping', 'momentum', 'mean_reversion', 'all'],
-                       help='StratÃƒÂ©gie ÃƒÂ  optimiser')
+                       help='Strategie  optimiser')
     parser.add_argument('--data', required=True,
-                       help='Fichier CSV avec donnÃƒÂ©es historiques')
+                       help='Fichier CSV avec donnees historiques')
     parser.add_argument('--iterations', type=int, default=50,
-                       help='Nombre d\'itÃƒÂ©rations (dÃƒÂ©faut: 50)')
+                       help='Nombre d\'iterations (defaut: 50)')
     
     args = parser.parse_args()
     
     print("\n" + "="*50)
-    print("Ã°Å¸â€Â§ OPTIMISATION DES PARAMÃƒË†TRES")
+    print("" OPTIMISATION DES PARAMTRES")
     print("="*50)
     
-    # Charger les donnÃƒÂ©es
-    logger.info(f"Ã°Å¸â€œÂ¥ Chargement des donnÃƒÂ©es: {args.data}")
+    # Charger les donnees
+    logger.info(f"" Chargement des donnees: {args.data}"")
     try:
         df = pd.read_csv(args.data, index_col=0, parse_dates=True)
-        logger.info(f"   Ã¢Å“â€¦ {len(df)} candles chargÃƒÂ©es")
+        logger.info(f"   ""| {len(df)} candles chargees")
     except Exception as e:
-        logger.error(f"Ã¢ÂÅ’ Erreur chargement donnÃƒÂ©es: {e}")
+        logger.error(f"' Erreur chargement donnees: {e}")
         sys.exit(1)
     
     optimizer = ParameterOptimizer(df)
@@ -456,7 +456,7 @@ def main():
     elif args.strategy == 'mean_reversion':
         optimizer.optimize_mean_reversion_strategy(args.iterations)
     elif args.strategy == 'all':
-        logger.info("Ã°Å¸Å½Â¯ Optimisation de toutes les stratÃƒÂ©gies")
+        logger.info(" Optimisation de toutes les strategies")
         optimizer.optimize_scalping_strategy(args.iterations)
         optimizer.optimize_momentum_strategy(args.iterations)
         optimizer.optimize_mean_reversion_strategy(args.iterations)
