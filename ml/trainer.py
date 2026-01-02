@@ -1,6 +1,6 @@
 """
 ML Trainer pour The Bot
-EntraÃƒÂ®nement des modÃƒÂ¨les ML
+Entranement des modeles ML
 """
 
 import numpy as np
@@ -20,14 +20,14 @@ logger = logging.getLogger(__name__)
 
 class MLTrainer:
     """
-    EntraÃƒÂ®neur de modÃƒÂ¨les ML
+    Entraneur de modeles ML
     
-    ResponsabilitÃƒÂ©s:
-    - PrÃƒÂ©parer les donnÃƒÂ©es d'entraÃƒÂ®nement depuis l'historique
-    - EntraÃƒÂ®ner l'ensemble de modÃƒÂ¨les
+    Responsabilites:
+    - Preparer les donnees d'entranement depuis l'historique
+    - Entraner l'ensemble de modeles
     - Valider les performances
-    - Sauvegarder les modÃƒÂ¨les
-    - Tracker l'historique d'entraÃƒÂ®nement
+    - Sauvegarder les modeles
+    - Tracker l'historique d'entranement
     """
     
     def __init__(self, 
@@ -45,24 +45,26 @@ class MLTrainer:
         
         self.training_history = []
         
-        logger.info("Ã¢Å“â€¦ ML Trainer initialisÃƒÂ©")
+        logger.info("""| ML Trainer initialise")
     
     def prepare_training_data(self, 
-                             trades_data: pd.DataFrame,
+    """
+    trades_data: pd.DataFrame,
+    """
                              ohlcv_data: Dict[str, pd.DataFrame],
                              lookback_periods: int = 50) -> Tuple[np.ndarray, np.ndarray]:
         """
-        PrÃƒÂ©pare les donnÃƒÂ©es d'entraÃƒÂ®nement ÃƒÂ  partir de l'historique des trades
+        Prepare les donnees d'entranement  partir de l'historique des trades
         
         Args:
             trades_data: DataFrame avec colonnes: symbol, entry_time, exit_time, profit
             ohlcv_data: Dict {symbol: DataFrame OHLCV}
-            lookback_periods: Nombre de pÃƒÂ©riodes ÃƒÂ  regarder en arriÃƒÂ¨re
+            lookback_periods: Nombre de periodes  regarder en arriere
             
         Returns:
             (X, y) Features et labels
         """
-        logger.info(f"Ã°Å¸â€œÅ  PrÃƒÂ©paration donnÃƒÂ©es d'entraÃƒÂ®nement: {len(trades_data)} trades")
+        logger.info(f"" Preparation donnees d'entranement: {len(trades_data)} trades")
         
         X_list = []
         y_list = []
@@ -74,14 +76,14 @@ class MLTrainer:
                 entry_time = trade['entry_time']
                 profit = trade['profit']
                 
-                # RÃƒÂ©cupÃƒÂ©rer les donnÃƒÂ©es OHLCV avant l'entrÃƒÂ©e
+                # Recuperer les donnees OHLCV avant l'entree
                 if symbol not in ohlcv_data:
                     skipped += 1
                     continue
                 
                 df = ohlcv_data[symbol]
                 
-                # Filtrer jusqu'ÃƒÂ  l'heure d'entrÃƒÂ©e
+                # Filtrer jusqu' l'heure d'entree
                 df_before = df[df['timestamp'] <= entry_time].tail(lookback_periods)
                 
                 if len(df_before) < lookback_periods:
@@ -91,42 +93,44 @@ class MLTrainer:
                 # Calculer les features
                 features = self.feature_engineer.calculate_features(df_before)
                 
-                # Prendre la derniÃƒÂ¨re ligne (au moment de l'entrÃƒÂ©e)
+                # Prendre la derniere ligne (au moment de l'entree)
                 X_list.append(features[-1])
                 
                 # Label: 1 si profit positif, 0 sinon
                 y_list.append(1 if profit > 0 else 0)
                 
             except Exception as e:
-                logger.debug(f"Erreur prÃƒÂ©paration trade {idx}: {e}")
+                logger.debug(f"Erreur preparation trade {idx}: {e}")
                 skipped += 1
                 continue
         
         X = np.array(X_list)
         y = np.array(y_list)
         
-        logger.info(f"Ã¢Å“â€¦ DonnÃƒÂ©es prÃƒÂ©parÃƒÂ©es: {len(X)} samples, {X.shape[1]} features")
+        logger.info(f"""| Donnees preparees: {len(X)} samples, {X.shape[1]} features")
         logger.info(f"   Skipped: {skipped} trades")
         logger.info(f"   Distribution: {np.sum(y)} wins ({np.sum(y)/len(y):.1%}), {len(y) - np.sum(y)} losses ({1 - np.sum(y)/len(y):.1%})")
         
         return X, y
     
     def train(self, X: np.ndarray, y: np.ndarray,
-             test_size: float = 0.2,
+    """
+    test_size: float = 0.2,
+    """
              save_path: Optional[str] = None) -> Dict:
         """
-        EntraÃƒÂ®ne les modÃƒÂ¨les
+        Entrane les modeles
         
         Args:
             X: Features (shape: [n_samples, n_features])
             y: Labels binaires (0 ou 1)
             test_size: Taille du set de validation (0-1)
-            save_path: Chemin pour sauvegarder les modÃƒÂ¨les
+            save_path: Chemin pour sauvegarder les modeles
             
         Returns:
-            Dict avec les rÃƒÂ©sultats d'entraÃƒÂ®nement
+            Dict avec les resultats d'entranement
         """
-        logger.info(f"Ã°Å¸Å½Â¯ DÃƒÂ©but entraÃƒÂ®nement: {len(X)} samples, {X.shape[1]} features")
+        logger.info(f" Debut entranement: {len(X)} samples, {X.shape[1]} features")
         
         start_time = time.time()
         
@@ -138,15 +142,15 @@ class MLTrainer:
         logger.info(f"Split: {len(X_train)} train ({np.sum(y_train)/len(y_train):.1%} wins), "
                    f"{len(X_val)} val ({np.sum(y_val)/len(y_val):.1%} wins)")
         
-        # EntraÃƒÂ®ner l'ensemble
+        # Entraner l'ensemble
         scores = self.ensemble.train(X_train, y_train, X_val, y_val)
         
-        # Ãƒâ€°valuation dÃƒÂ©taillÃƒÂ©e sur validation
+        # "valuation detaillee sur validation
         evaluation = self.evaluate(X_val, y_val)
         
         elapsed = time.time() - start_time
         
-        # RÃƒÂ©sultats
+        # Resultats
         results = {
             'timestamp': datetime.now(),
             'training_time_seconds': elapsed,
@@ -166,13 +170,13 @@ class MLTrainer:
         # Sauvegarder l'historique
         self.training_history.append(results)
         
-        # Sauvegarder les modÃƒÂ¨les
+        # Sauvegarder les modeles
         if save_path:
             self.save_models(save_path)
             results['model_path'] = save_path
         
         # Logs
-        logger.info(f"Ã¢Å“â€¦ EntraÃƒÂ®nement terminÃƒÂ© en {elapsed:.1f}s")
+        logger.info(f"""| Entranement termine en {elapsed:.1f}s")
         logger.info(f"   Accuracy:  {evaluation['accuracy']:.2%}")
         logger.info(f"   Precision: {evaluation['precision']:.2%}")
         logger.info(f"   Recall:    {evaluation['recall']:.2%}")
@@ -182,24 +186,24 @@ class MLTrainer:
     
     def evaluate(self, X_val: np.ndarray, y_val: np.ndarray) -> Dict:
         """
-        Ãƒâ€°value les performances sur le set de validation
+        "value les performances sur le set de validation
         
         Args:
             X_val: Features de validation
             y_val: Labels de validation
             
         Returns:
-            Dict avec les mÃƒÂ©triques de performance
+            Dict avec les metriques de performance
         """
-        # PrÃƒÂ©dictions
+        # Predictions
         y_pred = self.ensemble.predict_batch(X_val)
         
         # Convertir les signaux (-1, 0, 1) en labels binaires (0, 1)
-        # Signal > 0 = BUY = prÃƒÂ©diction de profit = 1
-        # Signal <= 0 = SELL/HOLD = prÃƒÂ©diction de perte = 0
+        # Signal > 0 = BUY = prediction de profit = 1
+        # Signal <= 0 = SELL/HOLD = prediction de perte = 0
         y_pred_binary = (y_pred > 0).astype(int)
         
-        # Calculer les mÃƒÂ©triques
+        # Calculer les metriques
         accuracy = accuracy_score(y_val, y_pred_binary)
         precision = precision_score(y_val, y_pred_binary, zero_division=0)
         recall = recall_score(y_val, y_pred_binary, zero_division=0)
@@ -226,7 +230,7 @@ class MLTrainer:
     def cross_validate(self, X: np.ndarray, y: np.ndarray, 
                       n_splits: int = 5) -> Dict:
         """
-        Validation croisÃƒÂ©e
+        Validation croisee
         
         Args:
             X: Features
@@ -238,7 +242,7 @@ class MLTrainer:
         """
         from sklearn.model_selection import StratifiedKFold
         
-        logger.info(f"Ã°Å¸â€â€ž Validation croisÃƒÂ©e ({n_splits} splits)...")
+        logger.info(f""" Validation croisee ({n_splits} splits)...")
         
         skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
         
@@ -253,10 +257,10 @@ class MLTrainer:
             X_train, X_val = X[train_idx], X[val_idx]
             y_train, y_val = y[train_idx], y[val_idx]
             
-            # EntraÃƒÂ®ner
+            # Entraner
             self.ensemble.train(X_train, y_train)
             
-            # Ãƒâ€°valuer
+            # "valuer
             eval_results = self.evaluate(X_val, y_val)
             
             accuracies.append(eval_results['accuracy'])
@@ -276,39 +280,39 @@ class MLTrainer:
             'f1_score_std': float(np.std(f1_scores))
         }
         
-        logger.info(f"Ã¢Å“â€¦ CV terminÃƒÂ©e: Accuracy={results['accuracy_mean']:.2%} Ã‚Â± {results['accuracy_std']:.2%}")
+        logger.info(f"""| CV terminee: Accuracy={results['accuracy_mean']:.2%}  {results['accuracy_std']:.2%}")
         
         return results
     
     def save_models(self, filepath: str):
         """
-        Sauvegarde les modÃƒÂ¨les entraÃƒÂ®nÃƒÂ©s
+        Sauvegarde les modeles entranes
         
         Args:
             filepath: Chemin pour sauvegarder
         """
         self.ensemble.save(filepath)
-        logger.info(f"Ã°Å¸â€™Â¾ ModÃƒÂ¨les sauvegardÃƒÂ©s: {filepath}")
+        logger.info(f"' Modeles sauvegardes: {filepath}")
     
     def load_models(self, filepath: str):
         """
-        Charge des modÃƒÂ¨les prÃƒÂ©-entraÃƒÂ®nÃƒÂ©s
+        Charge des modeles pre-entranes
         
         Args:
-            filepath: Chemin des modÃƒÂ¨les
+            filepath: Chemin des modeles
         """
         self.ensemble.load(filepath)
-        logger.info(f"Ã°Å¸â€œâ€š ModÃƒÂ¨les chargÃƒÂ©s: {filepath}")
+        logger.info(f""" Modeles charges: {filepath}")
     
     def get_training_history(self, limit: Optional[int] = None) -> List[Dict]:
         """
-        Retourne l'historique d'entraÃƒÂ®nement
+        Retourne l'historique d'entranement
         
         Args:
-            limit: Nombre max d'entrÃƒÂ©es (None = toutes)
+            limit: Nombre max d'entrees (None = toutes)
             
         Returns:
-            Liste des entraÃƒÂ®nements
+            Liste des entranements
         """
         if limit:
             return self.training_history[-limit:]
@@ -337,26 +341,26 @@ if __name__ == "__main__":
     
     print("\n=== Test ML Trainer ===\n")
     
-    # CrÃƒÂ©er des donnÃƒÂ©es synthÃƒÂ©tiques
+    # Creer des donnees synthetiques
     np.random.seed(42)
     n_samples = 1000
     n_features = 30
     
     X = np.random.randn(n_samples, n_features)
-    # Labels basÃƒÂ©s sur une combinaison de features
+    # Labels bases sur une combinaison de features
     y = (X[:, 0] + X[:, 1] - X[:, 2] > 0).astype(int)
     
-    print(f"DonnÃƒÂ©es: {n_samples} samples, {n_features} features")
+    print(f"Donnees: {n_samples} samples, {n_features} features")
     print(f"Distribution: {np.sum(y)} wins ({np.sum(y)/len(y):.1%})")
     
-    # CrÃƒÂ©er le trainer
+    # Creer le trainer
     trainer = MLTrainer()
     
-    # EntraÃƒÂ®ner
-    print("\nÃ°Å¸Å½Â¯ EntraÃƒÂ®nement...")
+    # Entraner
+    print("\n Entranement...")
     results = trainer.train(X, y, test_size=0.2, save_path='data/models/test_trainer')
     
-    print(f"\nÃ°Å¸â€œÅ  RÃƒÂ©sultats:")
+    print(f"\n" Resultats:")
     print(f"  Temps: {results['training_time_seconds']:.1f}s")
     print(f"  Accuracy: {results['evaluation']['accuracy']:.2%}")
     print(f"  Precision: {results['evaluation']['precision']:.2%}")
@@ -364,14 +368,14 @@ if __name__ == "__main__":
     print(f"  F1 Score: {results['evaluation']['f1_score']:.2%}")
     
     # Feature importance
-    print("\nÃ°Å¸Å½Â¯ Top 10 Features:")
+    print("\n Top 10 Features:")
     importance = trainer.get_feature_importance(top_n=10)
     for feature, imp in list(importance.items())[:10]:
         print(f"  {feature}: {imp:.4f}")
     
-    # Validation croisÃƒÂ©e
-    print("\nÃ°Å¸â€â€ž Test validation croisÃƒÂ©e...")
+    # Validation croisee
+    print("\n"" Test validation croisee...")
     cv_results = trainer.cross_validate(X, y, n_splits=3)
-    print(f"  CV Accuracy: {cv_results['accuracy_mean']:.2%} Ã‚Â± {cv_results['accuracy_std']:.2%}")
+    print(f"  CV Accuracy: {cv_results['accuracy_mean']:.2%}  {cv_results['accuracy_std']:.2%}")
     
-    print("\nÃ¢Å“â€¦ Tests terminÃƒÂ©s")
+    print("\n""| Tests termines")
