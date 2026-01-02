@@ -1,6 +1,6 @@
 """
 Portfolio Manager
-GÃƒÂ¨re le portfolio et l'allocation du capital entre positions
+Gere le portfolio et l'allocation du capital entre positions
 """
 
 import numpy as np
@@ -15,12 +15,12 @@ class PortfolioManager:
     """
     Gestionnaire de portfolio
     
-    ResponsabilitÃƒÂ©s:
+    Responsabilites:
     - Allocation du capital
     - Suivi des positions ouvertes
     - Calcul de l'exposition totale
     - Diversification
-    - RÃƒÂ©ÃƒÂ©quilibrage
+    - Reequilibrage
     """
     
     def __init__(self, initial_capital: float, config: Dict = None):
@@ -36,8 +36,8 @@ class PortfolioManager:
             'max_position_size_pct': 0.25,  # 25% max par position
             'max_total_exposure_pct': 0.95,  # 95% du capital max
             'min_position_size': 50,  # 50$ minimum
-            'reserve_cash_pct': 0.05,  # 5% de rÃƒÂ©serve
-            'max_correlation_exposure': 0.5  # Max 50% dans actifs corrÃƒÂ©lÃƒÂ©s
+            'reserve_cash_pct': 0.05,  # 5% de reserve
+            'max_correlation_exposure': 0.5  # Max 50% dans actifs correles
         }
         
         if config:
@@ -58,7 +58,7 @@ else:
         self.positions = {}  # {symbol: position_data}
         self.closed_positions = []
         
-        # Allocation par stratÃƒÂ©gie
+        # Allocation par strategie
         self.strategy_allocations = {
             'scalping': 0.40,
             'momentum': 0.25,
@@ -77,13 +77,13 @@ else:
             'max_open_positions': 0
         }
         
-        logger.info("Ã°Å¸â€™Â¼ Portfolio Manager initialisÃƒÂ©")
+        logger.info("' Portfolio Manager initialise")
         logger.info(f"   Capital initial: ${initial_capital:,.0f}")
         logger.info(f"   Max positions: {self.config['max_positions']}")
     
     def can_open_position(self, symbol: str, required_capital: float) -> Tuple[bool, str]:
         """
-        VÃƒÂ©rifie si une position peut ÃƒÂªtre ouverte
+        Verifie si une position peut etre ouverte
         
         Args:
             symbol: Le symbole
@@ -92,33 +92,33 @@ else:
         Returns:
             Tuple (can_open, reason)
         """
-        # 1. VÃƒÂ©rifier si position existe dÃƒÂ©jÃƒÂ 
+        # 1. Verifier si position existe dej
         if symbol in self.positions:
-            return False, "Position dÃƒÂ©jÃƒÂ  ouverte sur ce symbole"
+            return False, "Position dej ouverte sur ce symbole"
         
-        # 2. VÃƒÂ©rifier nombre max de positions
+        # 2. Verifier nombre max de positions
         if len(self.positions) >= self.config['max_positions']:
             return False, f"Nombre max de positions atteint ({self.config['max_positions']})"
         
-        # 3. VÃƒÂ©rifier capital disponible
+        # 3. Verifier capital disponible
         if required_capital > self.available_capital:
             return False, f"Capital insuffisant (requis: ${required_capital:.0f}, dispo: ${self.available_capital:.0f})"
         
-        # 4. VÃƒÂ©rifier taille minimum
+        # 4. Verifier taille minimum
         if required_capital < self.config['min_position_size']:
             return False, f"Taille position trop petite (min: ${self.config['min_position_size']})"
         
-        # 5. VÃƒÂ©rifier taille maximum par position
+        # 5. Verifier taille maximum par position
         max_size = self.current_capital * self.config['max_position_size_pct']
         if required_capital > max_size:
             return False, f"Taille position trop grande (max: ${max_size:.0f})"
         
-        # 6. VÃƒÂ©rifier exposition totale
+        # 6. Verifier exposition totale
         total_exposure = self.get_total_exposure() + required_capital
         max_exposure = self.current_capital * self.config['max_total_exposure_pct']
         
         if total_exposure > max_exposure:
-            return False, f"Exposition totale trop ÃƒÂ©levÃƒÂ©e ({total_exposure/self.current_capital:.1%})"
+            return False, f"Exposition totale trop elevee ({total_exposure/self.current_capital:.1%})"
         
         return True, "OK"
     
@@ -127,10 +127,10 @@ else:
         Ouvre une nouvelle position
         
         Args:
-            position_data: DonnÃƒÂ©es de la position
+            position_data: Donnees de la position
             
         Returns:
-            True si succÃƒÂ¨s
+            True si succes
         """
         try:
             symbol = position_data['symbol']
@@ -138,13 +138,13 @@ else:
             entry_price = position_data['entry_price']
             capital_used = size * entry_price
             
-            # VÃƒÂ©rifier si possible
+            # Verifier si possible
             can_open, reason = self.can_open_position(symbol, capital_used)
             if not can_open:
                 logger.warning(f"Impossible d'ouvrir position {symbol}: {reason}")
                 return False
             
-            # CrÃƒÂ©er la position
+            # Creer la position
             position = {
                 'symbol': symbol,
                 'side': position_data['side'],
@@ -162,11 +162,11 @@ else:
             self.positions[symbol] = position
             self.available_capital -= capital_used
             
-            # Mettre ÃƒÂ  jour stats
+            # Mettre  jour stats
             if len(self.positions) > self.stats['max_open_positions']:
                 self.stats['max_open_positions'] = len(self.positions)
             
-            logger.info(f"Ã¢Å“â€¦ Position ouverte: {symbol}")
+            logger.info(f"""| Position ouverte: {symbol}")
             logger.info(f"   Side: {position['side']}")
             logger.info(f"   Size: {size:.4f} @ ${entry_price:.2f}")
             logger.info(f"   Capital: ${capital_used:.2f}")
@@ -186,10 +186,10 @@ else:
             exit_price: Prix de sortie
             
         Returns:
-            Dict avec rÃƒÂ©sultat ou None
+            Dict avec resultat ou None
         """
         if symbol not in self.positions:
-            logger.warning(f"Position {symbol} non trouvÃƒÂ©e")
+            logger.warning(f"Position {symbol} non trouvee")
             return None
         
         try:
@@ -206,11 +206,11 @@ else:
             
             pnl_pct = pnl / position['capital_used']
             
-            # LibÃƒÂ©rer le capital
+            # Liberer le capital
             self.available_capital += position['capital_used'] + pnl
             self.current_capital += pnl
             
-            # Enregistrer le rÃƒÂ©sultat
+            # Enregistrer le resultat
             result = {
                 'symbol': symbol,
                 'side': position['side'],
@@ -228,7 +228,7 @@ else:
             
             self.closed_positions.append(result)
             
-            # Mettre ÃƒÂ  jour les stats
+            # Mettre  jour les stats
             self.stats['total_trades'] += 1
             if pnl > 0:
                 self.stats['winning_trades'] += 1
@@ -240,7 +240,7 @@ else:
             # Supprimer la position
             del self.positions[symbol]
             
-            logger.info(f"Ã°Å¸â€â€™ Position fermÃƒÂ©e: {symbol}")
+            logger.info(f""' Position fermee: {symbol}")
             logger.info(f"   P&L: ${pnl:.2f} ({pnl_pct:+.2%})")
             logger.info(f"   Nouveau capital: ${self.current_capital:.2f}")
             
@@ -252,7 +252,7 @@ else:
     
     def update_position_price(self, symbol: str, current_price: float):
         """
-        Met ÃƒÂ  jour le prix actuel d'une position
+        Met  jour le prix actuel d'une position
         
         Args:
             symbol: Le symbole
@@ -264,7 +264,7 @@ else:
         position = self.positions[symbol]
         position['current_price'] = current_price
         
-        # Calculer le P&L non rÃƒÂ©alisÃƒÂ©
+        # Calculer le P&L non realise
         size = position['size']
         entry_price = position['entry_price']
         
@@ -288,19 +288,19 @@ else:
         return sum(p['capital_used'] for p in self.positions.values())
     
     def get_total_unrealized_pnl(self) -> float:
-        """Retourne le P&L non rÃƒÂ©alisÃƒÂ© total"""
+        """Retourne le P&L non realise total"""
         return sum(p.get('unrealized_pnl', 0) for p in self.positions.values())
     
     def get_positions_by_strategy(self, strategy: str) -> List[Dict]:
-        """Retourne les positions d'une stratÃƒÂ©gie"""
+        """Retourne les positions d'une strategie"""
         return [p for p in self.positions.values() if p.get('strategy') == strategy]
     
     def calculate_strategy_capital(self, strategy: str) -> float:
         """
-        Calcule le capital disponible pour une stratÃƒÂ©gie
+        Calcule le capital disponible pour une strategie
         
         Args:
-            strategy: Nom de la stratÃƒÂ©gie
+            strategy: Nom de la strategie
             
         Returns:
             Capital disponible
@@ -314,10 +314,10 @@ else:
     
     def get_portfolio_summary(self) -> Dict:
         """
-        Retourne un rÃƒÂ©sumÃƒÂ© du portfolio
+        Retourne un resume du portfolio
         
         Returns:
-            Dict avec mÃƒÂ©triques
+            Dict avec metriques
         """
         total_pnl = self.current_capital - self.initial_capital
         total_pnl_pct = total_pnl / self.initial_capital if self.initial_capital > 0 else 0
@@ -379,10 +379,10 @@ if __name__ == "__main__":
     }
     
     success = manager.open_position(position1)
-    print(f"   SuccÃƒÂ¨s: {success}")
+    print(f"   Succes: {success}")
     
     # Test 2: Ouvrir plusieurs positions
-    print("\n2. Ouverture de positions supplÃƒÂ©mentaires:")
+    print("\n2. Ouverture de positions supplementaires:")
     for symbol, price in [('ETHUSDC', 3000), ('BNBUSDC', 400)]:
         position = {
             'symbol': symbol,
@@ -393,8 +393,8 @@ if __name__ == "__main__":
         }
         manager.open_position(position)
     
-    # Test 3: RÃƒÂ©sumÃƒÂ© du portfolio
-    print("\n3. RÃƒÂ©sumÃƒÂ© du portfolio:")
+    # Test 3: Resume du portfolio
+    print("\n3. Resume du portfolio:")
     summary = manager.get_portfolio_summary()
     for key, value in summary.items():
         if isinstance(value, float):
@@ -411,8 +411,8 @@ if __name__ == "__main__":
     if result:
         print(f"   P&L: ${result['pnl']:.2f} ({result['pnl_pct']:+.2%})")
     
-    # Test 5: RÃƒÂ©sumÃƒÂ© final
-    print("\n5. RÃƒÂ©sumÃƒÂ© final:")
+    # Test 5: Resume final
+    print("\n5. Resume final:")
     final_summary = manager.get_portfolio_summary()
     print(f"   Capital: ${final_summary['current_capital']:.2f}")
     print(f"   P&L Total: ${final_summary['total_pnl']:.2f} ({final_summary['total_pnl_pct']:+.2%})")
