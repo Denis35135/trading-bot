@@ -1,6 +1,6 @@
 """
 Circuit Breakers
-Disjoncteurs d'urgence pour arrÃƒÂªter le trading en cas de conditions extrÃƒÂªmes
+Disjoncteurs d'urgence pour arreter le trading en cas de conditions extremes
 """
 
 import logging
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class BreakLevel(Enum):
-    """Niveaux de gravitÃƒÂ© des circuit breakers"""
+    """Niveaux de gravite des circuit breakers"""
     WARNING = 1
     PAUSE = 2
     HALT = 3
@@ -21,15 +21,15 @@ class BreakLevel(Enum):
 
 class CircuitBreaker:
     """
-    SystÃƒÂ¨me de disjoncteurs pour protection du capital
+    Systeme de disjoncteurs pour protection du capital
     
-    DÃƒÂ©clencheurs:
-    - Drawdown maximum dÃƒÂ©passÃƒÂ©
-    - Pertes journaliÃƒÂ¨res excessives
-    - SÃƒÂ©rie de trades perdants
-    - VolatilitÃƒÂ© de marchÃƒÂ© extrÃƒÂªme
-    - Erreurs systÃƒÂ¨me rÃƒÂ©pÃƒÂ©tÃƒÂ©es
-    - LiquiditÃƒÂ© insuffisante
+    Declencheurs:
+    - Drawdown maximum depasse
+    - Pertes journalieres excessives
+    - Serie de trades perdants
+    - Volatilite de marche extreme
+    - Erreurs systeme repetees
+    - Liquidite insuffisante
     """
     
     def __init__(self, config: Dict = None):
@@ -43,10 +43,10 @@ class CircuitBreaker:
             'max_daily_loss_pct': 0.05,  # 5% perte max/jour
             'max_drawdown_pct': 0.08,  # 8% drawdown max
             'max_consecutive_losses': 5,
-            'min_win_rate_threshold': 0.35,  # ArrÃƒÂªt si <35% win rate
+            'min_win_rate_threshold': 0.35,  # Arret si <35% win rate
             'max_position_loss_pct': 0.03,  # 3% perte max par position
-            'cooldown_period': 3600,  # 1h de pause aprÃƒÂ¨s dÃƒÂ©clenchement
-            'volatility_spike_threshold': 3.0,  # 3x volatilitÃƒÂ© normale
+            'cooldown_period': 3600,  # 1h de pause apres declenchement
+            'volatility_spike_threshold': 3.0,  # 3x volatilite normale
             'max_errors_per_hour': 10,
             'min_liquidity_threshold': 100000  # 100k$ minimum
         }
@@ -74,7 +74,7 @@ class CircuitBreaker:
             'prevented_losses': 0
         }
         
-        logger.info("Ã°Å¸â€ºÂ¡Ã¯Â¸Â Circuit Breaker initialisÃƒÂ©")
+        logger.info("" Circuit Breaker initialise")
         logger.info(f"   Max daily loss: {self.config['max_daily_loss_pct']:.1%}")
         logger.info(f"   Max drawdown: {self.config['max_drawdown_pct']:.1%}")
     
@@ -86,18 +86,18 @@ class CircuitBreaker:
         recent_trades: List[Dict]
     ) -> Dict:
         """
-        VÃƒÂ©rifie toutes les conditions de dÃƒÂ©clenchement
+        Verifie toutes les conditions de declenchement
         
         Args:
             portfolio_value: Valeur actuelle du portfolio
             daily_pnl: P&L du jour
             drawdown: Drawdown actuel
-            recent_trades: Trades rÃƒÂ©cents
+            recent_trades: Trades recents
             
         Returns:
             Dict avec statut et actions
         """
-        # VÃƒÂ©rifier si en cooldown
+        # Verifier si en cooldown
         if self.cooldown_until and datetime.now() < self.cooldown_until:
             remaining = (self.cooldown_until - datetime.now()).seconds
             return {
@@ -107,41 +107,41 @@ class CircuitBreaker:
                 'level': BreakLevel.PAUSE
             }
         
-        # Liste des conditions dÃƒÂ©clenchÃƒÂ©es
+        # Liste des conditions declenchees
         triggered = []
         max_level = BreakLevel.WARNING
         
-        # 1. VÃƒÂ©rifier perte journaliÃƒÂ¨re
+        # 1. Verifier perte journaliere
         daily_loss_check = self._check_daily_loss(portfolio_value, daily_pnl)
         if daily_loss_check['triggered']:
             triggered.append(daily_loss_check)
             max_level = max(max_level, daily_loss_check['level'])
         
-        # 2. VÃƒÂ©rifier drawdown
+        # 2. Verifier drawdown
         drawdown_check = self._check_drawdown(drawdown)
         if drawdown_check['triggered']:
             triggered.append(drawdown_check)
             max_level = max(max_level, drawdown_check['level'])
         
-        # 3. VÃƒÂ©rifier sÃƒÂ©rie de pertes
+        # 3. Verifier serie de pertes
         losing_streak_check = self._check_losing_streak(recent_trades)
         if losing_streak_check['triggered']:
             triggered.append(losing_streak_check)
             max_level = max(max_level, losing_streak_check['level'])
         
-        # 4. VÃƒÂ©rifier win rate
+        # 4. Verifier win rate
         win_rate_check = self._check_win_rate(recent_trades)
         if win_rate_check['triggered']:
             triggered.append(win_rate_check)
             max_level = max(max_level, win_rate_check['level'])
         
-        # 5. VÃƒÂ©rifier erreurs systÃƒÂ¨me
+        # 5. Verifier erreurs systeme
         error_check = self._check_system_errors()
         if error_check['triggered']:
             triggered.append(error_check)
             max_level = max(max_level, error_check['level'])
         
-        # DÃƒÂ©cision finale
+        # Decision finale
         if triggered:
             return self._handle_triggers(triggered, max_level)
         
@@ -153,7 +153,7 @@ class CircuitBreaker:
         }
     
     def _check_daily_loss(self, portfolio_value: float, daily_pnl: float) -> Dict:
-        """VÃƒÂ©rifie la perte journaliÃƒÂ¨re"""
+        """Verifie la perte journaliere"""
         daily_loss_pct = abs(daily_pnl) / portfolio_value if portfolio_value > 0 else 0
         
         if daily_loss_pct >= self.config['max_daily_loss_pct']:
@@ -161,7 +161,7 @@ class CircuitBreaker:
                 'triggered': True,
                 'type': 'daily_loss',
                 'level': BreakLevel.HALT,
-                'message': f'Perte journaliÃƒÂ¨re excessive: {daily_loss_pct:.2%}',
+                'message': f'Perte journaliere excessive: {daily_loss_pct:.2%}',
                 'value': daily_loss_pct
             }
         elif daily_loss_pct >= self.config['max_daily_loss_pct'] * 0.8:
@@ -169,14 +169,14 @@ class CircuitBreaker:
                 'triggered': True,
                 'type': 'daily_loss_warning',
                 'level': BreakLevel.WARNING,
-                'message': f'Perte journaliÃƒÂ¨re ÃƒÂ©levÃƒÂ©e: {daily_loss_pct:.2%}',
+                'message': f'Perte journaliere elevee: {daily_loss_pct:.2%}',
                 'value': daily_loss_pct
             }
         
         return {'triggered': False}
     
     def _check_drawdown(self, drawdown: float) -> Dict:
-        """VÃƒÂ©rifie le drawdown"""
+        """Verifie le drawdown"""
         if drawdown >= self.config['max_drawdown_pct']:
             return {
                 'triggered': True,
@@ -190,18 +190,18 @@ class CircuitBreaker:
                 'triggered': True,
                 'type': 'drawdown_warning',
                 'level': BreakLevel.PAUSE,
-                'message': f'Drawdown ÃƒÂ©levÃƒÂ©: {drawdown:.2%}',
+                'message': f'Drawdown eleve: {drawdown:.2%}',
                 'value': drawdown
             }
         
         return {'triggered': False}
     
     def _check_losing_streak(self, recent_trades: List[Dict]) -> Dict:
-        """VÃƒÂ©rifie la sÃƒÂ©rie de trades perdants"""
+        """Verifie la serie de trades perdants"""
         if not recent_trades:
             return {'triggered': False}
         
-        # Compter les pertes consÃƒÂ©cutives rÃƒÂ©centes
+        # Compter les pertes consecutives recentes
         consecutive_losses = 0
         for trade in reversed(recent_trades[-20:]):  # 20 derniers trades
             if trade.get('pnl', 0) < 0:
@@ -216,14 +216,14 @@ class CircuitBreaker:
                 'triggered': True,
                 'type': 'losing_streak',
                 'level': BreakLevel.PAUSE,
-                'message': f'{consecutive_losses} pertes consÃƒÂ©cutives',
+                'message': f'{consecutive_losses} pertes consecutives',
                 'value': consecutive_losses
             }
         
         return {'triggered': False}
     
     def _check_win_rate(self, recent_trades: List[Dict]) -> Dict:
-        """VÃƒÂ©rifie le win rate rÃƒÂ©cent"""
+        """Verifie le win rate recent"""
         if len(recent_trades) < 20:
             return {'triggered': False}
         
@@ -244,7 +244,7 @@ class CircuitBreaker:
         return {'triggered': False}
     
     def _check_system_errors(self) -> Dict:
-        """VÃƒÂ©rifie les erreurs systÃƒÂ¨me"""
+        """Verifie les erreurs systeme"""
         # Nettoyer les anciennes erreurs (>1h)
         cutoff = datetime.now() - timedelta(hours=1)
         self.error_timestamps = [t for t in self.error_timestamps if t > cutoff]
@@ -262,14 +262,14 @@ class CircuitBreaker:
     
     def _handle_triggers(self, triggered: List[Dict], max_level: BreakLevel) -> Dict:
         """
-        GÃƒÂ¨re les dÃƒÂ©clenchements
+        Gere les declenchements
         
         Args:
-            triggered: Liste des conditions dÃƒÂ©clenchÃƒÂ©es
-            max_level: Niveau maximum de gravitÃƒÂ©
+            triggered: Liste des conditions declenchees
+            max_level: Niveau maximum de gravite
             
         Returns:
-            Dict avec actions ÃƒÂ  prendre
+            Dict avec actions  prendre
         """
         self.breakers_triggered = triggered
         self.last_trigger_time = datetime.now()
@@ -281,15 +281,15 @@ class CircuitBreaker:
             self.stats['triggers_by_type'][trigger_type] = \
                 self.stats['triggers_by_type'].get(trigger_type, 0) + 1
         
-        # Log dÃƒÂ©taillÃƒÂ©
-        logger.warning("Ã¢Å¡Â Ã¯Â¸Â CIRCUIT BREAKER DÃƒâ€°CLENCHÃƒâ€°!")
+        # Log detaille
+        logger.warning(" CIRCUIT BREAKER D"CLENCH"!")
         logger.warning(f"   Niveau: {max_level.name}")
         for trigger in triggered:
             logger.warning(f"   - {trigger['message']}")
         
-        # DÃƒÂ©terminer les actions
+        # Determiner les actions
         if max_level == BreakLevel.EMERGENCY:
-            # ARRÃƒÅ T D'URGENCE TOTAL
+            # ARRT D'URGENCE TOTAL
             self.is_active = False
             self.cooldown_until = datetime.now() + timedelta(days=1)  # 24h
             
@@ -297,21 +297,21 @@ class CircuitBreaker:
                 'status': 'emergency',
                 'can_trade': False,
                 'must_close_all': True,
-                'reason': 'ARRÃƒÅ T D\'URGENCE - Conditions critiques',
+                'reason': 'ARRT D\'URGENCE - Conditions critiques',
                 'level': max_level,
                 'triggers': triggered,
                 'cooldown_hours': 24
             }
         
         elif max_level == BreakLevel.HALT:
-            # ARRÃƒÅ T COMPLET
+            # ARRT COMPLET
             self.cooldown_until = datetime.now() + timedelta(hours=4)
             
             return {
                 'status': 'halt',
                 'can_trade': False,
                 'must_close_all': True,
-                'reason': 'ARRÃƒÅ T - Fermeture de toutes les positions',
+                'reason': 'ARRT - Fermeture de toutes les positions',
                 'level': max_level,
                 'triggers': triggered,
                 'cooldown_hours': 4
@@ -328,7 +328,7 @@ class CircuitBreaker:
                 'can_trade': False,
                 'must_close_all': False,
                 'reduce_positions': True,
-                'reason': 'PAUSE - RÃƒÂ©duction des positions',
+                'reason': 'PAUSE - Reduction des positions',
                 'level': max_level,
                 'triggers': triggered,
                 'cooldown_hours': self.config['cooldown_period'] / 3600
@@ -339,17 +339,17 @@ class CircuitBreaker:
                 'status': 'warning',
                 'can_trade': True,
                 'reduce_risk': True,
-                'reason': 'ALERTE - RÃƒÂ©duire l\'exposition',
+                'reason': 'ALERTE - Reduire l\'exposition',
                 'level': max_level,
                 'triggers': triggered
             }
     
     def report_trade(self, trade_result: Dict):
         """
-        Enregistre le rÃƒÂ©sultat d'un trade
+        Enregistre le resultat d'un trade
         
         Args:
-            trade_result: Dict avec rÃƒÂ©sultat du trade
+            trade_result: Dict avec resultat du trade
         """
         pnl = trade_result.get('pnl', 0)
         
@@ -361,22 +361,22 @@ class CircuitBreaker:
     
     def report_error(self, error: Exception):
         """
-        Enregistre une erreur systÃƒÂ¨me
+        Enregistre une erreur systeme
         
         Args:
             error: L'exception
         """
         self.error_timestamps.append(datetime.now())
         self.errors_count += 1
-        logger.error(f"Erreur enregistrÃƒÂ©e par Circuit Breaker: {error}")
+        logger.error(f"Erreur enregistree par Circuit Breaker: {error}")
     
     def reset_daily_counters(self):
-        """RÃƒÂ©initialise les compteurs journaliers"""
+        """Reinitialise les compteurs journaliers"""
         self.daily_losses = 0
-        logger.info("Ã°Å¸â€â€ž Compteurs journaliers rÃƒÂ©initialisÃƒÂ©s")
+        logger.info(""" Compteurs journaliers reinitialises")
     
     def force_reset(self):
-        """Force la rÃƒÂ©initialisation complÃƒÂ¨te"""
+        """Force la reinitialisation complete"""
         self.is_active = True
         self.breakers_triggered = []
         self.cooldown_until = None
@@ -384,7 +384,7 @@ class CircuitBreaker:
         self.daily_losses = 0
         self.error_timestamps = []
         
-        logger.warning("Ã¢Å¡Â Ã¯Â¸Â Circuit Breaker FORCE RESET")
+        logger.warning(" Circuit Breaker FORCE RESET")
     
     def get_status(self) -> Dict:
         """
@@ -433,11 +433,11 @@ if __name__ == "__main__":
         {'pnl': -40, 'symbol': 'BNBUSDC'},
         {'pnl': -25, 'symbol': 'ADAUSDC'},
         {'pnl': -35, 'symbol': 'DOGEUSDC'},
-        {'pnl': -20, 'symbol': 'XRPUSDC'}  # 6 pertes consÃƒÂ©cutives
+        {'pnl': -20, 'symbol': 'XRPUSDC'}  # 6 pertes consecutives
     ]
     
-    # Test 1: SÃƒÂ©rie de pertes
-    print("\n1. Test sÃƒÂ©rie de pertes:")
+    # Test 1: Serie de pertes
+    print("\n1. Test serie de pertes:")
     result = breaker.check_conditions(
         portfolio_value=10000,
         daily_pnl=-200,
@@ -448,8 +448,8 @@ if __name__ == "__main__":
     print(f"   Can trade: {result['can_trade']}")
     print(f"   Reason: {result['reason']}")
     
-    # Test 2: Perte journaliÃƒÂ¨re excessive
-    print("\n2. Test perte journaliÃƒÂ¨re:")
+    # Test 2: Perte journaliere excessive
+    print("\n2. Test perte journaliere:")
     result = breaker.check_conditions(
         portfolio_value=10000,
         daily_pnl=-600,  # 6% de perte
